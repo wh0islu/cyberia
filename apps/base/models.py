@@ -6,9 +6,9 @@ class Profile(models.Model):
     name = models.CharField(max_length=60, help_text="Mr Penguim")
     bio = models.TextField(null=True)
     nationality = models.CharField(max_length=10, help_text="Siberian")
-    goals = models.CharField(max_length=100, help_text="Help people.", blank=True),
+    goals = models.CharField(max_length=100, help_text="Help people.", blank=True)
     message = models.TextField(null=True, help_text="Be humble.")
     #photo = models.ImageField(upload_to='perfil/', blank=True, null=True),
 
     def __str__(self):
-        return f"Cyberia's profile{self.name}"
+        return f"{self.name}'s profile"
