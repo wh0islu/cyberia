@@ -2,14 +2,14 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-import datetime
+from .models import Profile
 
-
+@login_required(login_url='loginUser')
 def home(request):
-    now = datetime.datetime.now()
-    html = f"Time is {now}"
-    context = {'html': html}
+    profile = Profile.objects.get(user=request.user)
+    context = {'profile': profile}
     return render(request, 'base/home.html', context)
 
 
@@ -19,7 +19,7 @@ def loginUser(request):
         return redirect('home')
 
     if request.method == 'POST':
-        username = request.POST.get('username').lower()
+        username = request.POST.get('username')
         password = request.POST.get('password')
         try:
             user = User.objects.get(username=username)

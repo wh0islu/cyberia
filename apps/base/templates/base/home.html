@@ -1,6 +1,12 @@
 {% extends 'main.html' %}
 {% block content %}
+{% if user.is_authenticated %}
+<a href="{% url 'logoutUser' %}">sair</a>
 <h1>Hello</h1>
-<p>time {{ html }}</p>
-<a href="{% url 'loginUser' %}">a</a>
+<p>Username: {{ profile.name }}</p>
+<p>Bio: {{ profile.bio }}</p>
+<p>Nationality: {{ profile.nationality }}</p>
+<p>Goals: {{ profile.goals }}</p>
+<p>Message: {{ profile.message }}</p>
+{% endif %}
 {% endblock %}
