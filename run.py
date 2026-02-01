@@ -1,11 +1,12 @@
-import sys
-import subprocess
-from pathlib import Path
 import shutil
+import subprocess
+import sys
+from pathlib import Path
 
 # =========================================================
 # Utils
 # =========================================================
+
 
 def run(cmd, shell=False):
     subprocess.run(cmd, shell=shell, check=True)
@@ -143,4 +144,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
