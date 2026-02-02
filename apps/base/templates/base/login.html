@@ -13,16 +13,20 @@
         <input type="submit" value="Login" />
     </form>
     <p>Haven't signed up yet ?</p>
-    <a href={% url 'registerUser' %}>Sign up</a>
+    <a href="{% url 'registerUser' %}">Sign up</a>
+    <a href="{% url 'recovery' %}">Forgot password?</a>
     {% else %}
     <div>
-        <form method="POST" action="">
+        <form method="POST" onsubmit="showSpinner()">
             {% csrf_token %}
             {{ form.as_p }}
-            <input type="submit" value="Register" />
+            <button type="submit" id="submit-btn">
+                <span id="btn-text">Submit</span>
+                <span id="spinner" class="spinner hidden"></span>
+            </button>
         </form>
         <p>Already signed up?</p>
-        <a href="{% url 'loginUser' %}>Login</a>
+        <a href="{% url 'loginUser' %}">Login</a>
     </div>
 </div>
 {% endif %}

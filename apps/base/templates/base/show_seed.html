@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<h2>⚠️ Your Seed Phrase</h2>
+<p>Save this carefully. It will be shown only once.</p>
+
+<ul>
+    {% for word in seed %}
+    <li>{{ forloop.counter }}: {{ word }}</li>
+    {% endfor %}
+</ul>
+
+
+<a href="{% url 'loginUser' %}">Continue</a>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<h2>Reset password</h2>
+
+<form method="POST" onsubmit="showSpinner()">
+    {% csrf_token %}
+
+    <label>Username</label>
+    <input type="text" name="username" required>
+
+    {% for pos in positions %}
+    <label>{{ pos }}:</label>
+    <input type="text" name="word_{{ pos }}" required>
+    {% endfor %}
+
+    <label>New password</label>
+    <input type="password" name="password" required>
+
+    <button type="submit" id="submit-btn">
+        <span id="btn-text">Recover</span>
+        <span id="spinner" class="spinner hidden"></span>
+    </button>
+</form>
+
+{% endblock %}

@@ -4,7 +4,11 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from .models import Profile
+from .models import Profile, SeedWord
+from django.contrib.auth.hashers import check_password, make_password
+from .utils import generate_seed
+import random
+
 
 @login_required(login_url='loginUser')
 def home(request):
@@ -40,17 +44,105 @@ def logoutUser(request):
     logout(request)
     return redirect('home')
 
+def showSeed(request):
+    seed = request.session.get("seed_phrase")
+
+    if not seed:
+        return redirect("loginUser")
+
+    del request.session["seed_phrase"]
+
+    return render(request, "base/show_seed.html", {"seed": seed})
+
 
 def registerUser(request):
     form = UserCreationForm()
+
     if request.method == "POST":
         form = UserCreationForm(request.POST)
+
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
-            login(request, user)
-            return redirect("home")
-        else:
-            messages.error(request, "An error occurred during registration")
+
+            profile = Profile.objects.create(user=user)
+
+            # gerar seed
+            seed_words = generate_seed()
+
+            seed_objects = []
+            for i, word in enumerate(seed_words, start=1):
+                seed_objects.append(
+                    SeedWord(
+                        profile=profile,
+                        index=i,
+                        word_hash=make_password(word)
+                    )
+                )
+
+            SeedWord.objects.bulk_create(seed_objects)
+
+            # mostrar seed UMA vez
+            request.session["seed_phrase"] = seed_words
+            return redirect("show-seed")
+
     return render(request, "base/login.html", {"form": form})
+
+
+def recoverAccount(request):
+    if request.method == "GET":
+        positions = sorted(random.sample(range(1, 10), 5))
+        request.session["seed_positions"] = positions
+        return render(request, "base/recovery.html", {"positions": positions})
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        new_password = request.POST.get("password")
+
+        try:
+            user = User.objects.get(username=username)
+            profile = Profile.objects.get(user=user)
+        except (User.DoesNotExist, Profile.DoesNotExist):
+            messages.error(request, "Invalid credentials")
+            return redirect("recovery")
+
+        positions = request.session.get("seed_positions", [])
+
+        for pos in positions:
+            user_word = request.POST.get(f"word_{pos}")
+
+            try:
+                seed_word = SeedWord.objects.get(profile=profile, index=pos)
+            except SeedWord.DoesNotExist:
+                messages.error(request, "Invalid credentials")
+                return redirect("recovery")
+
+            if not check_password(user_word, seed_word.word_hash):
+                messages.error(request, "Invalid credentials")
+                return redirect("recovery")
+
+        # senha válida → redefinir
+        user.set_password(new_password)
+        user.save()
+
+        # apagar seed antiga
+        SeedWord.objects.filter(profile=profile).delete()
+
+        # gerar nova seed
+        new_seed = generate_seed()
+
+        seed_objects = []
+        for i, word in enumerate(new_seed, start=1):
+            seed_objects.append(
+                SeedWord(
+                    profile=profile,
+                    index=i,
+                    word_hash=make_password(word)
+                )
+            )
+
+        SeedWord.objects.bulk_create(seed_objects)
+
+        request.session["seed_phrase"] = new_seed
+        return redirect("show-seed")

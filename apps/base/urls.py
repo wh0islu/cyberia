@@ -7,5 +7,6 @@ urlpatterns = [
     path('login/', views.loginUser, name="loginUser"),
     path('registerUser/', views.registerUser, name='registerUser'),
     path('logoutUser/', views.logoutUser, name="logoutUser"),
-    #path('recovery-seed/', views.recoverySeed, name="recoverySeed")
+    path('show-seed/', views.showSeed, name='show-seed'),
+    path('recovery/', views.recoverAccount, name='recovery'),  # type: ignore
 ]
