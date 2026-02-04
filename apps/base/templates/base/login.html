@@ -1,33 +1,68 @@
-{% extends 'main.html' %}
-
+{% extends "main.html" %}
 {% block content %}
-{% if page == "loginUser" %}
-<div>
-    <form method="POST" action="">
-        {% csrf_token %}
-        <label>Username: </label>
-        <input type="text" name="username" placeholder="Enter username" />
 
-        <label>Password: </label>
-        <input type="password" name="password" placeholder="Enter password" />
-        <input type="submit" value="Login" />
-    </form>
-    <p>Haven't signed up yet ?</p>
-    <a href="{% url 'registerUser' %}">Sign up</a>
-    <a href="{% url 'recovery' %}">Forgot password?</a>
-    {% else %}
-    <div>
-        <form method="POST" onsubmit="showSpinner()">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" id="submit-btn">
-                <span id="btn-text">Submit</span>
-                <span id="spinner" class="spinner hidden"></span>
-            </button>
-        </form>
-        <p>Already signed up?</p>
-        <a href="{% url 'loginUser' %}">Login</a>
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-2 pt-16">
+
+    <!-- LEFT -->
+    <div class="flex items-center justify-center px-6">
+        <div class="w-full max-w-md space-y-6">
+
+            <div class="space-y-2">
+                <h3 class="text-2xl font-semibold">Log into your account</h3>
+            </div>
+
+            <form method="POST" class="space-y-4" onsubmit="showSpinner()">
+                {% csrf_token %}
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm mb-1">Username</label>
+                    <input type="text" name="username" placeholder="akira" class="w-full rounded-md border border-gray-700 px-3 py-2
+                   bg-[var(--color-dark-surface)]
+                   focus:outline-none focus:ring-2
+                   focus:ring-[var(--color-brand-primary)]" required />
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-sm mb-1">Password</label>
+                    <input type="password" name="password" placeholder="••••••••" class="w-full rounded-md border border-gray-700 px-3 py-2
+                   bg-[var(--color-dark-surface)]
+                   focus:outline-none focus:ring-2
+                   focus:ring-[var(--color-brand-primary)]" required />
+                </div>
+
+                <!-- Button -->
+                <button type="submit" class="w-full mt-2 flex items-center justify-center gap-2
+                 rounded-md px-4 py-2 font-medium transition
+                 bg-[var(--color-brand-primary)] hover:opacity-90">
+                    <span id="btn-text">Sign in</span>
+
+                    <svg id="spinner" class="hidden h-5 w-5 animate-spin" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="text-sm text-gray-400 space-y-1">
+                <p>
+                    Don't have an account?
+                    <a href="{% url 'registerUser' %}" class="hover:underline text-[var(--color-brand-primary)]">
+                        Sign up
+                    </a>
+                </p>
+                <p>
+                    Forgot your password?
+                    <a href="{% url 'recovery' %}" class="hover:underline text-[var(--color-brand-primary)]">
+                        Try with seedphrases
+                    </a>
+                </p>
+            </div>
+
+        </div>
     </div>
 </div>
-{% endif %}
-{% endblock content %}
+
+{% endblock %}

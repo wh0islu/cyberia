@@ -1,0 +1,26 @@
+{
+  "name": "cyberia",
+  "version": "1.0.0",
+  "description": "my personal cyberia",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "npx tailwindcss -i ./apps/base/static/base/src/css/input.css -o ./static/css/output.css --watch --content './apps/base/templates/**/*.html'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wh0isd1me/cyberia.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/wh0isd1me/cyberia/issues"
+  },
+  "homepage": "https://github.com/wh0isd1me/cyberia#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  }
+}

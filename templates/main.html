@@ -1,29 +1,22 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br" class="scroll-smooth overflow-x-hidden">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>Cyberia</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <title>luhwired</title>
+    <!--<link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">-->
 </head>
 
-<body>
+<body
+    class="overflow-x-hidden font-poppins text-gray-800 bg-gray-50 dark:bg-dark-bg dark:text-white transition-colors duration-300">
+    {% include 'partials/navbar.html' %}
     {% block content %}
-    {% endblock %}
-    <script>
-        function showSpinner() {
-            const spinner = document.getElementById("spinner");
-            const text = document.getElementById("btn-text");
-
-            spinner.classList.remove("hidden");
-            text.textContent = "Processing...";
-            document.body.style.pointerEvents = "none";
-        }
-
-    </script>
-
+    {% endblock content %}
+    {% include 'partials/footer.html' %}
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
 
 </html>

@@ -8,6 +8,7 @@ from .models import Profile, SeedWord
 from django.contrib.auth.hashers import check_password, make_password
 from .utils import generate_seed
 import random
+from .forms import Signup
 
 
 @login_required(login_url='loginUser')
@@ -44,6 +45,7 @@ def logoutUser(request):
     logout(request)
     return redirect('home')
 
+
 def showSeed(request):
     seed = request.session.get("seed_phrase")
 
@@ -56,10 +58,10 @@ def showSeed(request):
 
 
 def registerUser(request):
-    form = UserCreationForm()
+    form = Signup()
 
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = Signup(request.POST)
 
         if form.is_valid():
             user = form.save(commit=False)
@@ -68,7 +70,6 @@ def registerUser(request):
 
             profile = Profile.objects.create(user=user)
 
-            # gerar seed
             seed_words = generate_seed()
 
             seed_objects = []
@@ -83,7 +84,6 @@ def registerUser(request):
 
             SeedWord.objects.bulk_create(seed_objects)
 
-            # mostrar seed UMA vez
             request.session["seed_phrase"] = seed_words
             return redirect("show-seed")
 
@@ -129,7 +129,6 @@ def recoverAccount(request):
         # apagar seed antiga
         SeedWord.objects.filter(profile=profile).delete()
 
-        # gerar nova seed
         new_seed = generate_seed()
 
         seed_objects = []
