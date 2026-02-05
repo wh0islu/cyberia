@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -59,6 +60,7 @@ def showSeed(request):
 
 def registerUser(request):
     form = Signup()
+    seed_file_ready = False
 
     if request.method == "POST":
         form = Signup(request.POST)
@@ -72,22 +74,51 @@ def registerUser(request):
 
             seed_words = generate_seed()
 
-            seed_objects = []
-            for i, word in enumerate(seed_words, start=1):
-                seed_objects.append(
-                    SeedWord(
-                        profile=profile,
-                        index=i,
-                        word_hash=make_password(word)
-                    )
+            SeedWord.objects.bulk_create([
+                SeedWord(
+                    profile=profile,
+                    index=i,
+                    word_hash=make_password(word)
                 )
+                for i, word in enumerate(seed_words, start=1)
+            ])
 
-            SeedWord.objects.bulk_create(seed_objects)
+            # 🔐 cria conteúdo do arquivo
+            seed_text = "\n".join(
+                f"{i}. {word}" for i, word in enumerate(seed_words, start=1)
+            )
 
-            request.session["seed_phrase"] = seed_words
-            return redirect("show-seed")
+            # guarda temporariamente na sessão (curto prazo)
+            request.session["seed_file"] = seed_text
 
-    return render(request, "base/login.html", {"form": form})
+            seed_file_ready = True
+
+    return render(
+        request,
+        "base/register.html",
+        {
+            "form": form,
+            "seed_file_ready": seed_file_ready,
+        }
+    )
+
+def download_seed(request):
+    seed_text = request.session.get("seed_file")
+
+    if not seed_text:
+        return HttpResponse(status=404)
+
+    response = HttpResponse(
+        seed_text,
+        content_type="text/plain"
+    )
+    response["Content-Disposition"] = 'attachment; filename="seedphrases.txt"'
+
+    # remove depois do download
+    del request.session["seed_file"]
+
+    return response
+
 
 
 def recoverAccount(request):

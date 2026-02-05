@@ -22,7 +22,8 @@ def python_cmd():
 
 def setup_poetry():
     run(["poetry", "init", "-n"])
-    run(["poetry", "add", "django", "djangorestframework", "python-decouple"])
+    run(["poetry", "add", "django", "djangorestframework", "python-decouple",
+         "pillow"])
     return "poetry run python"
 
 

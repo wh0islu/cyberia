@@ -140,5 +140,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTypingEffect();
     setupCarousel('projetos');
     setupCarousel('reconhecimentos');
-    setupAntiInspect();
+    //setupAntiInspect();
 });

@@ -9,4 +9,5 @@ urlpatterns = [
     path('logout/', views.logoutUser, name="logoutUser"),
     path('show-seed/', views.showSeed, name='show-seed'),
     path('recovery/', views.recoverAccount, name='recovery'),  # type: ignore
+    path("download-seed/", views.download_seed, name="download-seed"),
 ]
