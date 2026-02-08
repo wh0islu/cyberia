@@ -2,10 +2,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-
-# =========================================================
-# Utils
-# =========================================================
+import secrets
 
 
 def run(cmd, shell=False):
@@ -16,20 +13,12 @@ def python_cmd():
     return "python" if sys.platform.startswith("win") else "python3"
 
 
-# =========================================================
-# Environment
-# =========================================================
-
 def setup_poetry():
     run(["poetry", "init", "-n"])
     run(["poetry", "add", "django", "djangorestframework", "python-decouple",
          "pillow"])
     return "poetry run python"
 
-
-# =========================================================
-# Django project
-# =========================================================
 
 def create_project(python, project_name):
     run(f"{python} -m django startproject {project_name} .", shell=True)
@@ -80,31 +69,38 @@ INSTALLED_APPS += [
     (settings_dir / "base.py").write_text(base_content)
 
 
-# =========================================================
-# Apps
-# =========================================================
-
 def create_app(python, app_name):
     apps_dir = Path("apps")
     apps_dir.mkdir(exist_ok=True)
     run(f"{python} manage.py startapp {app_name} apps/{app_name}", shell=True)
 
     apps_py = apps_dir / app_name / "apps.py"
-    content = apps_py.read_text()
+    content = apps_py.read_text(encoding="utf-8")
 
     class_name = f"{app_name.capitalize()}Config"
 
-    content = content.replace(
-        "class Config(AppConfig):",
-        f"class {class_name}(AppConfig):"
-    )
+    content = content.replace("class AppConfig(AppConfig):", f"class {class_name}(AppConfig):")
 
-    content = content.replace(
-        "name =",
-        f"name = 'apps.{app_name}'\n    default_auto_field = 'django.db.models.BigAutoField'\n"
-    )
+    lines = content.splitlines()
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("name ="):
+            new_lines.append("    name = 'apps." + app_name + "'")
+            new_lines.append("    default_auto_field = 'django.db.models.BigAutoField'")
+        else:
+            new_lines.append(line)
 
-    apps_py.write_text(content)
+    content = "\n".join(new_lines) + "\n"  # garante quebra no final
+
+    apps_py.write_text(content, encoding="utf-8")
+
+#import re
+#content = re.sub(
+#    r'(\s*)name\s*=\s*["\'][^"\']*["\']',
+#    rf'\1name = "apps.{app_name}"\n\1default_auto_field = "django.db.models.BigAutoField"',
+#    content
+#)
 
 
 def register_app(project_name, app_name):
@@ -119,10 +115,6 @@ def register_app(project_name, app_name):
     base.write_text(content)
 
 
-# =========================================================
-# Main
-# =========================================================
-
 def main():
     project = input("Nome do projeto: ")
     apps = input("Apps (separados por espaço): ").split()
@@ -135,9 +127,11 @@ def main():
         create_app(python, app)
         register_app(project, app)
 
-    Path(".env").write_text("SECRET_KEY=django-insecure-change-me\n")
+    secret_key = secrets.token_urlsafe(50)
+    env_content = f"SECRET_KEY={secret_key}\n"
+    Path(".env").write_text(env_content, encoding="utf-8")
 
-    print("\n✅ Projeto criado corretamente")
+    print("\n[+] Projeto criado corretamente [+]")
     print(f"export DJANGO_SETTINGS_MODULE={project}.settings.dev")
     print(f"{python} manage.py migrate")
     print(f"{python} manage.py runserver")

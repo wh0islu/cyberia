@@ -1,15 +1,16 @@
-from django.contrib import messages
-from django.http import HttpResponse
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
-from .models import Profile, SeedWord
-from django.contrib.auth.hashers import check_password, make_password
-from .utils import generate_seed
 import random
+
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+
 from .forms import Signup
+from .models import Profile, SeedWord
+from .utils import generate_seed
 
 
 @login_required(login_url='loginUser')
@@ -102,6 +103,7 @@ def registerUser(request):
         }
     )
 
+
 def download_seed(request):
     seed_text = request.session.get("seed_file")
 
@@ -118,7 +120,6 @@ def download_seed(request):
     del request.session["seed_file"]
 
     return response
-
 
 
 def recoverAccount(request):

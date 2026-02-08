@@ -27,7 +27,8 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 79
+line-length = 85
+src = ["apps"]
 extend-exclude = ["migrations"]
 
 
@@ -41,12 +42,12 @@ preview = true
 quote-style = 'single'
 
 [tool.taskipy.tasks]
-lint = 'ruff check'
-pre_format = 'ruff check --fix'
-format = 'ruff format'
-run = 'python manage.py runserver'
-migrate = 'python manage.py migrate'
-makemigrations = 'python manage.py makemigrations'
-pre_test = 'task lint'
-test = 'pytest -s -x --cov=fast_zero -vv'
-post_test = 'coverage html'
+lint = "ruff check apps"
+pre_format = "ruff check apps --fix"
+format = "ruff format apps"
+run = "python manage.py runserver"
+migrate = "python manage.py migrate"
+makemigrations = "python manage.py makemigrations"
+pre_test = "task lint"
+test = "pytest -s -x --cov=apps -vv"
+post_test = "coverage html"
