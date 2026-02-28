@@ -9,12 +9,7 @@
             <div class="hidden md:flex items-center space-x-8">
 
                 {% if user.is_authenticated %}
-                <a href="#home" class="dark:text-white hover:text-emerald-600 font-bold font-poppins">Home</a>
-                <a href="#jornada" class="dark:text-white hover:text-emerald-600 font-poppins">Jornada</a>
                 <a href="{% url 'logoutUser' %}" class="dark:text-white hover:text-emerald-600 font-poppins">Exit</a>
-                {% if recognitions %}<a href="#reconhecimentos"
-                    class="dark:text-white hover:text-emerald-600 font-poppins">Reconhecimentos</a>{%endif%}
-                <a href="#contato" class="dark:text-white hover:text-emerald-600 font-poppins">Contato</a>
                 {%endif%}
                 <button id="theme-toggle" type="button"
                     class="dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5">
