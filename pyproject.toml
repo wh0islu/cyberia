@@ -27,7 +27,7 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 85
+line-length = 120
 src = ["apps"]
 extend-exclude = ["migrations"]
 
