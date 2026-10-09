@@ -56,9 +56,7 @@ ROOT_URLCONF = 'cyberia.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'templates'
-        ],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,6 +118,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 SECRET_KEY = config('SECRET_KEY')
@@ -131,8 +131,4 @@ DATABASES = {
     }
 }
 
-INSTALLED_APPS += [
-    'apps.base',
-    'rest_framework',
-    'widget_tweaks'
-]
+INSTALLED_APPS += ['apps.base', 'rest_framework', 'widget_tweaks']

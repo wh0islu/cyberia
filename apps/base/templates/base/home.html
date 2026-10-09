@@ -1,12 +1,10 @@
 {% extends 'main.html' %}
 {% block content %}
 {% if user.is_authenticated %}
-<a href="{% url 'logoutUser' %}">sair</a>
-<h1>Hello World!</h1>
-<p>user @{{ profile.name }} is wired!</p>
-<p>Bio: {{ profile.bio }}</p>
-<p>Nationality: {{ profile.nationality }}</p>
-<p>Goals: {{ profile.goals }}</p>
-<p>Message: {{ profile.message }}</p>
+<div>
+    {% for book in books %}
+    <p>{{ book.title }} - {{ book.author }}</p>
+{% endfor %}
+</div>
 {% endif %}
 {% endblock %}

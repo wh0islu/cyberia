@@ -82,7 +82,7 @@ class Course(models.Model):
     status = models.CharField(max_length=2, default='NS', choices=COURSE_OPTIONS)
     language = models.CharField(max_length=2, blank=True, null=True, choices=LANGUAGE_OPTIONS)
     url = models.URLField(blank=True, null=True)
-    cover = models.ImageField(upload_to='coursers/covers/', blank=True, null=True)
+    cover = models.ImageField(upload_to='courses/covers/', blank=True, null=True)
     certificate_available = models.BooleanField(default=False)
     certificate_obtained = models.BooleanField(default=False)
 
