@@ -15,9 +15,14 @@ from .utils import generate_seed
 
 @login_required(login_url='loginUser')
 def home(request):
+    return render(request, 'base/home.html')
+
+
+@login_required(login_url='loginUser')
+def books(request):
     books = Book.objects.all()
     context = {'books': books}
-    return render(request, 'base/home.html', context)
+    return render(request, 'base/book.html', context)
 
 
 @login_required(login_url='loginUser')
