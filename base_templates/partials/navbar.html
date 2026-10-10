@@ -1,0 +1,22 @@
+<header>
+    <nav>
+	{% if user.is_authenticated %}
+	<ul class="nav-links">
+	    <li><a href="{% url 'home' %}">/home</a></li>
+	    <li><a href="{% url 'books' %}">/books</a></li>
+	    <li><a href="{% url 'books' %}">/movies</a></li>
+	</ul>
+	<div class="nav-user">
+	    <span>{{ user.profile.name }}</span>
+	    <a href="{% url 'profile' %}" title="Profile">
+		{% if user.profile.pfp %}
+		<img class="nav-avatar" src="{{ user.profile.pfp.url }}" alt="Profile">
+		{% else %}
+		Profile
+		{% endif %}
+	    </a>
+	    <a href="{% url 'logoutUser' %}">/quit</a>
+	</div>
+	{% endif %}
+    </nav>
+</header>
