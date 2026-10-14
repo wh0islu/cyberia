@@ -1,11 +1,17 @@
-{% extends 'main.html' %}
+{% extends 'global/base.html' %}
 {% block content %}
-<h1>Books</h1>
 {% if user.is_authenticated %}
-<div>
-    {% for book in books %}
-    <p>{{ book.title }} - {{ book.author }}</p>
-{% endfor %}
+<div id="booksContent">
+    <div class="grid">
+        {% for book in books %}
+        <div class="grid-item">
+            {% if book.cover %}
+            <img src="{{ book.cover.url }}" alt="{{ book.title }}"/>
+            {% endif %}
+            <h3>{{ book.title }}</h3>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 {% endblock content %}

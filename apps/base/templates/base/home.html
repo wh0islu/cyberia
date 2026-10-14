@@ -1,4 +1,8 @@
-{% extends 'main.html' %}
+{% extends 'global/base.html' %}
+{% load static %}
 {% block content %}
-<h1>welcome to Cyberia</h1>
+ <h1 class="welcome">Добро welcome пожаловать to Cyberia..</h1>
+<div id="nowPlaying" data-url="{% url 'now-playing' %}">loading...</div>
+<p></p>
+<script src="{% static 'base/js/now_playing.js' %}"></script>
 {% endblock %}
