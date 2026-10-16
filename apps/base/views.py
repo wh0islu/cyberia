@@ -22,7 +22,7 @@ def home(request):
 def books(request):
     books = Book.objects.all()
     context = {'books': books}
-    return render(request, 'base/book.html', context)
+    return render(request, 'base/books.html', context)
 
 
 @login_required(login_url='loginUser')
@@ -125,7 +125,7 @@ def download_seed(request):
     return response
 
 
-def recoverAccount(request):
+def recover_account(request):
     if request.method == 'GET':
         positions = sorted(random.sample(range(1, 10), 5))
         request.session['seed_positions'] = positions
@@ -138,7 +138,7 @@ def recoverAccount(request):
         try:
             user = User.objects.get(username=username)
             profile = Profile.objects.get(user=user)
-        except User.DoesNotExist, Profile.DoesNotExist:
+        except (User.DoesNotExist, Profile.DoesNotExist):
             messages.error(request, 'Invalid credentials')
             return redirect('recovery')
 
@@ -174,3 +174,7 @@ def recoverAccount(request):
 
         request.session['seed_phrase'] = new_seed
         return redirect('show-seed')
+    return render(
+        request,
+        'base/pages/recovery.html',
+    )
