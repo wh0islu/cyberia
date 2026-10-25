@@ -1,8 +1,25 @@
 {% extends 'global/base.html' %}
 {% load static %}
 {% block content %}
- <h1 class="welcome">Добро welcome пожаловать to Cyberia..</h1>
+ <h1 class="welcome">welcome to Cyberia..</h1>
 <div id="nowPlaying" data-url="{% url 'now-playing' %}">loading...</div>
-<p></p>
+<p>current book</p>
+{% if book %}
+    {% include 'base/forms/current_book.html' %}
+{% endif %}
+<p><a href="{% url 'meal_create' %}">+ Registrar refeição</a></p>
+{% if meals_today %}
+    <section>
+        <h2>Refeições de hoje</h2>
+        {% for meal in meals_today %}
+        <article>
+            <h3>{{ meal.get_category_display }}{% if meal.time %} · {{ meal.time|time:'H:i' }}{% endif %}</h3>
+            <ul>
+                {% for item in meal.items.all %}<li>{{ item.name }}</li>{% endfor %}
+            </ul>
+        </article>
+        {% endfor %}
+    </section>
+{% endif %}
 <script src="{% static 'base/js/now_playing.js' %}"></script>
 {% endblock %}

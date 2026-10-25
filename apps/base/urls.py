@@ -5,7 +5,11 @@ from . import views, api
 urlpatterns = [
     path('', views.home, name='home'),
     path('profile/', views.profile, name='profile'),
+    path('spotify/now-playing/', views.now_playing, name='now-playing'),
+    path('spotify/recently-played/', views.recently_played, name='recently-played'),
     path('books/', views.books, name='books'),
+    path('books/<int:book_id>/progress/', views.update_book_page, name='update_book_page'),
+    path('meals/new/', views.create_meal, name='meal_create'),
     path('login/', views.loginUser, name='loginUser'),
     path('register/', views.registerUser, name='registerUser'),
     path('logout/', views.logoutUser, name='logoutUser'),

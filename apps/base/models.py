@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -77,6 +78,42 @@ class BookSource(models.Model):
 
     def __str__(self):
         return f'{self.book.title} - {self.book.author} - {self.format}'
+
+
+class MealEntry(models.Model):
+    MEAL_OPTIONS = [
+        ('BR', 'Café'),
+        ('LU', 'Almoço'),
+        ('SN', 'Lanche'),
+        ('DI', 'Jantar'),
+        ('OT', 'Outro'),
+    ]
+    TAG_OPTIONS = [
+        ('home', 'Caseiro'),
+        ('out', 'Fora de casa'),
+        ('delivery', 'Delivery'),
+        ('quick', 'Rápido'),
+        ('healthy', 'Saudável'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meal_entries')
+    category = models.CharField(max_length=2, choices=MEAL_OPTIONS)
+    date = models.DateField(default=timezone.localdate)
+    time = models.TimeField(blank=True, null=True)
+    photo = models.ImageField(upload_to='meals/photos/', blank=True, null=True)
+    tags = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.get_category_display()} - {self.date}'
+
+
+class MealItem(models.Model):
+    meal = models.ForeignKey(MealEntry, on_delete=models.CASCADE, related_name='items')
+    name = models.CharField(max_length=120)
+
+    def __str__(self):
+        return self.name
 
 
 class Course(models.Model):

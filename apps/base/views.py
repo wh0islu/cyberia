@@ -5,24 +5,146 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.db import transaction
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
-from .forms import Signup
-from .models import Book, Profile, SeedWord
+from .forms import (
+    BookForm,
+    BookProgressForm,
+    BookSourceFormSet,
+    MealEntryForm,
+    MealItemFormSet,
+    Signup,
+)
+from .models import Book, MealEntry, Profile, SeedWord
+from .spotify import get_now_playing, get_recently_played
 from .utils import generate_seed
 
 
 @login_required(login_url='loginUser')
 def home(request):
-    return render(request, 'base/home.html')
+    book = Book.objects.filter(status='RE').first()
+    current_page = book.current_page if book else 0
+    number_of_pages = book.number_of_pages if book else None
+    progress = 0
+
+    if number_of_pages is not None and number_of_pages > 0:
+        progress = min(round(current_page / number_of_pages * 100, 2), 100)
+
+    meals_today = MealEntry.objects.filter(
+        user=request.user,
+        date=timezone.localdate(),
+    ).prefetch_related('items')
+
+    return render(request, 'base/home.html', {
+        'book': book,
+        'current_page': current_page,
+        'number_of_pages': number_of_pages,
+        'progress': progress,
+        'meals_today': meals_today,
+    })
 
 
 @login_required(login_url='loginUser')
-def books(request):
+def create_meal(request):
+    if request.method == 'POST':
+        form = MealEntryForm(request.POST, request.FILES)
+        item_formset = MealItemFormSet(request.POST, prefix='items')
+        form_is_valid = form.is_valid()
+        items_are_valid = item_formset.is_valid()
+
+        if form_is_valid and items_are_valid:
+            with transaction.atomic():
+                meal = form.save(commit=False)
+                meal.user = request.user
+                meal.save()
+                form.save_m2m()
+                item_formset.instance = meal
+                item_formset.save()
+
+            return redirect('home')
+    else:
+        form = MealEntryForm(initial={'date': timezone.localdate()})
+        item_formset = MealItemFormSet(prefix='items')
+
+    return render(request, 'base/meal_form.html', {
+        'form': form,
+        'item_formset': item_formset,
+    })
+
+
+@login_required(login_url='loginUser')
+def addBook(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('books')
+    else:
+        form = BookForm()
     books = Book.objects.all()
-    context = {'books': books}
+
+    return render(request, 'base/books.html', {'books': books, 'form': form})
+
+
+@login_required(login_url='loginUser')
+def update_book_page(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    if request.method == 'POST':
+        form = BookProgressForm(request.POST)
+
+        if form.is_valid():
+            page = form.cleaned_data['current_page']
+
+            if book.number_of_pages and page > book.number_of_pages:
+                form.add_error(
+                    'current_page',
+                    'A página não pode ultrapassar o total do livro.'
+                )
+            else:
+                book.current_page = page
+                book.save(update_fields=['current_page'])
+                return redirect('home')
+
+    return redirect('home')
+
+@login_required(login_url='loginUser')
+def books(request):
+    if request.method == 'POST':
+        book_form = BookForm(request.POST, request.FILES)
+        source_formset = BookSourceFormSet(request.POST, prefix='sources')
+
+        if book_form.is_valid() and source_formset.is_valid():
+            with transaction.atomic():
+                book = book_form.save()
+                source_formset.instance = book
+                source_formset.save()
+
+            return redirect('books')
+    else:
+        book_form = BookForm()
+        source_formset = BookSourceFormSet(prefix='sources')
+
+    books = Book.objects.all()
+    context = {
+        'books': books,
+        'book_form': book_form,
+        'source_formset': source_formset,
+    }
     return render(request, 'base/books.html', context)
+
+
+@login_required(login_url='loginUser')
+def now_playing(request):
+    return JsonResponse(get_now_playing())
+
+
+@login_required(login_url='loginUser')
+def recently_played(request):
+    return JsonResponse({'items': get_recently_played()})
 
 
 @login_required(login_url='loginUser')
