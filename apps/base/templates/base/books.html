@@ -3,15 +3,45 @@
 {% if user.is_authenticated %}
 <div id="booksContent">
     <div class="grid">
+        <button
+            type="button"
+            id="toggleBookForm"
+            class="book-form-toggle"
+            aria-controls="bookForm"
+            aria-expanded="false"
+        >
+            + Adicionar livro
+        </button>
+
+        <div id="bookForm" hidden>
+            {% include 'base/forms/form_book.html' %}
+        </div>
+
         {% for book in books %}
         <div class="grid-item">
             {% if book.cover %}
             <img src="{{ book.cover.url }}" alt="{{ book.title }}"/>
             {% endif %}
             <h3>{{ book.title }}</h3>
+            <span>{{ book.number_of_pages }}</span>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<script>
+    const toggleBookForm = document.querySelector('#toggleBookForm');
+    const bookForm = document.querySelector('#bookForm');
+
+    toggleBookForm.addEventListener('click', () => {
+        const shouldShowForm = bookForm.hidden;
+
+        bookForm.hidden = !shouldShowForm;
+        toggleBookForm.setAttribute('aria-expanded', String(shouldShowForm));
+        toggleBookForm.textContent = shouldShowForm
+            ? '- Fechar formulário'
+            : '+ Adicionar livro';
+    });
+</script>
 {% endif %}
 {% endblock content %}

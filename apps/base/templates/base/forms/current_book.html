@@ -1,0 +1,25 @@
+<form method="post" action="{% url 'update_book_page' book.id %}">
+    {% csrf_token %}
+    <div class="grid-item">
+            {% if book.cover %}
+            <img src="{{ book.cover.url }}" alt="{{ book.title }}"/>
+            {% endif %}
+            <h3>progress</h3>
+            <p>page: {{ current_page }}/{{number_of_pages}}</p>
+
+<div class="progress-track">
+    <span>{{ progress|floatformat:2 }}%</span>
+</div>
+        </div>
+    <label for="current_page">Parei na pág.</label>
+    <input
+        id="current_page"
+        type="number"
+        name="current_page"
+        min="0"
+        max="{{ book.number_of_pages }}"
+        value="{{ book.current_page }}"
+    >
+
+    <button type="submit">Salvar</button>
+</form>

@@ -36,11 +36,25 @@ class Book(models.Model):
     ]
 
     LANGUAGE_OPTIONS = [('PT', 'PORTUGUESE'), ('EN', 'ENGLISH')]
+    GENRE_OPTIONS = [
+        ('FI', 'Fiction'),
+        ('TC', 'Technical'),
+        ('FA', 'Fantasy'),
+        ('SF', 'Science fiction'),
+        ('HI', 'Historical'),
+        ('BI', 'Biography'),
+        ('NF', 'Non-fiction'),
+        ('OT', 'Other'),
+    ]
 
     title = models.CharField(max_length=100, help_text="Book's title")
     author = models.CharField(max_length=100, help_text="Author's name")
+    genre = models.CharField(max_length=2, choices=GENRE_OPTIONS, blank=True)
     year = models.IntegerField(blank=True, null=True, help_text='Year of the book')
     number_of_pages = models.PositiveIntegerField(blank=True, null=True, help_text='Number of pages')
+    current_page = models.PositiveIntegerField(default=0, help_text='Actual page reading')
+    started_on = models.DateField(blank=True, null=True)
+    notes = models.TextField(blank=True)
     status = models.CharField(null=True, default='NR', choices=BOOK_OPTIONS)
     language = models.CharField(null=True, blank=True, choices=LANGUAGE_OPTIONS)
     cover = models.ImageField(upload_to='books/covers/', blank=True, null=True)
