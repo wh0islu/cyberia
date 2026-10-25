@@ -9,6 +9,7 @@ __pycache__/
 # Assets
 wordlist.txt
 *.png
+/static/
 
 # Distribution / packaging
 .Python
