@@ -116,8 +116,8 @@ def register_app(project_name, app_name):
 
 
 def main():
-    project = input("Nome do projeto: ")
-    apps = input("Apps (separados por espaço): ").split()
+    project = input("Project name: ")
+    apps = input("Apps (separated by spaces): ").split()
 
     python = setup_poetry()
     create_project(python, project)
