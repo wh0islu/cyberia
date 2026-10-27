@@ -1,0 +1,213 @@
+.moviesPage {
+  width: 100%;
+  padding: 28px 24px 48px;
+}
+
+.pageIntro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.breadcrumb,
+.inProgressSection h2,
+.watchedSection h2 {
+  display: block;
+  color: var(--text-muted);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pageIntro h1 {
+  margin: 10px 0 6px;
+  font-size: 28px;
+}
+
+.pageIntro p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.filters > a {
+  padding: 0 0 12px;
+  color: var(--text-default);
+  font-size: 12px;
+}
+
+.activeFilter {
+  border-bottom: 2px solid var(--border-strong);
+  font-weight: 700;
+}
+
+.filterControls {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  padding-bottom: 6px;
+}
+
+.filterControls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.filterControls select {
+  height: 30px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--text-default);
+  font-size: 12px;
+}
+
+.inProgressSection,
+.watchedSection {
+  margin-top: 30px;
+}
+
+.inProgressSection h2,
+.watchedSection h2 {
+  margin-bottom: 14px;
+}
+
+.seriesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.moviesPage .seriesCard {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  min-height: 166px;
+}
+
+.seriesPoster {
+  width: 112px;
+  height: 140px;
+  border: 1px solid var(--border-strong);
+  object-fit: cover;
+}
+
+.seriesDetails h3,
+.watchedItem h3 {
+  font-size: 15px;
+}
+
+.seriesDetails p,
+.watchedItem p {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.progress {
+  margin-top: 12px;
+}
+
+.seriesDetails small {
+  display: block;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.seriesDetails :global(button) {
+  margin-top: 14px;
+}
+
+.watchedGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+
+.moviesPage .watchedItem {
+  min-width: 0;
+}
+
+.watchedItem > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--border-strong);
+  object-fit: cover;
+}
+
+.watchedItem h3 {
+  margin-top: 7px;
+}
+
+.watchedItem strong {
+  display: block;
+  margin-top: 8px;
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+.watchedItem small {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+@media (max-width: 800px) {
+  .seriesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .watchedGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .moviesPage {
+    width: calc(100% - 32px);
+  }
+
+  .pageIntro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filters {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+
+  .filterControls {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .moviesPage .seriesCard {
+    grid-template-columns: 90px minmax(0, 1fr);
+  }
+
+  .seriesPoster {
+    width: 90px;
+    height: 120px;
+  }
+
+  .watchedGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
