@@ -1,0 +1,147 @@
+.insights {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 24px 48px;
+  color: var(--text-default);
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageHeader > div > span,
+.period {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.pageHeader h1 {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.period {
+  color: var(--primary);
+}
+
+.insightsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.mainColumn,
+.sideColumn {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+}
+
+.activityItem {
+  display: grid;
+  grid-template-columns: 112px 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11px;
+}
+
+.activityItem:last-child {
+  border-bottom: 0;
+}
+
+.activityItem time {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.category {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  font-size: 10px;
+  text-align: center;
+}
+
+.description {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.monthStats > div {
+  display: flex;
+  min-width: 0;
+  min-height: 76px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+}
+
+.monthStats span {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.monthStats strong {
+  font-size: 22px;
+}
+
+@media (max-width: 1050px) {
+  .insightsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sideColumn {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 700px) {
+  .insights {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .pageHeader h1 {
+    font-size: 24px;
+  }
+
+  .activityItem {
+    grid-template-columns: 76px 58px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .monthStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sideColumn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
