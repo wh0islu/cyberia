@@ -1,0 +1,31 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  gap: 16px;
+  padding: 0 16px 0 0;
+  box-sizing: border-box;
+  background: var(--bg-app);
+}
+
+.app__conteudo {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .app__conteudo {
+    max-width: none;
+    margin-inline: 0;
+  }
+}
