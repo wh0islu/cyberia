@@ -82,18 +82,18 @@ class BookSource(models.Model):
 
 class MealEntry(models.Model):
     MEAL_OPTIONS = [
-        ('BR', 'Café'),
-        ('LU', 'Almoço'),
-        ('SN', 'Lanche'),
-        ('DI', 'Jantar'),
-        ('OT', 'Outro'),
+        ('BR', 'Breakfast'),
+        ('LU', 'Lunch'),
+        ('SN', 'Snack'),
+        ('DI', 'Dinner'),
+        ('OT', 'Other'),
     ]
     TAG_OPTIONS = [
-        ('home', 'Caseiro'),
-        ('out', 'Fora de casa'),
+        ('home', 'Homemade'),
+        ('out', 'Eating out'),
         ('delivery', 'Delivery'),
-        ('quick', 'Rápido'),
-        ('healthy', 'Saudável'),
+        ('quick', 'Quick'),
+        ('healthy', 'Healthy'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meal_entries')

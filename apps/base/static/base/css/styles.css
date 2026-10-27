@@ -95,7 +95,7 @@ header nav ul li a {
   overflow-wrap: anywhere;
 }
 
-/* Formulário de livros */
+/* Book form */
 .book-form-toggle {
   grid-column: 1 / -1;
   justify-self: end;
@@ -240,7 +240,7 @@ header nav ul li a {
   background: #2e2e2e;
 }
 
-/* Registro de refeições */
+/* Meal logging */
 .meal-page {
   min-height: calc(100vh - 110px);
   display: grid;
@@ -563,7 +563,7 @@ footer {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: auto; /* defina a altura do seu rodapé */
+  height: auto; /* Set the footer height. */
   text-align: center;
 }
 

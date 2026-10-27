@@ -35,7 +35,7 @@ def _post_token(data):
 
 
 def exchange_code(code, redirect_uri):
-    """Troca o authorization code pelos tokens (usado uma vez, pelo comando spotify_token)."""
+    """Exchange the authorization code for tokens (used once by the spotify_token command)."""
     return _post_token({'grant_type': 'authorization_code', 'code': code, 'redirect_uri': redirect_uri})
 
 
@@ -51,7 +51,7 @@ def get_access_token():
 
 
 def get_now_playing():
-    """Retorna um dict simples para o front-end; nunca levanta erro de rede."""
+    """Return a simple dictionary for the frontend; never raise a network error."""
     cached = cache.get(NOW_PLAYING_CACHE_KEY)
     if cached is not None:
         return cached
@@ -94,7 +94,7 @@ def _fetch_recently_played(limit):
         external_urls = track.get('external_urls') or {}
 
         tracks.append({
-            'title': track.get('name', 'Música desconhecida'),
+            'title': track.get('name', 'Unknown track'),
             'artists': ', '.join(artist.get('name', '') for artist in track.get('artists', [])),
             'album': album.get('name', ''),
             'cover': images[0].get('url') if images else None,

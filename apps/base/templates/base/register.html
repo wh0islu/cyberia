@@ -78,7 +78,7 @@
       <!-- Footer -->
       <div class="text-sm text-gray-500 dark:text-gray-400">
         Already signed up?
-        <a href="{% url 'loginUser' %}" class="text-brand-primary hover:underline">
+        <a href="{% url 'base:loginUser' %}" class="text-brand-primary hover:underline">
           Login
         </a>
       </div>
@@ -110,14 +110,14 @@
       </p>
 
       <a
-        href="{% url 'download-seed' %}"
+        href="{% url 'base:download-seed' %}"
         class="block text-center bg-white text-black py-2 rounded-md font-medium"
       >
         Download file
       </a>
 
       <a
-        href="{% url 'loginUser' %}"
+        href="{% url 'base:loginUser' %}"
         class="block text-center text-sm text-gray-400 hover:underline"
       >
         I saved it

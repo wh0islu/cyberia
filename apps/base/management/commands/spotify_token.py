@@ -22,7 +22,7 @@ class Command(BaseCommand):
             'scope': SCOPES,
         })
         self.stdout.write(f'1. Abra no navegador e autorize:\nhttps://accounts.spotify.com/authorize?{query}\n')
-        self.stdout.write('2. Voce sera redirecionado para uma pagina que nao carrega. Copie a URL inteira dela.')
+        self.stdout.write('2. You will be redirected to a page that does not load. Copy its full URL.')
         redirected = input('URL: ').strip()
 
         code = urllib.parse.parse_qs(urllib.parse.urlparse(redirected).query).get('code', [None])[0]

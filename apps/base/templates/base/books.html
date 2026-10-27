@@ -10,7 +10,7 @@
             aria-controls="bookForm"
             aria-expanded="false"
         >
-            + Adicionar livro
+            + Add book
         </button>
 
         <div id="bookForm" hidden>
@@ -39,8 +39,8 @@
         bookForm.hidden = !shouldShowForm;
         toggleBookForm.setAttribute('aria-expanded', String(shouldShowForm));
         toggleBookForm.textContent = shouldShowForm
-            ? '- Fechar formulário'
-            : '+ Adicionar livro';
+            ? '- Close form'
+            : '+ Add book';
     });
 </script>
 {% endif %}

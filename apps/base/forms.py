@@ -42,7 +42,7 @@ class BookForm(forms.ModelForm):
         current_page = cleaned_data.get('current_page') or 0
 
         if total_pages is not None and current_page > total_pages:
-            self.add_error('current_page', 'A página atual não pode exceder o total de páginas.')
+            self.add_error('current_page', 'The current page cannot exceed the total number of pages.')
 
         return cleaned_data
 
@@ -77,11 +77,11 @@ class MealEntryForm(forms.ModelForm):
         model = MealEntry
         fields = ['category', 'date', 'time', 'photo', 'tags']
         labels = {
-            'category': 'Tipo de refeição',
-            'date': 'Data',
-            'time': 'Hora',
-            'photo': 'Foto',
-            'tags': 'Etiquetas',
+            'category': 'Meal type',
+            'date': 'Date',
+            'time': 'Time',
+            'photo': 'Photo',
+            'tags': 'Tags',
         }
         widgets = {
             'category': forms.RadioSelect,
@@ -94,9 +94,9 @@ class MealItemForm(forms.ModelForm):
     class Meta:
         model = MealItem
         fields = ['name']
-        labels = {'name': 'Alimento'}
+        labels = {'name': 'Food'}
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Ex.: Arroz e feijão'}),
+            'name': forms.TextInput(attrs={'placeholder': 'E.g., rice and beans'}),
         }
 
 
@@ -112,7 +112,7 @@ class BaseMealItemFormSet(BaseInlineFormSet):
             if form.cleaned_data
         )
         if not has_item:
-            raise ValidationError('Adicione pelo menos um alimento à refeição.')
+            raise ValidationError('Add at least one food item to the meal.')
 
 
 MealItemFormSet = inlineformset_factory(

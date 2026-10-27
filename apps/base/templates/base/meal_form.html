@@ -4,10 +4,10 @@
     <section class="meal-dialog" aria-labelledby="meal-title">
         <header class="meal-dialog__header">
             <div>
-                <h1 id="meal-title">Registrar refeição</h1>
-                <p>Registre o que comeu. A foto é opcional.</p>
+                <h1 id="meal-title">Log a meal</h1>
+                <p>Record what you ate. A photo is optional.</p>
             </div>
-            <a class="meal-close" href="{% url 'home' %}" aria-label="Fechar">×</a>
+            <a class="meal-close" href="{% url 'base:home' %}" aria-label="Close">×</a>
         </header>
 
         <form method="post" enctype="multipart/form-data" class="meal-form">
@@ -15,7 +15,7 @@
             {{ form.non_field_errors }}
 
             <fieldset class="meal-category">
-                <legend class="visually-hidden">Tipo de refeição</legend>
+                <legend class="visually-hidden">Meal type</legend>
                 {{ form.category.errors }}
                 {{ form.category }}
             </fieldset>
@@ -35,13 +35,13 @@
 
             <label class="meal-photo">
                 <span aria-hidden="true">▧</span>
-                <span>Adicionar foto (opcional)</span>
+                <span>Add a photo (optional)</span>
                 {{ form.photo }}
             </label>
             {{ form.photo.errors }}
 
             <section class="meal-items" aria-labelledby="meal-items-title">
-                <h2 id="meal-items-title">O que comi <span class="required-mark">*</span></h2>
+                <h2 id="meal-items-title">What I ate <span class="required-mark">*</span></h2>
                 {{ item_formset.management_form }}
                 {{ item_formset.non_form_errors }}
                 <div id="mealItemForms">
@@ -50,18 +50,18 @@
                         {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
                         {{ item_form.name }}
                         {{ item_form.name.errors }}
-                        <label class="meal-item-delete" title="Remover alimento">
+                        <label class="meal-item-delete" title="Remove food item">
                             {{ item_form.DELETE }}<span aria-hidden="true">×</span>
                         </label>
                     </div>
                     {% endfor %}
                 </div>
-                <button type="button" class="meal-add-item" id="addMealItem">+ Adicionar alimento</button>
+                <button type="button" class="meal-add-item" id="addMealItem">+ Add food item</button>
                 <template id="emptyMealItem">
                     <div class="meal-item-row">
                         {% for hidden in item_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
                         {{ item_formset.empty_form.name }}
-                        <label class="meal-item-delete" title="Remover alimento">
+                        <label class="meal-item-delete" title="Remove food item">
                             {{ item_formset.empty_form.DELETE }}<span aria-hidden="true">×</span>
                         </label>
                     </div>
@@ -69,15 +69,15 @@
             </section>
 
             <fieldset class="meal-tags">
-                <legend>Etiquetas</legend>
+                <legend>Tags</legend>
                 {{ form.tags.errors }}
                 {{ form.tags }}
             </fieldset>
 
             <footer class="meal-actions">
-                <span><span class="required-mark">*</span> obrigatório</span>
-                <a href="{% url 'home' %}">Cancelar</a>
-                <button type="submit">Registrar</button>
+                <span><span class="required-mark">*</span> required</span>
+                <a href="{% url 'base:home' %}">Cancel</a>
+                <button type="submit">Log meal</button>
             </footer>
         </form>
     </section>

@@ -8,7 +8,7 @@ async function updateNowPlaying() {
     if (!response.ok) return;
     render(await response.json());
   } catch (error) {
-    // falha de rede: mantem o estado atual
+    // On network failure, keep the current state.
   }
 }
 

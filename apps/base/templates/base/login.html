@@ -65,7 +65,7 @@
         <p>
           Don't have an account?
           <a
-            href="{% url 'registerUser' %}"
+            href="{% url 'base:registerUser' %}"
             class="text-brand-primary hover:underline"
           >
             Sign up
@@ -74,7 +74,7 @@
         <p>
           Forgot your password?
           <a
-            href="{% url 'recovery' %}"
+            href="{% url 'base:recovery' %}"
             class="text-brand-primary hover:underline"
           >
             Try with seedphrases
@@ -85,7 +85,7 @@
     </div>
   </div>
 
-  <!-- RIGHT: VISUAL PLACEHOLDER (consistência com register) -->
+  <!-- RIGHT: visual placeholder (matches the registration page) -->
   <div class="hidden lg:flex items-center justify-center bg-gray-50 dark:bg-dark-surface">
     <!-- intencionalmente vazio ou pode repetir a arte -->
   </div>

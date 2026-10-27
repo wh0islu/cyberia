@@ -1,4 +1,4 @@
-<form method="post" action="{% url 'update_book_page' book.id %}">
+<form method="post" action="{% url 'base:update_book_page' book.id %}">
     {% csrf_token %}
     <div class="grid-item">
             {% if book.cover %}
@@ -11,7 +11,7 @@
     <span>{{ progress|floatformat:2 }}%</span>
 </div>
         </div>
-    <label for="current_page">Parei na pág.</label>
+    <label for="current_page">Paused at page</label>
     <input
         id="current_page"
         type="number"
@@ -21,5 +21,5 @@
         value="{{ book.current_page }}"
     >
 
-    <button type="submit">Salvar</button>
+    <button type="submit">Save</button>
 </form>
