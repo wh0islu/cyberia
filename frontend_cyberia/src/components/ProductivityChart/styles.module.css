@@ -1,0 +1,136 @@
+.panel {
+  min-width: 0;
+  padding-left: 24px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.header a {
+  color: var(--link-color);
+  font-size: 10px;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.summary span {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.summary strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.weekSummary {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  min-height: 100px;
+  max-width: 300px;
+  margin-inline: auto;
+}
+
+.chartDay {
+  display: grid;
+  grid-template-rows: 12px 1fr 12px;
+  align-items: end;
+  gap: 4px;
+  min-width: 0;
+  height: 100px;
+  text-align: center;
+}
+
+.chartCount {
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 12px;
+}
+
+.barTrack {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--bg-surface-alt);
+}
+
+.bar {
+  display: block;
+  width: min(100%, 28px);
+  min-height: 4px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--primary) 30%, var(--bg-surface-alt));
+  transition: height 0.2s ease;
+}
+
+.barToday {
+  background: var(--primary);
+}
+
+.barEmpty {
+  min-height: 0;
+  background: transparent;
+}
+
+.dayLabel,
+.todayLabel {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 12px;
+  text-overflow: ellipsis;
+  text-transform: lowercase;
+}
+
+.todayLabel {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .panel {
+    padding-top: 14px;
+    padding-left: 0;
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .chart {
+    gap: 6px;
+  }
+}
