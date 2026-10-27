@@ -23,7 +23,7 @@ from .spotify import get_now_playing, get_recently_played
 from .utils import generate_seed
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def home(request):
     book = Book.objects.filter(status='RE').first()
     current_page = book.current_page if book else 0
@@ -47,7 +47,7 @@ def home(request):
     })
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def create_meal(request):
     if request.method == 'POST':
         form = MealEntryForm(request.POST, request.FILES)
@@ -64,7 +64,7 @@ def create_meal(request):
                 item_formset.instance = meal
                 item_formset.save()
 
-            return redirect('home')
+            return redirect('base:home')
     else:
         form = MealEntryForm(initial={'date': timezone.localdate()})
         item_formset = MealItemFormSet(prefix='items')
@@ -75,13 +75,13 @@ def create_meal(request):
     })
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def addBook(request):
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('books')
+            return redirect('base:books')
     else:
         form = BookForm()
     books = Book.objects.all()
@@ -89,7 +89,7 @@ def addBook(request):
     return render(request, 'base/books.html', {'books': books, 'form': form})
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def update_book_page(request, book_id):
     book = get_object_or_404(Book, id=book_id)
 
@@ -102,16 +102,16 @@ def update_book_page(request, book_id):
             if book.number_of_pages and page > book.number_of_pages:
                 form.add_error(
                     'current_page',
-                    'A página não pode ultrapassar o total do livro.'
+                    'The page number cannot exceed the total number of pages.'
                 )
             else:
                 book.current_page = page
                 book.save(update_fields=['current_page'])
-                return redirect('home')
+                return redirect('base:home')
 
-    return redirect('home')
+    return redirect('base:home')
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def books(request):
     if request.method == 'POST':
         book_form = BookForm(request.POST, request.FILES)
@@ -123,7 +123,7 @@ def books(request):
                 source_formset.instance = book
                 source_formset.save()
 
-            return redirect('books')
+            return redirect('base:books')
     else:
         book_form = BookForm()
         source_formset = BookSourceFormSet(prefix='sources')
@@ -137,17 +137,17 @@ def books(request):
     return render(request, 'base/books.html', context)
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def now_playing(request):
     return JsonResponse(get_now_playing())
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def recently_played(request):
     return JsonResponse({'items': get_recently_played()})
 
 
-@login_required(login_url='loginUser')
+@login_required(login_url='base:loginUser')
 def profile(request):
     profile = Profile.objects.get(user=request.user)
     context = {'profile': profile}
@@ -157,7 +157,7 @@ def profile(request):
 def loginUser(request):
     page = 'loginUser'
     if request.user.is_authenticated:
-        return redirect('home')
+        return redirect('base:home')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -169,7 +169,7 @@ def loginUser(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('home')
+            return redirect('base:home')
         else:
             messages.error(request, 'Username OR password does not exist!')
 
@@ -179,14 +179,14 @@ def loginUser(request):
 
 def logoutUser(request):
     logout(request)
-    return redirect('home')
+    return redirect('base:home')
 
 
 def showSeed(request):
     seed = request.session.get('seed_phrase')
 
     if not seed:
-        return redirect('loginUser')
+        return redirect('base:loginUser')
 
     del request.session['seed_phrase']
 
@@ -214,10 +214,10 @@ def registerUser(request):
                 for i, word in enumerate(seed_words, start=1)
             ])
 
-            # 🔐 cria conteúdo do arquivo
+            # 🔐 Create the file contents.
             seed_text = '\n'.join(f'{i}. {word}' for i, word in enumerate(seed_words, start=1))
 
-            # guarda temporariamente na sessão (curto prazo)
+            # Store the data in the session temporarily.
             request.session['seed_file'] = seed_text
 
             seed_file_ready = True
@@ -262,7 +262,7 @@ def recover_account(request):
             profile = Profile.objects.get(user=user)
         except (User.DoesNotExist, Profile.DoesNotExist):
             messages.error(request, 'Invalid credentials')
-            return redirect('recovery')
+            return redirect('base:recovery')
 
         positions = request.session.get('seed_positions', [])
 
@@ -273,13 +273,13 @@ def recover_account(request):
                 seed_word = SeedWord.objects.get(profile=profile, index=pos)
             except SeedWord.DoesNotExist:
                 messages.error(request, 'Invalid credentials')
-                return redirect('recovery')
+                return redirect('base:recovery')
 
             if not check_password(user_word, seed_word.word_hash):
                 messages.error(request, 'Invalid credentials')
-                return redirect('recovery')
+                return redirect('base:recovery')
 
-        # senha válida → redefinir
+        # Valid password → reset the credentials.
         user.set_password(new_password)
         user.save()
 
@@ -295,7 +295,7 @@ def recover_account(request):
         SeedWord.objects.bulk_create(seed_objects)
 
         request.session['seed_phrase'] = new_seed
-        return redirect('show-seed')
+        return redirect('base:show-seed')
     return render(
         request,
         'base/pages/recovery.html',

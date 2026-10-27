@@ -132,7 +132,17 @@ DATABASES = {
     }
 }
 
-INSTALLED_APPS += ['apps.base', 'rest_framework', 'widget_tweaks']
+INSTALLED_APPS += ['apps.base', 'rest_framework', 'drf_spectacular', 'widget_tweaks']
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Cyberia API',
+    'DESCRIPTION': 'API Cyberia (MCP :).',
+    'VERSION': '1.0.0',
+}
 
 SPOTIFY_CLIENT_ID = config('SPOTIFY_CLIENT_ID', default='')
 SPOTIFY_CLIENT_SECRET = config('SPOTIFY_CLIENT_SECRET', default='')
