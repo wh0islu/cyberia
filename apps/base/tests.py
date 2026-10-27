@@ -1,9 +1,8 @@
 
+from apps.base.models import Book
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-from apps.base.models import Book
 
 
 class BookApiTests(APITestCase):

@@ -1,6 +1,18 @@
 from django.contrib import admin
 
-from .models import Book, BookSource, Course, CourseSource, Movie, MovieSource, Profile, SeedWord, Series, SeriesSource, MealEntry, MealItem
+from .models import (
+    Book,
+    BookSource,
+    Course,
+    CourseSource,
+    MealEntry,
+    MealItem,
+    Movie,
+    MovieSource,
+    Profile,
+    Series,
+    SeriesSource,
+)
 
 admin.site.register(Profile)
 admin.site.register(Book)

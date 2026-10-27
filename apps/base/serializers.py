@@ -1,5 +1,3 @@
-from rest_framework import serializers
-
 from apps.base.models import (
     Book,
     BookSource,
@@ -14,6 +12,7 @@ from apps.base.models import (
     Series,
     SeriesSource,
 )
+from rest_framework import serializers
 
 
 # Books
@@ -239,7 +238,6 @@ class HabitSerializer(serializers.ModelSerializer):
         if len(weekdays) != len(set(weekdays)):
             raise serializers.ValidationError('Weekdays must not be repeated.')
         return weekdays
-
 
     def create(self, validated_data):
         request = self.context['request']

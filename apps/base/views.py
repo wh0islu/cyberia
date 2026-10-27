@@ -111,6 +111,7 @@ def update_book_page(request, book_id):
 
     return redirect('base:home')
 
+
 @login_required(login_url='base:loginUser')
 def books(request):
     if request.method == 'POST':
