@@ -43,6 +43,7 @@
   --bg-hover: var(--gray-700);
   --border-subtle: var(--gray-600);
   --border-strong: var(--gray-500);
+  --scrollbar-thumb: var(--primary-light);
   --placeholder-bg: var(--gray-800);
   --placeholder-line: var(--gray-500);
 
@@ -56,8 +57,8 @@
   --progress-track: var(--gray-700);
   --hatch: var(--gray-500); /* cover / poster placeholder */
 
-  --nav-active-bg: var(--gray-100);
-  --nav-active-text: var(--gray-900);
+  --nav-active-bg: var(--gray-900);
+  --nav-active-text: var(--gray-100);
   --btn-strong-bg: var(--gray-100); /* primary button ("Log") */
   --btn-strong-text: var(--gray-900);
 
@@ -72,6 +73,7 @@
   --bg-hover: var(--gray-100);
   --border-subtle: var(--gray-200);
   --border-strong: var(--gray-900);
+  --scrollbar-thumb: var(--primary);
   --placeholder-bg: var(--gray-50);
   --placeholder-line: var(--gray-300);
 
