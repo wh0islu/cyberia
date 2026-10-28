@@ -12,7 +12,7 @@
   border-radius: 0 24px 24px 0;
   background: var(--bg-surface);
   color: var(--text-default);
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist Variable", sans-serif;
   overflow-y: auto;
 }
 
