@@ -241,6 +241,24 @@
   font: inherit;
 }
 
+.pageForm input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  border: 1px solid var(--border-subtle);
+}
+
+.pageForm input[type="number"]::-webkit-inner-spin-button,
+.pageForm input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.pageForm input[type="number"]:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .booksPage .shelfSection {
   margin-top: 20px;
   padding: 18px;

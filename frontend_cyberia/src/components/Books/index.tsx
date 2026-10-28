@@ -5,6 +5,7 @@ import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
 import { ProgressBar } from "../ProgressBar";
+import { Select } from "../Select";
 import styles from "./styles.module.css";
 
 type Book = {
@@ -149,7 +150,7 @@ function ReadingBookCard({ book }: { book: Book }) {
 export function Books() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  async function handleSalvarLivro(_dados: unknown) {
+  function handleSaveBook(_data: unknown) {
     setIsModalOpen(false);
   }
 
@@ -187,11 +188,11 @@ export function Books() {
           </div>
           <label className={styles.sortControl}>
             Sort
-            <select defaultValue="last-read" aria-label="Sort books">
+            <Select compact defaultValue="last-read" aria-label="Sort books">
               <option value="last-read">Last read</option>
               <option value="title">Title</option>
               <option value="rating">Rating</option>
-            </select>
+            </Select>
           </label>
         </nav>
 
@@ -277,7 +278,7 @@ export function Books() {
       >
         <BookForm
           initial={undefined}
-          onSubmit={handleSalvarLivro}
+          onSubmit={handleSaveBook}
           onCancel={() => setIsModalOpen(false)}
         />
       </FormModal>

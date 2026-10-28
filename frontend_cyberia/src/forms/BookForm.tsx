@@ -11,6 +11,9 @@ import {
   type CleanedSource,
   type SourceFormat,
 } from "../components/FormFields";
+import { ScrollArea } from "../components/ScrollArea";
+import { Select } from "../components/Select";
+import { DatePicker } from "../components/DatePicker";
 
 type BookFormData = {
   cover: File | null;
@@ -160,7 +163,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
 
   return (
     <form className="form" onSubmit={handleSubmit}>
-      <div className="form__body">
+      <ScrollArea className="form__body">
         <div className="row row--nowrap">
           <ImageDrop
             label="Add cover"
@@ -212,7 +215,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
             />
           </Field>
           <Field label="Genre">
-            <select
+            <Select
               className="in"
               value={data.genre}
               onChange={setFromInput("genre")}
@@ -221,7 +224,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
               {GENRES.map((g) => (
                 <option key={g}>{g}</option>
               ))}
-            </select>
+            </Select>
           </Field>
         </div>
 
@@ -246,11 +249,9 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
               />
             </Field>
             <Field label="Started on">
-              <input
-                className="in"
-                type="date"
+              <DatePicker
                 value={data.started_at}
-                onChange={setFromInput("started_at")}
+                onChange={set("started_at")}
               />
             </Field>
           </div>
@@ -260,11 +261,9 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
           <div className="row" style={{ alignItems: "flex-end" }}>
             <Stars value={data.rating} onChange={set("rating")} />
             <Field label="Finished on">
-              <input
-                className="in"
-                type="date"
+              <DatePicker
                 value={data.finished_at}
-                onChange={setFromInput("finished_at")}
+                onChange={set("finished_at")}
               />
             </Field>
           </div>
@@ -288,7 +287,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
             onChange={setFromInput("notes")}
           />
         </Field>
-      </div>
+      </ScrollArea>
 
       <FormFooter
         submitLabel={initial ? "Save" : "Add book"}
