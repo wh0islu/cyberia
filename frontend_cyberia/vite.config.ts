@@ -11,6 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/spotify": "http://localhost:8000",
+      "/api": "http://localhost:8000",
     },
   },
 })

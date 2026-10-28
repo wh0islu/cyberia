@@ -50,6 +50,7 @@ type ImageDropProps = {
   label: string;
   shape?: "cover" | "thumb" | "wide";
   value: File | null;
+  imageUrl?: string | null;
   onChange: (file: File | null) => void;
 };
 
@@ -204,11 +205,13 @@ export function ImageDrop({
   label,
   shape = "cover",
   value,
+  imageUrl,
   onChange,
 }: ImageDropProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const visiblePreview = preview ?? imageUrl ?? null;
 
   useEffect(() => {
     if (!value) {
@@ -237,12 +240,12 @@ export function ImageDrop({
       />
       <button
         type="button"
-        className={`drop drop--${shape}${preview ? " drop--filled" : ""}`}
-        aria-label={preview ? `Replace ${label.toLowerCase()}` : label}
+        className={`drop drop--${shape}${visiblePreview ? " drop--filled" : ""}`}
+        aria-label={visiblePreview ? `Replace ${label.toLowerCase()}` : label}
         onClick={() => inputRef.current?.click()}
       >
-        {preview ? (
-          <img src={preview} alt="" />
+        {visiblePreview ? (
+          <img src={visiblePreview} alt="" />
         ) : (
           <>
             {shape === "wide" ? (

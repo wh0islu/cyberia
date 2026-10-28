@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { Plus, X } from "lucide-react";
 import {
   Field,
   Segmented,
@@ -11,19 +12,26 @@ import {
   type CleanedSource,
   type SourceFormat,
 } from "../components/FormFields";
+import { ScrollArea } from "../components/ScrollArea";
+import { Select } from "../components/Select";
+import { DatePicker } from "../components/DatePicker";
 
 type MediaKind = "movie" | "series";
 
 type MediaFormData = {
   kind: MediaKind;
   poster: File | null;
+  tmdb_id: number | null;
+  tmdb_poster_path: string | null;
+  poster_url: string | null;
   title: string;
   year: string;
   genre: string;
   status: string;
-  season: string;
+  current_minute: string;
+  current_season: string;
   episode: string;
-  total_episodes: string;
+  season_episodes: string[];
   rating: number;
   watched_at: string;
   comment: string;
@@ -32,15 +40,35 @@ type MediaFormData = {
 
 type MediaSubmission = Omit<
   MediaFormData,
-  "year" | "season" | "episode" | "total_episodes" | "rating" | "watched_at" | "sources"
+  "year" | "current_minute" | "current_season" | "episode" | "season_episodes" | "rating" | "watched_at" | "sources" | "poster_url"
 > & {
   year: number | null;
-  season: number | null;
-  episode: number | null;
-  total_episodes: number | null;
+  current_minute: number | null;
+  current_season: number | null;
+  current_episode: number | null;
+  number_of_seasons: number | null;
+  number_of_episodes: number | null;
+  seasons: { number: number; episode_count: number }[];
   rating: number | null;
   watched_at: string | null;
   sources: CleanedSource[];
+};
+
+type TmdbResult = {
+  tmdb_id: number;
+  title: string;
+  year: string | null;
+  tmdb_poster_path: string | null;
+  poster_url: string | null;
+  genres: string[];
+  overview: string;
+};
+
+type TmdbSeriesDetails = {
+  tmdb_id: number;
+  number_of_seasons: number;
+  number_of_episodes: number;
+  seasons: { number: number; episode_count: number }[];
 };
 
 type MediaFormProps = {
@@ -79,13 +107,17 @@ const GENRES = ["Drama", "Comedy", "Action", "Documentary", "Animation", "Horror
 const empty: MediaFormData = {
   kind: "movie",
   poster: null,
+  tmdb_id: null,
+  tmdb_poster_path: null,
+  poster_url: null,
   title: "",
   year: "",
   genre: "",
   status: "WANT",
-  season: "",
+  current_minute: "",
+  current_season: "",
   episode: "",
-  total_episodes: "",
+  season_episodes: [""],
   rating: 0,
   watched_at: "",
   comment: "",
@@ -104,6 +136,17 @@ export function MediaForm({
 }: MediaFormProps) {
   const [data, setData] = useState<MediaFormData>({ ...empty, ...initial });
   const [submitting, setSubmitting] = useState(false);
+  const [tmdbResults, setTmdbResults] = useState<TmdbResult[]>([]);
+  const [tmdbGenreOptions, setTmdbGenreOptions] = useState<string[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [seriesDetails, setSeriesDetails] = useState<TmdbSeriesDetails | null>(null);
+  const [loadingSeriesDetails, setLoadingSeriesDetails] = useState(false);
+  const [seriesDetailsError, setSeriesDetailsError] = useState("");
+  const [editingSeriesDetails, setEditingSeriesDetails] = useState(false);
+  const seriesDetailsController = useRef<AbortController | null>(null);
+
+  useEffect(() => () => seriesDetailsController.current?.abort(), []);
   const set = <Key extends keyof MediaFormData>(key: Key) =>
     (value: MediaFormData[Key]) =>
       setData((previousData) => ({ ...previousData, [key]: value }));
@@ -112,25 +155,207 @@ export function MediaForm({
       event: ChangeEvent<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >,
-    ) =>
+    ) => {
+      const value = event.currentTarget.value;
       setData((previousData) => ({
         ...previousData,
-        [key]: event.currentTarget.value,
+        [key]: value,
       }));
+    };
 
   const isSeries = data.kind === "series";
   const toNum = (value: string) => (value === "" ? null : Number(value));
+
+  useEffect(() => {
+    const query = data.title.trim();
+    if (query.length < 2 || data.tmdb_id !== null) {
+      setTmdbResults([]);
+      setSearching(false);
+      setSearchError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setSearching(true);
+      setSearchError("");
+      try {
+        const params = new URLSearchParams({
+          type: data.kind,
+          query,
+        });
+        const response = await fetch(`/api/v1/media-search/?${params}`, {
+          signal: controller.signal,
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.detail || "Search is unavailable.");
+        }
+        setTmdbResults(payload.results ?? []);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setTmdbResults([]);
+        setSearchError(error instanceof Error ? error.message : "Search failed.");
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [data.kind, data.title, data.tmdb_id]);
+
+  function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
+    const title = event.currentTarget.value;
+    seriesDetailsController.current?.abort();
+    setSeriesDetails(null);
+    setEditingSeriesDetails(false);
+    setLoadingSeriesDetails(false);
+    setSeriesDetailsError("");
+    setData((previousData) => ({
+      ...previousData,
+      title,
+      genre: "",
+      tmdb_id: null,
+      tmdb_poster_path: null,
+      poster_url: null,
+      season_episodes: [""],
+      current_minute: "",
+      current_season: "",
+      episode: "",
+    }));
+    setTmdbGenreOptions([]);
+  }
+
+  async function selectTmdbResult(result: TmdbResult) {
+    seriesDetailsController.current?.abort();
+    setSeriesDetails(null);
+    setEditingSeriesDetails(false);
+    setSeriesDetailsError("");
+    setData((previousData) => ({
+      ...previousData,
+      title: result.title,
+      year: result.year ?? previousData.year,
+      genre: result.genres[0] ?? "",
+      tmdb_id: result.tmdb_id,
+      tmdb_poster_path: result.tmdb_poster_path,
+      poster_url: result.poster_url,
+      poster: null,
+      ...(data.kind === "series" ? { season_episodes: [""] } : {}),
+    }));
+    setTmdbGenreOptions(result.genres);
+    setTmdbResults([]);
+
+    if (data.kind !== "series") return;
+
+    const controller = new AbortController();
+    seriesDetailsController.current = controller;
+    setLoadingSeriesDetails(true);
+    try {
+      const response = await fetch(`/api/v1/tmdb/series/${result.tmdb_id}/`, {
+        signal: controller.signal,
+      });
+      const details: TmdbSeriesDetails & { detail?: string } = await response.json();
+      if (!response.ok) throw new Error(details.detail || "Could not load series details.");
+
+      setSeriesDetails(details);
+      setData((previousData) => previousData.tmdb_id === result.tmdb_id
+        ? {
+            ...previousData,
+            season_episodes: details.seasons.length
+              ? details.seasons.map((season) => season.episode_count ? String(season.episode_count) : "")
+              : [""],
+          }
+        : previousData);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setSeriesDetailsError(error instanceof Error ? error.message : "Could not load series details.");
+    } finally {
+      if (!controller.signal.aborted) setLoadingSeriesDetails(false);
+    }
+  }
+
+  function changeMediaKind(kind: string) {
+    seriesDetailsController.current?.abort();
+    setSeriesDetails(null);
+    setEditingSeriesDetails(false);
+    setLoadingSeriesDetails(false);
+    setSeriesDetailsError("");
+    setData((previousData) => ({
+      ...previousData,
+      kind: kind as MediaKind,
+      genre: "",
+      tmdb_id: null,
+      tmdb_poster_path: null,
+      poster_url: null,
+      season_episodes: [""],
+      current_minute: "",
+      current_season: "",
+      episode: "",
+    }));
+    setTmdbGenreOptions([]);
+    setTmdbResults([]);
+  }
+
+  function updateSeasonEpisodes(index: number, episodeCount: string) {
+    setData((previousData) => ({
+      ...previousData,
+      season_episodes: previousData.season_episodes.map((count, seasonIndex) =>
+        seasonIndex === index ? episodeCount : count,
+      ),
+    }));
+  }
+
+  function addSeason() {
+    setData((previousData) => ({
+      ...previousData,
+      season_episodes: [...previousData.season_episodes, ""],
+    }));
+  }
+
+  function removeSeason(index: number) {
+    setData((previousData) => ({
+      ...previousData,
+      season_episodes:
+        previousData.season_episodes.length > 1
+          ? previousData.season_episodes.filter((_, seasonIndex) => seasonIndex !== index)
+          : [""],
+    }));
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     try {
+      const { season_episodes, ...formData } = data;
+      const status = data.status === "WANT"
+        ? "NW"
+        : data.status === "WATCHING"
+          ? (isSeries ? "WT" : "WG")
+          : data.status === "WATCHED"
+            ? (isSeries ? "WD" : "WT")
+            : data.status;
       await onSubmit({
-        ...data,
+        ...formData,
         year: toNum(data.year),
-        season: isSeries && data.status === "WATCHING" ? toNum(data.season) : null,
-        episode: isSeries && data.status === "WATCHING" ? toNum(data.episode) : null,
-        total_episodes: isSeries ? toNum(data.total_episodes) : null,
+        status,
+        current_minute: !isSeries && data.status === "WATCHING" ? toNum(data.current_minute) : null,
+        current_season: isSeries && data.status === "WATCHING" ? toNum(data.current_season) : null,
+        current_episode: isSeries && data.status === "WATCHING" ? toNum(data.episode) : null,
+        number_of_seasons: isSeries ? season_episodes.length : null,
+        number_of_episodes: isSeries
+          ? season_episodes.reduce((total, count) => total + (toNum(count) ?? 0), 0)
+          : null,
+        seasons: isSeries
+          ? season_episodes.flatMap((episodeCount, index) => {
+              const count = toNum(episodeCount);
+              return count === null
+                ? []
+                : [{ number: index + 1, episode_count: count }];
+            })
+          : [],
         rating: data.status === "WATCHED" && data.rating ? data.rating : null,
         watched_at: data.status === "WATCHED" ? data.watched_at || null : null,
         sources: cleanSources(data.sources, MEDIA_FORMATS),
@@ -142,11 +367,11 @@ export function MediaForm({
 
   return (
     <form className="form" onSubmit={handleSubmit}>
-      <div className="form__body">
-        {!lockKind && <Segmented hideLabel label="Type" options={KINDS} value={data.kind} onChange={(kind) => set("kind")(kind as MediaKind)} />}
+      <ScrollArea className="form__body">
+        {!lockKind && <Segmented hideLabel label="Type" options={KINDS} value={data.kind} onChange={changeMediaKind} />}
 
         <div className="row row--nowrap">
-          <ImageDrop label="Add poster" shape="cover" value={data.poster} onChange={set("poster")} />
+          <ImageDrop label="Add poster" shape="cover" value={data.poster} imageUrl={data.poster_url} onChange={set("poster")} />
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 14 }}>
             <Field label="Title" required full>
               <input
@@ -155,18 +380,49 @@ export function MediaForm({
                 autoFocus
                 placeholder={isSeries ? "E.g., Cangaço Novo" : "E.g., Central do Brasil"}
                 value={data.title}
-                onChange={setFromInput("title")}
+                onChange={handleTitleChange}
               />
             </Field>
+            {(searching || searchError || tmdbResults.length > 0) && (
+              <div className="tmdb-search" aria-live="polite">
+                {searching && <p className="tmdb-search__message">Searching TMDB…</p>}
+                {searchError && <p className="tmdb-search__message">{searchError}</p>}
+                {tmdbResults.map((result) => (
+                  <button
+                    className="tmdb-search__result"
+                    key={result.tmdb_id}
+                    type="button"
+                    onClick={() => selectTmdbResult(result)}
+                  >
+                    {result.poster_url ? (
+                      <img src={result.poster_url} alt="" />
+                    ) : (
+                      <span className="tmdb-search__poster-placeholder" />
+                    )}
+                    <span>
+                      <strong>{result.title}</strong>
+                      <small>
+                        {[result.year, ...result.genres].filter(Boolean).join(" · ") || "Details unavailable"}
+                      </small>
+                    </span>
+                  </button>
+                ))}
+                <p className="tmdb-search__credit">
+                  This product uses the TMDB API but is not endorsed or certified by TMDB.
+                </p>
+              </div>
+            )}
             <div className="row">
               <Field label="Year">
                 <input className="in" type="number" min="1900" max="2100" placeholder="2026" value={data.year} onChange={setFromInput("year")} />
               </Field>
               <Field label="Genre">
-                <select className="in" value={data.genre} onChange={setFromInput("genre")}>
+                <Select className="in" value={data.genre} onChange={setFromInput("genre")}>
                   <option value="">Select</option>
-                  {GENRES.map((g) => <option key={g}>{g}</option>)}
-                </select>
+                  {[...new Set([...GENRES, ...tmdbGenreOptions])].map((genre) => (
+                    <option key={genre} value={genre}>{genre}</option>
+                  ))}
+                </Select>
               </Field>
             </div>
           </div>
@@ -174,16 +430,86 @@ export function MediaForm({
 
         <Segmented label="Status" options={STATUS} value={data.status} onChange={set("status")} />
 
+        {isSeries && (
+          <div className="field field--full">
+            <div className="series-details-heading">
+              <span className="lbl">Episodes per season</span>
+              {seriesDetails && (
+                <span className="series-details-summary">
+                  {seriesDetails.number_of_seasons} seasons · {seriesDetails.number_of_episodes} episodes · TMDB
+                </span>
+              )}
+              {seriesDetails && (
+                <button
+                  type="button"
+                  className="series-edit-btn"
+                  aria-pressed={editingSeriesDetails}
+                  onClick={() => setEditingSeriesDetails((isEditing) => !isEditing)}
+                >
+                  {editingSeriesDetails ? "Done" : "Edit data"}
+                </button>
+              )}
+            </div>
+            {loadingSeriesDetails && <p className="tmdb-search__message">Loading season and episode counts…</p>}
+            {seriesDetailsError && <p className="tmdb-search__message" role="status">{seriesDetailsError} You can enter the counts manually.</p>}
+            {seriesDetails && !editingSeriesDetails && !loadingSeriesDetails ? (
+              <ul className="series-season-list">
+                {seriesDetails.seasons.map((season) => (
+                  <li key={season.number}>
+                    <span>Season {season.number}</span>
+                    <span>{season.episode_count} {season.episode_count === 1 ? "episode" : "episodes"}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : !loadingSeriesDetails && (
+              <>
+                {data.season_episodes.map((episodeCount, index) => (
+                  <div className="row season-count-row" key={index}>
+                    <Field label={`Season ${index + 1} · episodes`}>
+                      <input
+                        className="in"
+                        type="number"
+                        min="1"
+                        placeholder="10"
+                        value={episodeCount}
+                        onChange={(event) =>
+                          updateSeasonEpisodes(index, event.currentTarget.value)
+                        }
+                      />
+                    </Field>
+                    {data.season_episodes.length > 1 && (
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        aria-label={`Remove season ${index + 1}`}
+                        onClick={() => removeSeason(index)}
+                      >
+                        <X aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" className="add-btn" onClick={addSeason}>
+                  <Plus size={16} aria-hidden="true" /> Add season
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {!isSeries && data.status === "WATCHING" && (
+          <Field label="Stopped at (minute)">
+            <input className="in" type="number" min="0" required placeholder="E.g., 42" value={data.current_minute} onChange={setFromInput("current_minute")} />
+          </Field>
+        )}
+
         {isSeries && data.status === "WATCHING" && (
           <div className="row">
-            <Field label="Season">
-              <input className="in" type="number" min="1" placeholder="1" value={data.season} onChange={setFromInput("season")} />
+            <Field label="Current season">
+              <input className="in" type="number" min="1" max={data.season_episodes.length} required placeholder="1" value={data.current_season} onChange={setFromInput("current_season")} />
             </Field>
             <Field label="Current episode">
-              <input className="in" type="number" min="0" placeholder="0" value={data.episode} onChange={setFromInput("episode")} />
-            </Field>
-            <Field label="Total episodes">
-              <input className="in" type="number" min="1" placeholder="8" value={data.total_episodes} onChange={setFromInput("total_episodes")} />
+              <input className="in" type="number" min="1" max={toNum(data.season_episodes[Number(data.current_season) - 1] ?? "") ?? undefined} required placeholder="1" value={data.episode} onChange={setFromInput("episode")} />
             </Field>
           </div>
         )}
@@ -192,7 +518,7 @@ export function MediaForm({
           <div className="row" style={{ alignItems: "flex-end" }}>
             <Stars value={data.rating} onChange={set("rating")} />
             <Field label="Watched on">
-              <input className="in" type="date" value={data.watched_at} onChange={setFromInput("watched_at")} />
+              <DatePicker value={data.watched_at} onChange={set("watched_at")} />
             </Field>
           </div>
         )}
@@ -209,7 +535,7 @@ export function MediaForm({
         <Field label="Comment" full>
           <textarea className="in" rows={2} placeholder="What you thought, who you watched with…" value={data.comment} onChange={setFromInput("comment")} />
         </Field>
-      </div>
+      </ScrollArea>
 
       <FormFooter submitLabel="Save" onCancel={onCancel} submitting={submitting} />
     </form>
