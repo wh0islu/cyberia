@@ -4,149 +4,149 @@ import { HabitForm } from "../../forms";
 import { FormModal } from "../FormModal";
 import styles from "./styles.module.css";
 
-type Habito = {
+type Habit = {
   id: number;
-  nome: string;
-  meta: string;
-  diasAtivos: number[];
-  diasConcluidos: boolean[];
+  name: string;
+  goal: string;
+  activeDays: number[];
+  completedDays: boolean[];
 };
 
-type NovoHabito = {
+type NewHabitData = {
   name: string;
   goal: string;
   weekdays: number[];
 };
 
-const diasDaSemana = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+const weekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
-const habitosIniciais: Habito[] = [
+const initialHabits: Habit[] = [
   {
     id: 1,
-    nome: "Read 20 pages",
-    meta: "reading",
-    diasAtivos: [0, 1, 2, 3, 4, 5, 6],
-    diasConcluidos: [true, true, true, true, false, false, false],
+    name: "Read 20 pages",
+    goal: "reading",
+    activeDays: [0, 1, 2, 3, 4, 5, 6],
+    completedDays: [true, true, true, true, false, false, false],
   },
   {
     id: 2,
-    nome: "Exercise",
-    meta: "45 min",
-    diasAtivos: [0, 2, 4, 6],
-    diasConcluidos: [true, false, true, false, false, false, false],
+    name: "Exercise",
+    goal: "45 min",
+    activeDays: [0, 2, 4, 6],
+    completedDays: [true, false, true, false, false, false, false],
   },
   {
     id: 3,
-    nome: "Study a course",
-    meta: "1 h",
-    diasAtivos: [0, 1, 3, 5],
-    diasConcluidos: [true, true, false, true, false, false, false],
+    name: "Study a course",
+    goal: "1 h",
+    activeDays: [0, 1, 3, 5],
+    completedDays: [true, true, false, true, false, false, false],
   },
   {
     id: 4,
-    nome: "Drink 2 L of water",
-    meta: "2 L",
-    diasAtivos: [0, 1, 2, 3, 4, 5, 6],
-    diasConcluidos: [true, true, true, true, false, false, false],
+    name: "Drink 2 L of water",
+    goal: "2 L",
+    activeDays: [0, 1, 2, 3, 4, 5, 6],
+    completedDays: [true, true, true, true, false, false, false],
   },
   {
     id: 5,
-    nome: "Sleep before 11 PM",
-    meta: "sleep",
-    diasAtivos: [0, 1, 2, 3, 4, 5, 6],
-    diasConcluidos: [false, true, true, false, false, false, false],
+    name: "Sleep before 11 PM",
+    goal: "sleep",
+    activeDays: [0, 1, 2, 3, 4, 5, 6],
+    completedDays: [false, true, true, false, false, false, false],
   },
 ];
 
-const agenda = [
+const schedule = [
   {
-    hora: "06:30",
-    nome: "Wake up",
-    detalhe: "Goal: before 7 AM",
+    time: "06:30",
+    name: "Wake up",
+    detail: "Goal: before 7 AM",
     status: "Done",
   },
-  { hora: "07:00", nome: "Exercise", detalhe: "45 min", status: "Done" },
-  { hora: "09:00", nome: "Work / study", detalhe: "4 hours", status: "Done" },
-  { hora: "13:00", nome: "Lunch", detalhe: "1 hour", status: "Done" },
+  { time: "07:00", name: "Exercise", detail: "45 min", status: "Done" },
+  { time: "09:00", name: "Work / study", detail: "4 hours", status: "Done" },
+  { time: "13:00", name: "Lunch", detail: "1 hour", status: "Done" },
   {
-    hora: "19:00",
-    nome: "Study a course",
-    detalhe: "1 hour · Interface Design",
+    time: "19:00",
+    name: "Study a course",
+    detail: "1 hour · Interface Design",
     status: "Now",
   },
   {
-    hora: "22:00",
-    nome: "Reading",
-    detalhe: "30 min · Dom Casmurro",
+    time: "22:00",
+    name: "Reading",
+    detail: "30 min · Dom Casmurro",
     status: "Later",
   },
 ];
 
-function obterInicioDaSemana(data: Date) {
-  const inicio = new Date(data);
-  inicio.setHours(0, 0, 0, 0);
-  const diasDesdeSegunda = (inicio.getDay() + 6) % 7;
-  inicio.setDate(inicio.getDate() - diasDesdeSegunda);
-  return inicio;
+function getWeekStart(date: Date) {
+  const weekStart = new Date(date);
+  weekStart.setHours(0, 0, 0, 0);
+  const daysSinceMonday = (weekStart.getDay() + 6) % 7;
+  weekStart.setDate(weekStart.getDate() - daysSinceMonday);
+  return weekStart;
 }
 
-function formatarData(data: Date, opcoes: Intl.DateTimeFormatOptions) {
-  return new Intl.DateTimeFormat("en-US", opcoes).format(data);
+function formatDate(date: Date, options: Intl.DateTimeFormatOptions) {
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 }
 
 export function Routine() {
-  const [modalAberto, setModalAberto] = useState(false);
-  const [habitos, setHabitos] = useState(habitosIniciais);
-  const [deslocamentoSemana, setDeslocamentoSemana] = useState(0);
-  const hoje = new Date();
-  const inicioDaSemana = obterInicioDaSemana(hoje);
-  inicioDaSemana.setDate(inicioDaSemana.getDate() + deslocamentoSemana * 7);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [habits, setHabits] = useState(initialHabits);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const today = new Date();
+  const weekStart = getWeekStart(today);
+  weekStart.setDate(weekStart.getDate() + weekOffset * 7);
 
-  const datasDaSemana = diasDaSemana.map((_, indice) => {
-    const data = new Date(inicioDaSemana);
-    data.setDate(inicioDaSemana.getDate() + indice);
-    return data;
+  const weekDates = weekdays.map((_, index) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + index);
+    return date;
   });
 
-  const totalConcluido = habitos.reduce(
-    (total, habito) => total + habito.diasConcluidos.filter(Boolean).length,
+  const completedCount = habits.reduce(
+    (total, habit) => total + habit.completedDays.filter(Boolean).length,
     0,
   );
-  const totalPrevisto = habitos.reduce(
-    (total, habito) => total + habito.diasAtivos.length,
+  const scheduledCount = habits.reduce(
+    (total, habit) => total + habit.activeDays.length,
     0,
   );
-  const porcentagemConcluida = totalPrevisto
-    ? Math.round((totalConcluido / totalPrevisto) * 100)
+  const completionPercentage = scheduledCount
+    ? Math.round((completedCount / scheduledCount) * 100)
     : 0;
 
-  function alternarConclusao(idHabito: number, indiceDia: number) {
-    setHabitos((habitosAtuais) =>
-      habitosAtuais.map((habito) =>
-        habito.id === idHabito
+  function toggleCompletion(habitId: number, dayIndex: number) {
+    setHabits((currentHabits) =>
+      currentHabits.map((habit) =>
+        habit.id === habitId
           ? {
-              ...habito,
-              diasConcluidos: habito.diasConcluidos.map((concluido, indice) =>
-                indice === indiceDia ? !concluido : concluido,
+              ...habit,
+              completedDays: habit.completedDays.map((completed, index) =>
+                index === dayIndex ? !completed : completed,
               ),
             }
-          : habito,
+          : habit,
       ),
     );
   }
 
-  async function handleCriarHabito(dados: NovoHabito) {
-    setHabitos((habitosAtuais) => [
-      ...habitosAtuais,
+  async function handleCreateHabit(data: NewHabitData) {
+    setHabits((currentHabits) => [
+      ...currentHabits,
       {
         id: Date.now(),
-        nome: dados.name,
-        meta: dados.goal || "—",
-        diasAtivos: dados.weekdays,
-        diasConcluidos: Array(7).fill(false),
+        name: data.name,
+        goal: data.goal || "—",
+        activeDays: data.weekdays,
+        completedDays: Array(7).fill(false),
       },
     ]);
-    setModalAberto(false);
+    setIsModalOpen(false);
   }
 
   return (
@@ -162,13 +162,13 @@ export function Routine() {
               <button
                 type="button"
                 aria-label="Previous week"
-                onClick={() => setDeslocamentoSemana((valor) => valor - 1)}
+                onClick={() => setWeekOffset((offset) => offset - 1)}
               >
                 <ChevronLeft size={16} />
               </button>
               <span>
-                {formatarData(datasDaSemana[0], { day: "numeric" })} –{" "}
-                {formatarData(datasDaSemana[6], {
+                {formatDate(weekDates[0], { day: "numeric" })} –{" "}
+                {formatDate(weekDates[6], {
                   day: "numeric",
                   month: "short",
                 })}
@@ -176,7 +176,7 @@ export function Routine() {
               <button
                 type="button"
                 aria-label="Next week"
-                onClick={() => setDeslocamentoSemana((valor) => valor + 1)}
+                onClick={() => setWeekOffset((offset) => offset + 1)}
               >
                 <ChevronRight size={16} />
               </button>
@@ -184,7 +184,7 @@ export function Routine() {
             <button
               className={styles.primaryButton}
               type="button"
-              onClick={() => setModalAberto(true)}
+              onClick={() => setIsModalOpen(true)}
             >
               <Plus size={16} aria-hidden="true" />
               New habit
@@ -196,51 +196,51 @@ export function Routine() {
           <section className={styles.weekPanel}>
             <header className={styles.panelHeader}>
               <h2>Weekly habits</h2>
-              <span>{porcentagemConcluida}% complete</span>
+              <span>{completionPercentage}% complete</span>
             </header>
 
             <div className={styles.weekGrid}>
               <div className={styles.gridCorner} />
-              {datasDaSemana.map((data, indice) => (
-                <div className={styles.dayHeading} key={data.toISOString()}>
-                  <span>{diasDaSemana[indice]}</span>
-                  <time dateTime={data.toISOString()}>
-                    {formatarData(data, { day: "numeric" })}
+              {weekDates.map((date, index) => (
+                <div className={styles.dayHeading} key={date.toISOString()}>
+                  <span>{weekdays[index]}</span>
+                  <time dateTime={date.toISOString()}>
+                    {formatDate(date, { day: "numeric" })}
                   </time>
                 </div>
               ))}
               <span className={styles.totalHeading}>Total</span>
 
-              {habitos.map((habito) => (
-                <div className={styles.habitRow} key={habito.id}>
-                  <span className={styles.habitName}>{habito.nome}</span>
-                  {datasDaSemana.map((data, indice) => {
-                    const diaAtivo = habito.diasAtivos.includes(indice);
-                    const concluido = habito.diasConcluidos[indice];
+              {habits.map((habit) => (
+                <div className={styles.habitRow} key={habit.id}>
+                  <span className={styles.habitName}>{habit.name}</span>
+                  {weekDates.map((date, index) => {
+                    const isScheduled = habit.activeDays.includes(index);
+                    const isCompleted = habit.completedDays[index];
 
                     return (
                       <button
                         className={
-                          concluido
+                          isCompleted
                             ? styles.dayDone
-                            : diaAtivo
+                            : isScheduled
                               ? styles.dayScheduled
                               : styles.dayEmpty
                         }
                         type="button"
-                        key={`${habito.id}-${data.toISOString()}`}
-                        aria-label={`${habito.nome}, ${formatarData(data, { weekday: "long", day: "numeric" })}${concluido ? ", completed" : ", not completed"}`}
-                        aria-pressed={concluido}
-                        disabled={!diaAtivo}
-                        onClick={() => alternarConclusao(habito.id, indice)}
+                        key={`${habit.id}-${date.toISOString()}`}
+                        aria-label={`${habit.name}, ${formatDate(date, { weekday: "long", day: "numeric" })}${isCompleted ? ", completed" : ", not completed"}`}
+                        aria-pressed={isCompleted}
+                        disabled={!isScheduled}
+                        onClick={() => toggleCompletion(habit.id, index)}
                       >
-                        {concluido ? "✓" : ""}
+                        {isCompleted ? "✓" : ""}
                       </button>
                     );
                   })}
                   <span className={styles.habitTotal}>
-                    {habito.diasConcluidos.filter(Boolean).length}/
-                    {habito.diasAtivos.length}
+                    {habit.completedDays.filter(Boolean).length}/
+                    {habit.activeDays.length}
                   </span>
                 </div>
               ))}
@@ -257,7 +257,7 @@ export function Routine() {
               <div>
                 <h2>Today</h2>
                 <p>
-                  {formatarData(hoje, {
+                  {formatDate(today, {
                     weekday: "long",
                     day: "numeric",
                     month: "short",
@@ -267,16 +267,16 @@ export function Routine() {
             </header>
 
             <div className={styles.agendaList}>
-              {agenda.map((bloco) => (
-                <article className={styles.agendaItem} key={bloco.hora}>
-                  <time>{bloco.hora}</time>
+              {schedule.map((item) => (
+                <article className={styles.agendaItem} key={item.time}>
+                  <time>{item.time}</time>
                   <div className={styles.agendaDetails}>
                     <div>
-                      <h3>{bloco.nome}</h3>
-                      <p>{bloco.detalhe}</p>
+                      <h3>{item.name}</h3>
+                      <p>{item.detail}</p>
                     </div>
-                    <span className={styles[`status${bloco.status}`]}>
-                      {bloco.status}
+                    <span className={styles[`status${item.status}`]}>
+                      {item.status}
                     </span>
                   </div>
                 </article>
@@ -287,15 +287,15 @@ export function Routine() {
       </main>
 
       <FormModal
-        open={modalAberto}
+        open={isModalOpen}
         title="New habit"
         description="It will appear in the weekly tracker and today's schedule."
-        onClose={() => setModalAberto(false)}
+        onClose={() => setIsModalOpen(false)}
       >
         <HabitForm
           initial={undefined}
-          onSubmit={handleCriarHabito}
-          onCancel={() => setModalAberto(false)}
+          onSubmit={handleCreateHabit}
+          onCancel={() => setIsModalOpen(false)}
         />
       </FormModal>
     </>

@@ -1,5 +1,7 @@
 import { useId, useState, type FormEvent } from "react";
 import { Field, Switch, FormFooter } from "../components/FormFields";
+import { ScrollArea } from "../components/ScrollArea";
+import { Select } from "../components/Select";
 
 type HabitFormData = {
   name: string;
@@ -79,7 +81,7 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
 
   return (
     <form className="form" onSubmit={handleSubmit}>
-      <div className="form__body">
+      <ScrollArea className="form__body">
         <Field label="Habit name" required full>
           <input className="in" required autoFocus placeholder="E.g., Read 20 pages" value={data.name} onChange={(e) => set("name")(e.target.value)} />
         </Field>
@@ -119,9 +121,9 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
         </div>
 
         <Field label="Link to a section" full>
-          <select className="in" value={data.linked_section} onChange={(e) => set("linked_section")(e.target.value)}>
+          <Select className="in" value={data.linked_section} onChange={(e) => set("linked_section")(e.target.value)}>
             {LINKS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
-          </select>
+          </Select>
         </Field>
 
         <Switch
@@ -130,7 +132,7 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
           checked={data.reminder}
           onChange={set("reminder")}
         />
-      </div>
+      </ScrollArea>
 
       <FormFooter submitLabel={initial ? "Save" : "Create habit"} onCancel={onCancel} submitting={submitting} />
     </form>
