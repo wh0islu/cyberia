@@ -12,12 +12,6 @@
   margin: 0 6px 16px;
 }
 
-.breadcrumb {
-  display: block;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
 .pageIntro h1 {
   margin: 6px 0 4px;
   font-size: 28px;
