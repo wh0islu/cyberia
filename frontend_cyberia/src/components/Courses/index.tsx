@@ -21,7 +21,8 @@ type Course = {
 const courses: Course[] = [
   {
     title: "Interface Design",
-    cover: "https://images.unsplash.com/photo-1542641633-cec279921f6b?auto=format&fit=crop&w=800&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1542641633-cec279921f6b?auto=format&fit=crop&w=800&q=80",
     platform: "Online course · 12 hours of video",
     lessonsDone: 24,
     lessonsTotal: 40,
@@ -37,7 +38,8 @@ const courses: Course[] = [
   },
   {
     title: "React from Scratch",
-    cover: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
     platform: "Online course · 8 hours of video",
     lessonsDone: 5,
     lessonsTotal: 20,
@@ -51,7 +53,8 @@ const courses: Course[] = [
   },
   {
     title: "Statistics with Python",
-    cover: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
     platform: "Online course · 10 hours of video",
     lessonsDone: 16,
     lessonsTotal: 20,
@@ -81,7 +84,6 @@ export function Courses() {
       <main className={styles.page}>
         <header className={styles.header}>
           <div>
-            <span className={styles.breadcrumb}>Library / Courses</span>
             <h1>Courses</h1>
             <p>3 in progress · 5 completed · 64 hours studied</p>
           </div>
@@ -90,7 +92,11 @@ export function Courses() {
               <Search aria-hidden="true" />
               <input type="search" placeholder="Search your library" />
             </label>
-            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} onClick={() => setIsModalOpen(true)}>
+            <DefaultButton
+              size="sm"
+              icon={<Plus aria-hidden="true" />}
+              onClick={() => setIsModalOpen(true)}
+            >
               Add course
             </DefaultButton>
           </div>
@@ -98,7 +104,9 @@ export function Courses() {
 
         <Card className={styles.tabsCard}>
           <nav className={styles.tabs} aria-label="Filter courses">
-            <button type="button" className={styles.activeTab}>In progress (3)</button>
+            <button type="button" className={styles.activeTab}>
+              In progress (3)
+            </button>
             <button type="button">Completed (5)</button>
             <button type="button">Queued (4)</button>
           </nav>
@@ -107,7 +115,9 @@ export function Courses() {
         <div className={styles.contentGrid}>
           <Card className={styles.courseList} aria-label="Courses in progress">
             {courses.map((course) => {
-              const progress = Math.round((course.lessonsDone / course.lessonsTotal) * 100);
+              const progress = Math.round(
+                (course.lessonsDone / course.lessonsTotal) * 100,
+              );
               const selected = course.title === selectedCourse.title;
 
               return (
@@ -117,21 +127,40 @@ export function Courses() {
                   className={`${styles.courseCard} ${selected ? styles.selectedCourse : ""}`}
                   aria-current={selected ? "true" : undefined}
                 >
-                  <img className={styles.courseCover} src={course.cover} alt={`${course.title} cover`} loading="lazy" />
+                  <img
+                    className={styles.courseCover}
+                    src={course.cover}
+                    alt={`${course.title} cover`}
+                    loading="lazy"
+                  />
                   <div className={styles.courseInfo}>
                     <div className={styles.courseTitleRow}>
                       <h2>{course.title}</h2>
                       <strong>{progress}%</strong>
                     </div>
                     <p>{course.platform}</p>
-                    <ProgressBar value={course.lessonsDone} max={course.lessonsTotal} className={styles.progress} />
+                    <ProgressBar
+                      value={course.lessonsDone}
+                      max={course.lessonsTotal}
+                      className={styles.progress}
+                    />
                     <div className={styles.courseMeta}>
-                      <span>Lesson {course.lessonsDone} of {course.lessonsTotal}</span>
-                      <span>Goal: {course.goal} · certificate: {course.certificate ? "yes" : "no"}</span>
+                      <span>
+                        Lesson {course.lessonsDone} of {course.lessonsTotal}
+                      </span>
+                      <span>
+                        Goal: {course.goal} · certificate:{" "}
+                        {course.certificate ? "yes" : "no"}
+                      </span>
                     </div>
                   </div>
                   <div className={styles.courseActions}>
-                    <DefaultButton size="sm" onClick={() => setSelectedCourse(course)}>Continue</DefaultButton>
+                    <DefaultButton
+                      size="sm"
+                      onClick={() => setSelectedCourse(course)}
+                    >
+                      Continue
+                    </DefaultButton>
                   </div>
                 </Card>
               );
@@ -141,20 +170,30 @@ export function Courses() {
           <Card className={styles.detailsCard}>
             <span className={styles.detailLabel}>Details</span>
             <h2>{selectedCourse.title}</h2>
-            <ProgressBar value={selectedCourse.lessonsDone} max={selectedCourse.lessonsTotal} className={styles.detailProgress} />
+            <ProgressBar
+              value={selectedCourse.lessonsDone}
+              max={selectedCourse.lessonsTotal}
+              className={styles.detailProgress}
+            />
             <p className={styles.detailProgressText}>
-              {selectedCourse.lessonsDone} of {selectedCourse.lessonsTotal} lessons · {progressoSelecionado}%
+              {selectedCourse.lessonsDone} of {selectedCourse.lessonsTotal}{" "}
+              lessons · {progressoSelecionado}%
             </p>
             <div className={styles.modules}>
               {selectedCourse.modules.map((module) => {
                 const completed = module.completed === module.total;
                 return (
                   <div className={styles.module} key={module.title}>
-                    <span className={`${styles.moduleCheck} ${completed ? styles.moduleComplete : ""}`} aria-hidden="true">
+                    <span
+                      className={`${styles.moduleCheck} ${completed ? styles.moduleComplete : ""}`}
+                      aria-hidden="true"
+                    >
                       {completed ? "✓" : ""}
                     </span>
                     <span>{module.title}</span>
-                    <small>{module.completed}/{module.total}</small>
+                    <small>
+                      {module.completed}/{module.total}
+                    </small>
                   </div>
                 );
               })}
@@ -173,7 +212,11 @@ export function Courses() {
         description="Add a course and track your progress through its lessons."
         onClose={() => setIsModalOpen(false)}
       >
-        <CourseForm initial={undefined} onSubmit={handleSalvarCurso} onCancel={() => setIsModalOpen(false)} />
+        <CourseForm
+          initial={undefined}
+          onSubmit={handleSalvarCurso}
+          onCancel={() => setIsModalOpen(false)}
+        />
       </FormModal>
     </>
   );
