@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Plus, Search, Star } from "lucide-react";
+﻿import { useEffect, useState, type FormEvent } from "react";
+import { Plus, Search } from "lucide-react";
 import { BookForm } from "../../forms";
+import type { BookSubmission } from "../../forms/BookForm";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
@@ -9,139 +10,87 @@ import { Select } from "../Select";
 import styles from "./styles.module.css";
 
 type Book = {
+  id: number;
   title: string;
   author: string;
-  currentPage: number;
-  totalPages: number;
-  lastRead: string;
-  cover: string;
-  rating?: number;
+  current_page: number;
+  number_of_pages: number | null;
+  status: string;
+  cover: string | null;
 };
 
-const bookCovers = {
-  domCasmurro:
-    "https://storage.googleapis.com/novo-blog-wordpress/2023/11/f7e9553a-dom-casmurro-reprod.jpg",
-  cortico:
-    "https://martinsfontespaulista.vteximg.com.br/arquivos/ids/242129-800-800/887228_ampliada.jpg?v=637250738515730000",
-  memorias:
-    "https://is1-ssl.mzstatic.com/image/thumb/Publication124/v4/d0/b8/d1/d0b8d19f-8b33-6bd8-b743-42c5b5f3830e/1032894253.jpg/1200x1200wz.jpg",
-  iracema:
-    "https://acdn-us.mitiendanube.com/stores/002/192/085/products/58cbc65127696988a2798c570da5e328-051cf43ec3d3ede77817284079827106-640-0.webp",
-  vidasSecas:
-    "https://cdn.awsli.com.br/2500x2500/1304/1304678/produto/255011060/a15bj0ux25l-_sl1500_-8f8nm4t8tp.jpg",
-  senhora:
-    "https://img.travessa.com.br/livro/GR/51/51b374fa-d4b6-4539-b652-6d8acb80618c.jpg",
-  oGuarani:
-    "https://higinocultural.com.br/wp-content/uploads/2023/02/O-Guarani-Jose-De-Alencar-Serie-Bom-Livro-25a-Ed.-6a-Imp..jpg",
+const statuses: Record<string, string> = {
+  RE: "Reading", NR: "Want to read", FD: "Read", RW: "Reviewing",
 };
 
-const readingBooks: Book[] = [
-  {
-    title: "Dom Casmurro",
-    author: "Machado de Assis",
-    currentPage: 120,
-    totalPages: 256,
-    lastRead: "today",
-    cover: bookCovers.domCasmurro,
-  },
-  {
-    title: "O Cortiço",
-    author: "Aluísio Azevedo",
-    currentPage: 45,
-    totalPages: 304,
-    lastRead: "3 days ago",
-    cover: bookCovers.cortico,
-  },
-];
+function apiError(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.map(apiError).join(" ");
+  if (value && typeof value === "object") {
+    return Object.entries(value).map(([key, error]) => `${key}: ${apiError(error)}`).join("; ");
+  }
+  return "Unable to complete request.";
+}
 
-const shelfBooks = [
-  {
-    title: "Memórias Póstumas de Brás Cubas",
-    author: "Machado de Assis",
-    status: "Read",
-    rating: 5,
-    cover: bookCovers.memorias,
-  },
-  {
-    title: "Iracema",
-    author: "José de Alencar",
-    status: "Read",
-    rating: 4,
-    cover: bookCovers.iracema,
-  },
-  {
-    title: "Vidas Secas",
-    author: "Graciliano Ramos",
-    status: "Want to read",
-    rating: null,
-    cover: bookCovers.vidasSecas,
-  },
-  {
-    title: "Senhora",
-    author: "José de Alencar",
-    status: "Read",
-    rating: 4,
-    cover: bookCovers.senhora,
-  },
-  {
-    title: "O Guarani",
-    author: "José de Alencar",
-    status: "Abandoned",
-    progress: 18,
-    rating: null,
-    cover: bookCovers.oGuarani,
-  },
-  {
-    title: "O Guarani",
-    author: "José de Alencar",
-    status: "Abandoned",
-    progress: 18,
-    rating: null,
-    cover: bookCovers.oGuarani,
-  },
-];
+async function requestBooks(path = "", options: RequestInit = {}) {
+  const csrf = document.cookie.split("; ").find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1];
+  const response = await fetch(`/api/v1/books/${path}`, {
+    ...options,
+    credentials: "include",
+    headers: { ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}), ...options.headers },
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(data ? apiError(data) : `Request failed (${response.status}).`);
+  return data;
+}
 
-function ReadingBookCard({ book }: { book: Book }) {
-  const percentage = Math.round((book.currentPage / book.totalPages) * 100);
+function BookCover({ book, className }: { book: Book; className: string }) {
+  return book.cover ? (
+    <img className={className} src={book.cover} alt={`${book.title} cover`} loading="lazy" />
+  ) : <div className={className} role="img" aria-label="No cover">No cover</div>;
+}
+
+function ReadingBookCard({ book, onSave }: { book: Book; onSave: (book: Book) => void }) {
+  const [page, setPage] = useState(String(book.current_page));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const total = book.number_of_pages;
+  const percentage = total ? Math.min(100, Math.round(book.current_page / total * 100)) : 0;
+
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const updated: Book = await requestBooks(`${book.id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_page: Number(page) }),
+      });
+      onSave(updated);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to save progress.");
+    } finally { setSaving(false); }
+  }
 
   return (
     <Card as="article" className={styles.readingCard}>
-      <img
-        className={styles.readingCover}
-        src={book.cover}
-        alt={`${book.title} cover`}
-        loading="lazy"
-      />
-
+      <BookCover book={book} className={styles.readingCover} />
       <div className={styles.readingDetails}>
         <h3>{book.title}</h3>
-        <p>
-          {book.author} · {book.totalPages} pages
-        </p>
+        <p>{book.author} · {total ?? "Unknown"} pages</p>
         <div className={styles.readingProgressHeader}>
-          <span>
-            p. {book.currentPage} / {book.totalPages}
-          </span>
-          <strong>{percentage}%</strong>
+          <span>p. {book.current_page} / {total ?? "?"}</span><strong>{percentage}%</strong>
         </div>
-        <ProgressBar
-          value={book.currentPage}
-          max={book.totalPages}
-          className={styles.bookProgress}
-        />
-        <small>
-          {book.totalPages - book.currentPage} pages left · last read:{" "}
-          {book.lastRead}
-        </small>
-        <div className={styles.pageForm}>
-          <label htmlFor={`book-page-${book.title}`}>Paused at p.</label>
-          <input
-            id={`book-page-${book.title}`}
-            type="number"
-            defaultValue={book.currentPage}
-          />
-          <DefaultButton size="sm">Save</DefaultButton>
-        </div>
+        <ProgressBar value={book.current_page} max={total || Math.max(book.current_page, 1)} className={styles.bookProgress} />
+        {total !== null && <small>{Math.max(0, total - book.current_page)} pages left</small>}
+        <form className={styles.pageForm} onSubmit={save}>
+          <label htmlFor={`book-page-${book.id}`}>Paused at p.</label>
+          <input id={`book-page-${book.id}`} type="number" required min="0" max={total ?? undefined} value={page} onChange={(event) => setPage(event.target.value)} />
+          <DefaultButton type="submit" size="sm" disabled={saving}>{saving ? "Saving..." : "Save"}</DefaultButton>
+        </form>
+        {error && <p role="alert">{error}</p>}
       </div>
     </Card>
   );
@@ -149,138 +98,89 @@ function ReadingBookCard({ book }: { book: Book }) {
 
 export function Books() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("");
+  const [sort, setSort] = useState("latest");
 
-  function handleSaveBook(_data: unknown) {
+  useEffect(() => {
+    let active = true;
+    requestBooks().then((data: Book[]) => { if (active) setBooks(data); })
+      .catch((error: Error) => { if (active) setError(error.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function handleSaveBook(data: BookSubmission) {
+    const body = new FormData();
+    body.append("title", data.title);
+    body.append("author", data.author);
+    body.append("number_of_pages", String(data.pages));
+    body.append("genre", data.genre);
+    body.append("status", data.status);
+    body.append("current_page", String(data.status === "FD" ? data.pages : data.current_page ?? 0));
+    if (data.started_at) body.append("started_on", data.started_at);
+    body.append("notes", data.notes);
+    if (data.cover) body.append("cover", data.cover);
+    data.sources.forEach((source, index) => {
+      body.append(`sources[${index}]format`, source.format);
+      if (source.location) body.append(`sources[${index}]location`, source.location);
+      if (source.url) body.append(`sources[${index}]url`, source.url);
+    });
+    const book: Book = await requestBooks("", { method: "POST", body });
+    setBooks((previous) => [...previous, book]);
     setIsModalOpen(false);
+  }
+
+  const visible = books.filter((book) => (!filter || book.status === filter) &&
+    `${book.title} ${book.author}`.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => sort === "title" ? a.title.localeCompare(b.title) : b.id - a.id);
+  const reading = visible.filter((book) => book.status === "RE" || book.status === "RW");
+  const shelf = visible.filter((book) => book.status !== "RE" && book.status !== "RW");
+  function updateBook(updated: Book) {
+    setBooks((previous) => previous.map((book) => book.id === updated.id ? updated : book));
   }
 
   return (
     <>
       <main className={styles.booksPage}>
         <section className={styles.pageIntro}>
-          <div>
-            <h1>Books</h1>
-            <p>26 books · 3,240 pages read this year</p>
-          </div>
+          <div><h1>Books</h1><p>{books.length} books · {books.reduce((sum, book) => sum + book.current_page, 0)} pages read</p></div>
           <div className={styles.pageActions}>
-            <label className={styles.searchBox}>
-              <Search size={18} aria-hidden="true" />
-              <input type="search" placeholder="Search your library" />
-            </label>
-            <DefaultButton
-              size="sm"
-              icon={<Plus aria-hidden="true" />}
-              onClick={() => setIsModalOpen(true)}
-            >
-              Add book
-            </DefaultButton>
+            <label className={styles.searchBox}><Search size={18} aria-hidden="true" /><input type="search" placeholder="Search your library" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} disabled={loading || !!error} onClick={() => setIsModalOpen(true)}>Add book</DefaultButton>
           </div>
         </section>
-
         <nav className={styles.filters} aria-label="Book filters">
           <div className={styles.filterPills}>
-            <a className={styles.activeFilter} href="#reading">
-              Reading (2)
-            </a>
-            <a href="#read">Read (14)</a>
-            <a href="#want-to-read">Want to read (9)</a>
-            <a href="#abandoned">Abandoned (1)</a>
-          </div>
-          <label className={styles.sortControl}>
-            Sort
-            <Select compact defaultValue="last-read" aria-label="Sort books">
-              <option value="last-read">Last read</option>
-              <option value="title">Title</option>
-              <option value="rating">Rating</option>
-            </Select>
-          </label>
-        </nav>
-
-        <Card
-          title="Currently reading"
-          className={styles.sectionPanel}
-          id="reading"
-        >
-          <div className={styles.readingGrid}>
-            {readingBooks.map((book) => (
-              <ReadingBookCard key={book.title} book={book} />
+            {[["", "All"], ...Object.entries(statuses)].map(([value, label]) => (
+              <a key={value} href="#books" className={filter === value ? styles.activeFilter : undefined} aria-current={filter === value ? "true" : undefined} onClick={(event) => { event.preventDefault(); setFilter(value); }}>{label} ({books.filter((book) => !value || book.status === value).length})</a>
             ))}
           </div>
+          <label className={styles.sortControl}>Sort<Select compact value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort books"><option value="latest">Latest added</option><option value="title">Title</option></Select></label>
+        </nav>
+        {loading && <p role="status">Loading books...</p>}
+        {error && <p role="alert">{error} Reload the page to retry.</p>}
+        {!loading && !error && visible.length === 0 && <p>{books.length ? "No matching books." : "Your library is empty. Add your first book."}</p>}
+        <Card title="Currently reading" className={styles.sectionPanel} id="reading">
+          <div className={styles.readingGrid}>{reading.map((book) => <ReadingBookCard key={book.id} book={book} onSave={updateBook} />)}</div>
         </Card>
-
-        <Card
-          title="Bookshelf"
-          action={{ label: "6 of 26", href: "#read" }}
-          className={styles.shelfSection}
-          id="read"
-        >
+        <Card title="Bookshelf" className={styles.shelfSection} id="books">
           <div className={styles.shelfGrid}>
-            {shelfBooks.map((book, index) => (
-              <article
-                className={styles.shelfBook}
-                key={`${book.title}-${index}`}
-              >
-                <img
-                  className={styles.shelfCover}
-                  src={book.cover}
-                  alt={`${book.title} cover`}
-                  loading="lazy"
-                />
-                <h3>{book.title}</h3>
-                <p>{book.author}</p>
-                {book.status === "Read" && (
-                  <ProgressBar
-                    value={100}
-                    max={100}
-                    className={styles.shelfProgress}
-                  />
-                )}
-                {book.status === "Abandoned" && (
-                  <ProgressBar
-                    value={book.progress ?? 0}
-                    max={100}
-                    className={styles.shelfProgress}
-                  />
-                )}
-                <span
-                  className={`${styles.bookBadge} ${styles[`bookBadge--${book.status.toLowerCase().replaceAll(" ", "-")}`]}`}
-                >
-                  <span aria-hidden="true" />
-                  {book.status}
-                  {book.rating ? (
-                    <>
-                      <span className={styles.badgeRating}>
-                        <Star
-                          size={11}
-                          fill="currentColor"
-                          aria-hidden="true"
-                        />{" "}
-                        {book.rating}/5
-                      </span>
-                    </>
-                  ) : book.progress ? (
-                    ` · ${book.progress}%`
-                  ) : (
-                    ""
-                  )}
-                </span>
+            {shelf.map((book) => (
+              <article className={styles.shelfBook} key={book.id}>
+                <BookCover book={book} className={styles.shelfCover} /><h3>{book.title}</h3><p>{book.author}</p>
+                {book.status === "FD" && <ProgressBar value={100} max={100} className={styles.shelfProgress} />}
+                <span className={`${styles.bookBadge} ${styles[`bookBadge--${(statuses[book.status] ?? "").toLowerCase().replaceAll(" ", "-")}`]}`}><span aria-hidden="true" />{statuses[book.status] ?? book.status}</span>
               </article>
             ))}
           </div>
         </Card>
       </main>
-
-      <FormModal
-        open={isModalOpen}
-        title="Add book"
-        description="Add the basics now; you can edit the rest later."
-        onClose={() => setIsModalOpen(false)}
-      >
-        <BookForm
-          initial={undefined}
-          onSubmit={handleSaveBook}
-          onCancel={() => setIsModalOpen(false)}
-        />
+      <FormModal open={isModalOpen} title="Add book" description="Add a book to your library." onClose={() => setIsModalOpen(false)}>
+        <BookForm onSubmit={handleSaveBook} onCancel={() => setIsModalOpen(false)} />
       </FormModal>
     </>
   );

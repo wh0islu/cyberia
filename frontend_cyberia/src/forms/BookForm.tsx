@@ -2,7 +2,6 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   Field,
   Segmented,
-  Stars,
   ImageDrop,
   SourcesField,
   cleanSources,
@@ -24,21 +23,17 @@ type BookFormData = {
   status: string;
   current_page: string;
   started_at: string;
-  rating: number;
-  finished_at: string;
   notes: string;
   sources: FormSource[];
 };
 
-type BookSubmission = Omit<
+export type BookSubmission = Omit<
   BookFormData,
-  "pages" | "current_page" | "started_at" | "rating" | "finished_at" | "sources"
+  "pages" | "current_page" | "started_at" | "sources"
 > & {
   pages: number;
   current_page: number | null;
   started_at: string | null;
-  rating: number | null;
-  finished_at: string | null;
   sources: CleanedSource[];
 };
 
@@ -53,7 +48,7 @@ type StringField = {
 }[keyof BookFormData];
 
 /* BookSource.FORMAT_OPTIONS */
-export const BOOK_FORMATS: SourceFormat[] = [
+const BOOK_FORMATS: SourceFormat[] = [
   {
     value: "PH",
     label: "Physical",
@@ -89,21 +84,23 @@ export const BOOK_FORMATS: SourceFormat[] = [
   },
 ];
 
-/* Replace these values with the choices from your Book model. */
+/* Book.BOOK_OPTIONS */
 const STATUS = [
-  { value: "WANT", label: "Want to read" },
-  { value: "READING", label: "Reading" },
-  { value: "READ", label: "Read" },
-  { value: "DROPPED", label: "Abandoned" },
+  { value: "NR", label: "Want to read" },
+  { value: "RE", label: "Reading" },
+  { value: "FD", label: "Read" },
+  { value: "RW", label: "Reviewing" },
 ];
 
 const GENRES = [
-  "Romance",
-  "Fiction",
-  "Nonfiction",
-  "Technical",
-  "Poesia",
-  "Biografia",
+  { value: "FI", label: "Fiction" },
+  { value: "TC", label: "Technical" },
+  { value: "FA", label: "Fantasy" },
+  { value: "SF", label: "Science fiction" },
+  { value: "HI", label: "Historical" },
+  { value: "BI", label: "Biography" },
+  { value: "NF", label: "Non-fiction" },
+  { value: "OT", label: "Other" },
 ];
 
 const empty = {
@@ -112,11 +109,9 @@ const empty = {
   author: "",
   pages: "",
   genre: "",
-  status: "WANT",
+  status: "NR",
   current_page: "",
   started_at: "",
-  rating: 0,
-  finished_at: "",
   notes: "",
   sources: [{ format: "PH", location: "", url: "" }],
 };
@@ -124,6 +119,7 @@ const empty = {
 export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
   const [data, setData] = useState<BookFormData>({ ...empty, ...initial });
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const set =
     <Key extends keyof BookFormData>(key: Key) =>
     (value: BookFormData[Key]) =>
@@ -134,28 +130,32 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
       event: ChangeEvent<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >,
-    ) =>
+    ) => {
+      const value = event.currentTarget.value;
       setData((previousData) => ({
         ...previousData,
-        [key]: event.currentTarget.value,
+        [key]: value,
       }));
+    };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
+    setError("");
     try {
       await onSubmit({
         ...data,
         pages: Number(data.pages),
         current_page:
-          data.status === "READING" && data.current_page !== ""
+          (data.status === "RE" || data.status === "RW") && data.current_page !== ""
             ? Number(data.current_page)
-            : null,
-        started_at: data.status === "READING" ? data.started_at || null : null,
-        rating: data.status === "READ" && data.rating ? data.rating : null,
-        finished_at: data.status === "READ" ? data.finished_at || null : null,
+            : 0,
+        started_at: (data.status === "RE" || data.status === "RW") ? data.started_at || null : null,
         sources: cleanSources(data.sources, BOOK_FORMATS),
       });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to save book.");
     } finally {
       setSubmitting(false);
     }
@@ -164,6 +164,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
   return (
     <form className="form" onSubmit={handleSubmit}>
       <ScrollArea className="form__body">
+        {error && <p role="alert">{error}</p>}
         <div className="row row--nowrap">
           <ImageDrop
             label="Add cover"
@@ -222,7 +223,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
             >
               <option value="">Select</option>
               {GENRES.map((g) => (
-                <option key={g}>{g}</option>
+                <option key={g.value} value={g.value}>{g.label}</option>
               ))}
             </Select>
           </Field>
@@ -235,7 +236,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
           onChange={set("status")}
         />
 
-        {data.status === "READING" && (
+        {(data.status === "RE" || data.status === "RW") && (
           <div className="row">
             <Field label="Current page">
               <input
@@ -252,18 +253,6 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
               <DatePicker
                 value={data.started_at}
                 onChange={set("started_at")}
-              />
-            </Field>
-          </div>
-        )}
-
-        {data.status === "READ" && (
-          <div className="row" style={{ alignItems: "flex-end" }}>
-            <Stars value={data.rating} onChange={set("rating")} />
-            <Field label="Finished on">
-              <DatePicker
-                value={data.finished_at}
-                onChange={set("finished_at")}
               />
             </Field>
           </div>
