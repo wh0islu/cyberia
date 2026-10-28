@@ -98,8 +98,8 @@ class MovieSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer)
     class Meta:
         model = Movie
         fields = [
-            'id', 'title', 'year', 'director', 'status', 'language',
-            'imdb_id', 'tmdb_id', 'cover', 'sources',
+            'id', 'title', 'genre', 'year', 'director', 'status', 'current_minute', 'language',
+            'imdb_id', 'tmdb_id', 'tmdb_poster_path', 'cover', 'sources',
         ]
         read_only_fields = ['id']
 
@@ -120,9 +120,10 @@ class SeriesSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer
     class Meta:
         model = Series
         fields = [
-            'id', 'title', 'original_title', 'start_year', 'end_year',
-            'number_of_seasons', 'number_of_episodes', 'status',
-            'imdb_id', 'tmdb_id', 'cover', 'sources',
+            'id', 'title', 'genre', 'original_title', 'start_year', 'end_year',
+            'number_of_seasons', 'number_of_episodes', 'current_season',
+            'current_episode', 'status',
+            'imdb_id', 'tmdb_id', 'tmdb_poster_path', 'cover', 'sources',
         ]
         read_only_fields = ['id']
 

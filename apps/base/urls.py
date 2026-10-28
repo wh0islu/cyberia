@@ -21,9 +21,20 @@ urlpatterns = [
     path('api/v1/books/', api.books_api_collection, name='books_api'),
     path('api/v1/books/<int:pk>/', api.book_api, name='book_api'),
     # Movies
+    path('api/v1/media-search/', api.tmdb_media_search, name='tmdb_media_search'),
+    path(
+        'api/v1/tmdb/<str:media_type>/<int:tmdb_id>/',
+        api.tmdb_media_details,
+        name='tmdb_media_details',
+    ),
     path('api/v1/movies/', api.movies_api_collection, name='movies_api'),
     path('api/v1/movies/<int:pk>/', api.movie_api, name='movie_api'),
     # Series
+    path(
+        'api/v1/tmdb/series/<int:tmdb_id>/',
+        api.tmdb_series_details,
+        name='tmdb_series_details',
+    ),
     path('api/v1/series/', api.series_api_collection, name='series_api'),
     path('api/v1/series/<int:pk>/', api.series_api, name='series_detail_api'),
     # Meals

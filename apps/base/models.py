@@ -211,12 +211,15 @@ class Movie(models.Model):
     LANGUAGE_OPTIONS = [('PT', 'PORTUGUESE'), ('EN', 'ENGLISH'), ('RU', 'RUSSIAN'), ('CH', 'CHINESE')]
 
     title = models.CharField(max_length=255)
+    genre = models.CharField(max_length=100, blank=True)
     year = models.PositiveIntegerField(blank=True, null=True)
     director = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(max_length=3, choices=MOVIE_OPTIONS)
+    current_minute = models.PositiveIntegerField(blank=True, null=True)
     language = models.CharField(max_length=2, blank=True, null=True, choices=LANGUAGE_OPTIONS)
     imdb_id = models.CharField(max_length=20, blank=True, null=True)
     tmdb_id = models.PositiveIntegerField(blank=True, null=True)
+    tmdb_poster_path = models.CharField(max_length=255, blank=True, null=True)
     cover = models.ImageField(upload_to='movies/covers/', blank=True, null=True)
 
     def __str__(self):
@@ -249,11 +252,14 @@ class Series(models.Model):
     ]
 
     title = models.CharField(max_length=255)
+    genre = models.CharField(max_length=100, blank=True)
     original_title = models.CharField(max_length=255, blank=True, null=True)
     start_year = models.PositiveIntegerField(blank=True, null=True)
     end_year = models.PositiveIntegerField(blank=True, null=True)
     number_of_seasons = models.PositiveIntegerField(blank=True, null=True)
     number_of_episodes = models.PositiveIntegerField(blank=True, null=True)
+    current_season = models.PositiveIntegerField(blank=True, null=True)
+    current_episode = models.PositiveIntegerField(blank=True, null=True)
     status = models.CharField(
         max_length=2,
         default='NW',
@@ -261,6 +267,7 @@ class Series(models.Model):
     )
     imdb_id = models.CharField(max_length=20, blank=True, null=True)
     tmdb_id = models.PositiveIntegerField(blank=True, null=True)
+    tmdb_poster_path = models.CharField(max_length=255, blank=True, null=True)
     cover = models.ImageField(upload_to='series/covers/', blank=True, null=True)
 
     def __str__(self):
