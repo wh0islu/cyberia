@@ -53,7 +53,7 @@ const shelfBooks = [
   { title: "Vidas Secas", author: "Graciliano Ramos", status: "Want to read", rating: null, cover: bookCovers.vidasSecas },
   { title: "Senhora", author: "José de Alencar", status: "Read", rating: 4, cover: bookCovers.senhora },
   { title: "O Guarani", author: "José de Alencar", status: "Abandoned", progress: 18, rating: null, cover: bookCovers.oGuarani },
-  { title: "Clean Code", author: "Robert C. Martin", status: "Want to read", rating: null, cover: cleanCodeCover },
+  { title: "O Guarani", author: "José de Alencar", status: "Abandoned", progress: 18, rating: null, cover: bookCovers.oGuarani },
 ];
 
 function ReadingBookCard({ book }: { book: Book }) {

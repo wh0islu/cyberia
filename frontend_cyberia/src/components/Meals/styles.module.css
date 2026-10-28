@@ -19,8 +19,11 @@
 }
 
 .breadcrumb {
+  display: block;
   color: var(--text-muted);
   font-size: 13px;
+  /* letter-spacing: 1px;
+  text-transform: uppercase; */
 }
 
 .header h1 {

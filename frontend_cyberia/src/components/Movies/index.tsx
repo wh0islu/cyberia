@@ -17,6 +17,7 @@ const watchedItems = [
   { type: "Movie", title: "The Batman", cover: batmanCover, rating: "★★★★☆" },
   { type: "Series", title: "The Big Bang Theory", cover: tbbtCover, rating: "★★★★☆" },
   { type: "Movie", title: "Central do Brasil", cover: centralCover, rating: "★★★☆☆" },
+  { type: "Movie", title: "Central do Brasil", cover: centralCover, rating: "★★★☆☆" },
   { type: "Series", title: "Cangaço Novo", cover: cangacoCover, rating: "★★★★☆" },
   { type: "Movie", title: "Bacurau", cover: bacurauCover, rating: "★★★★★" },
 ];
@@ -33,7 +34,7 @@ export function Movies() {
       <main className={styles.moviesPage}>
       <section className={styles.pageIntro}>
         <div>
-          <span className={styles.breadcrumb}>LIBRARY / MOVIES &amp; SERIES</span>
+          <span className={styles.breadcrumb}>Cyberia / Movies</span>
           <h1>Movies &amp; Series</h1>
           <p>[n] movies · [n] series · [n] hours watched</p>
         </div>
