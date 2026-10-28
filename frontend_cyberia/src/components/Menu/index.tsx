@@ -9,8 +9,11 @@ type AvailableThemes = "dark" | "light";
 
 export function Menu() {
   const [theme, setTheme] = useState<AvailableThemes>(() => {
-    const storageTheme = localStorage.getItem("theme") as AvailableThemes;
-    return storageTheme === "light" ? "light" : "dark";
+    try {
+      return localStorage.getItem("theme") === "light" ? "light" : "dark";
+    } catch {
+      return "dark";
+    }
   });
 
   const nextThemeIcon: Record<AvailableThemes, ReactNode> = {
@@ -26,8 +29,15 @@ export function Menu() {
   }
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+    const root = document.documentElement;
+    if (theme === "light") root.dataset.theme = "light";
+    else delete root.dataset.theme;
+
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // The selected theme still works for this session without storage.
+    }
   }, [theme]);
 
   return (

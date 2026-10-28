@@ -13,41 +13,50 @@ import {
   Activity,
 } from "lucide-react";
 
-const ICONES = {
-  inicio: House,
-  livros: LibraryBig,
-  filmes: MonitorPlay,
-  rotina: CalendarCheck2,
-  alimentacao: Salad,
-  cursos: BookOpenCheck,
+const icons = {
+  home: House,
+  books: LibraryBig,
+  movies: MonitorPlay,
+  routine: CalendarCheck2,
+  meals: Salad,
+  courses: BookOpenCheck,
   insights: Activity,
   avatar: UserRound,
 };
 
-const GRUPOS = [
+type SectionCountKey = "books" | "movies" | "routine" | "meals" | "courses";
+type NavigationItem = {
+  id: keyof typeof icons;
+  name: string;
+  href: string;
+  countKey?: SectionCountKey;
+};
+type NavigationGroup = { title: string | null; items: NavigationItem[] };
+
+const navigationGroups: NavigationGroup[] = [
   {
-    titulo: null,
-    itens: [
-      { id: "inicio", nome: "Home", href: "/" },
-      { id: "insights", nome: "Insights", href: "/insights" },
+    title: null,
+    items: [
+      { id: "home", name: "Home", href: "/" },
+      { id: "insights", name: "Insights", href: "/insights" },
     ],
   },
   {
-    titulo: "Library",
-    itens: [
-      { id: "livros", nome: "Books", href: "/books" },
-      { id: "filmes", nome: "Movies & Series", href: "/movies/series" },
-      { id: "rotina", nome: "Routine", href: "/routine" },
-      { id: "alimentacao", nome: "Meals", href: "/meals" },
-      { id: "cursos", nome: "Courses", href: "/courses" },
+    title: "Library",
+    items: [
+      { id: "books", name: "Books", href: "/books", countKey: "books" },
+      { id: "movies", name: "Movies & Series", href: "/movies/series", countKey: "movies" },
+      { id: "routine", name: "Routine", href: "/routine", countKey: "routine" },
+      { id: "meals", name: "Meals", href: "/meals", countKey: "meals" },
+      { id: "courses", name: "Courses", href: "/courses", countKey: "courses" },
     ],
   },
 ] as const;
 
-function useTema() {
-  const [tema, setTema] = useState<"dark" | "light">(() => {
+function useTheme() {
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
     try {
-      return localStorage.getItem("tema") === "light" ? "light" : "dark";
+      return localStorage.getItem("theme") === "light" ? "light" : "dark";
     } catch {
       return "dark";
     }
@@ -55,31 +64,31 @@ function useTema() {
 
   useEffect(() => {
     const raiz = document.documentElement;
-    if (tema === "light") raiz.dataset.theme = "light";
+    if (theme === "light") raiz.dataset.theme = "light";
     else delete raiz.dataset.theme;
     try {
-      localStorage.setItem("tema", tema);
+      localStorage.setItem("theme", theme);
     } catch {}
-  }, [tema]);
+  }, [theme]);
 
-  return [tema, setTema] as const;
+  return [theme, setTheme] as const;
 }
 
 type SidebarProps = {
-  rotaAtual?: string;
-  contagens?: Partial<Record<keyof typeof ICONES, number>>;
-  usuario?: { nome: string; sub: string };
+  currentPath?: string;
+  counts?: Partial<Record<SectionCountKey, number>>;
+  user?: { name: string; subtitle: string };
   onNavigate?: (href: string) => void;
 };
 
 export function Sidebar({
-  rotaAtual = "/",
-  contagens = {},
-  usuario = { nome: "My profile", sub: "Personal account" },
+  currentPath = "/",
+  counts = {},
+  user = { name: "My profile", subtitle: "Personal account" },
   onNavigate,
 }: SidebarProps) {
-  const [tema, setTema] = useTema();
-  const [recolhido, setRecolhido] = useState(false);
+  const [theme, setTheme] = useTheme();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   function handleNavigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
     if (!onNavigate || href.startsWith("#")) return;
@@ -91,7 +100,7 @@ export function Sidebar({
   return (
     <aside
       className={`${styles.sidebar} ${
-        recolhido ? styles["sidebar--collapsed"] : ""
+        isCollapsed ? styles["sidebar--collapsed"] : ""
       }`}
     >
       <div className={styles["sidebar__cabecalho"]}>
@@ -115,41 +124,41 @@ export function Sidebar({
         <button
           type="button"
           className={styles["sidebar__toggle"]}
-          aria-label={recolhido ? "Expand menu" : "Collapse menu"}
-          aria-expanded={!recolhido}
-          onClick={() => setRecolhido((valorAtual) => !valorAtual)}
+          aria-label={isCollapsed ? "Expand menu" : "Collapse menu"}
+          aria-expanded={!isCollapsed}
+          onClick={() => setIsCollapsed((currentValue) => !currentValue)}
         >
-          {recolhido ? "→" : "←"}
+          {isCollapsed ? "→" : "←"}
         </button>
       </div>
 
       <nav className={styles["sidebar__nav"]} aria-label="Sections">
-        {GRUPOS.map((grupo, i) => (
-          <div key={i} className={styles["sidebar__grupo"]}>
-            {grupo.titulo && (
+        {navigationGroups.map((group) => (
+          <div key={group.title ?? "main"} className={styles["sidebar__grupo"]}>
+            {group.title && (
               <span className={styles["sidebar__grupo-titulo"]}>
-                {grupo.titulo}
+                {group.title}
               </span>
             )}
-            {grupo.itens.map((item) => {
-              const ativo = rotaAtual === item.href;
-              const IconeItem = ICONES[item.id];
+            {group.items.map((item) => {
+              const isActive = currentPath === item.href;
+              const ItemIcon = icons[item.id];
 
               return (
                 <a
                   key={item.id}
                   href={item.href}
                   className={styles["sidebar__link"]}
-                  aria-current={ativo ? "page" : undefined}
+                  aria-current={isActive ? "page" : undefined}
                   onClick={(event) => handleNavigate(event, item.href)}
                 >
-                  <IconeItem aria-hidden="true" />
+                  <ItemIcon aria-hidden="true" />
                   <span className={styles["sidebar__link-nome"]}>
-                    {item.nome}
+                    {item.name}
                   </span>
-                  {contagens[item.id] != null && (
+                  {item.countKey && counts[item.countKey] != null && (
                     <span className={styles["sidebar__contagem"]}>
-                      {contagens[item.id]}
+                      {counts[item.countKey]}
                     </span>
                   )}
                 </a>
@@ -165,16 +174,16 @@ export function Sidebar({
           <div className={styles.seg} role="group" aria-label="Theme">
             <button
               type="button"
-              aria-pressed={tema === "dark"}
-              onClick={() => setTema("dark")}
+              aria-pressed={theme === "dark"}
+              onClick={() => setTheme("dark")}
             >
               <MoonIcon aria-hidden="true" />
               Dark
             </button>
             <button
               type="button"
-              aria-pressed={tema === "light"}
-              onClick={() => setTema("light")}
+              aria-pressed={theme === "light"}
+              onClick={() => setTheme("light")}
             >
               <SunIcon aria-hidden="true" />
               Light
@@ -191,8 +200,8 @@ export function Sidebar({
             <UserRound />
           </span>
           <span className={styles["sidebar__perfil-texto"]}>
-            <strong>{usuario.nome}</strong>
-            <span>{usuario.sub}</span>
+            <strong>{user.name}</strong>
+            <span>{user.subtitle}</span>
           </span>
         </a>
       </div>

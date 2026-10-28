@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Home } from "./components/Home";
 import { Books } from "./components/Books";
 import { Courses } from "./components/Courses";
@@ -12,28 +12,22 @@ import "./styles/theme.css";
 import styles from "./App.module.css";
 
 export function App() {
-  const [rotaAtual, setRotaAtual] = useState(() => window.location.pathname);
-  const isBooksPage = rotaAtual === "/books";
-  const isMoviesPage = rotaAtual === "/movies/series";
-  const isMealsPage = rotaAtual === "/meals";
-  const isCoursesPage = rotaAtual === "/courses";
-  const isRoutinePage = rotaAtual === "/routine";
-  const isInsightsPage = rotaAtual === "/insights";
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
 
   useEffect(() => {
-    const atualizarRota = () => setRotaAtual(window.location.pathname);
-    window.addEventListener("popstate", atualizarRota);
+    const updateCurrentPath = () => setCurrentPath(window.location.pathname);
+    window.addEventListener("popstate", updateCurrentPath);
 
-    return () => window.removeEventListener("popstate", atualizarRota);
+    return () => window.removeEventListener("popstate", updateCurrentPath);
   }, []);
 
   useEffect(() => {
-    function interceptarLinks(event: MouseEvent) {
+    function handleDocumentClick(event: MouseEvent) {
       if (event.defaultPrevented || event.button !== 0) return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
-      const elemento = event.target as HTMLElement;
-      const link = elemento.closest("a");
+      if (!(event.target instanceof Element)) return;
+      const link = event.target.closest("a");
       if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
 
       const href = link.getAttribute("href");
@@ -43,43 +37,38 @@ export function App() {
       if (url.origin !== window.location.origin) return;
 
       event.preventDefault();
-      navegarPara(url.pathname);
+      navigateTo(url.pathname);
     }
 
-    document.addEventListener("click", interceptarLinks);
-    return () => document.removeEventListener("click", interceptarLinks);
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
   });
 
-  function navegarPara(href: string) {
+  function navigateTo(href: string) {
     if (href === window.location.pathname) return;
 
     window.history.pushState({}, "", href);
-    setRotaAtual(href);
+    setCurrentPath(href);
   }
+
+  const pages: Record<string, ReactNode> = {
+    "/books": <Books />,
+    "/movies/series": <Movies />,
+    "/meals": <Meals />,
+    "/courses": <Courses />,
+    "/routine": <Routine />,
+    "/insights": <Insights />,
+  };
 
   return (
     <div className={styles.app}>
       <Sidebar
-        rotaAtual={rotaAtual}
-        contagens={{ livros: 26, filmes: 44, rotina: 5, alimentacao: 16, cursos: 3 }}
-        onNavigate={navegarPara}
+        currentPath={currentPath}
+        counts={{ books: 26, movies: 44, routine: 5, meals: 16, courses: 3 }}
+        onNavigate={navigateTo}
       />
       <div className={styles.app__conteudo}>
-        {isBooksPage ? (
-          <Books />
-        ) : isMoviesPage ? (
-          <Movies />
-        ) : isMealsPage ? (
-          <Meals />
-        ) : isCoursesPage ? (
-          <Courses />
-        ) : isRoutinePage ? (
-          <Routine />
-        ) : isInsightsPage ? (
-          <Insights />
-        ) : (
-          <Home />
-        )}
+        {pages[currentPath] ?? <Home />}
       </div>
     </div>
   );
