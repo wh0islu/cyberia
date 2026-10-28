@@ -25,6 +25,7 @@ from apps.base.serializers import (
     SeriesSerializer,
 )
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -276,11 +277,12 @@ def tmdb_media_details(request, media_type, tmdb_id):
 
 
 # Books
+@ensure_csrf_cookie
 @api_view(http_method_names=['GET', 'POST'])
 def books_api_collection(request):
     if request.method == 'GET':
-        books = Book.objects.all()
-        serializer = BooksSerializer(instance=books, many=True)
+        books = Book.objects.prefetch_related('sources').all()
+        serializer = BooksSerializer(instance=books, many=True, context={'request': request})
         return Response(serializer.data)
     elif request.method == 'POST':
         serializer = BookSerializer(data=request.data, context={'request': request})

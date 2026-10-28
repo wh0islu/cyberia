@@ -13,15 +13,10 @@ from apps.base.models import (
     SeriesSource,
 )
 from rest_framework import serializers
+from django.db import transaction
 
 
 # Books
-class BooksSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Book
-        fields = ['id', 'title', 'author', 'year']
-
-
 class BookSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookSource
@@ -61,6 +56,42 @@ class BookSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer):
     sources = BookSourceSerializer(many=True, required=False)
     source_model = BookSource
     source_parent_field = 'book'
+
+    @transaction.atomic
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def validate(self, attrs):
+        pages = attrs.get('number_of_pages', getattr(self.instance, 'number_of_pages', None))
+        current_page = attrs.get('current_page', getattr(self.instance, 'current_page', 0))
+        if pages is not None and current_page > pages:
+            raise serializers.ValidationError({
+                'current_page': 'The page number cannot exceed the total number of pages.'
+            })
+        return attrs
+
+    class Meta:
+        model = Book
+        fields = [
+            'id',
+            'title',
+            'author',
+            'genre',
+            'year',
+            'number_of_pages',
+            'current_page',
+            'started_on',
+            'notes',
+            'status',
+            'language',
+            'cover',
+            'sources',
+        ]
+        read_only_fields = ['id']
+
+
+class BooksSerializer(serializers.ModelSerializer):
+    sources = BookSourceSerializer(many=True, read_only=True)
 
     class Meta:
         model = Book
