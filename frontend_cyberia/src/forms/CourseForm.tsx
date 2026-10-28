@@ -12,6 +12,8 @@ import {
   type CleanedSource,
   type SourceFormat,
 } from "../components/FormFields";
+import { ScrollArea } from "../components/ScrollArea";
+import { DatePicker } from "../components/DatePicker";
 
 type CourseFormData = {
   image: File | null;
@@ -118,7 +120,7 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
 
   return (
     <form className="form" onSubmit={handleSubmit}>
-      <div className="form__body">
+      <ScrollArea className="form__body">
         <div className="row row--nowrap" style={{ alignItems: "flex-start" }}>
           <ImageDrop label="Image" shape="thumb" value={data.image} onChange={set("image")} />
           <Field label="Course name" required>
@@ -153,7 +155,7 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
             />
           </Field>
           <Field label="Goal date">
-            <input className="in" type="date" value={data.goal_date} onChange={setFromInput("goal_date")} />
+            <DatePicker value={data.goal_date} onChange={set("goal_date")} />
           </Field>
         </div>
 
@@ -196,7 +198,7 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
             <button type="button" className="add-btn" onClick={addModule}>+ Module</button>
           </div>
         </div>
-      </div>
+      </ScrollArea>
 
       <FormFooter submitLabel={initial ? "Save" : "Add course"} onCancel={onCancel} submitting={submitting} />
     </form>

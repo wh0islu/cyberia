@@ -71,7 +71,7 @@ export function Courses() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(courses[0]);
 
-  async function handleSalvarCurso(_dados: unknown) {
+  function handleSaveCourse(_data: unknown) {
     setIsModalOpen(false);
   }
 
@@ -214,7 +214,7 @@ export function Courses() {
       >
         <CourseForm
           initial={undefined}
-          onSubmit={handleSalvarCurso}
+          onSubmit={handleSaveCourse}
           onCancel={() => setIsModalOpen(false)}
         />
       </FormModal>
