@@ -59,12 +59,27 @@ const habitosIniciais: Habito[] = [
 ];
 
 const agenda = [
-  { hora: "06:30", nome: "Wake up", detalhe: "Goal: before 7 AM", status: "Done" },
+  {
+    hora: "06:30",
+    nome: "Wake up",
+    detalhe: "Goal: before 7 AM",
+    status: "Done",
+  },
   { hora: "07:00", nome: "Exercise", detalhe: "45 min", status: "Done" },
   { hora: "09:00", nome: "Work / study", detalhe: "4 hours", status: "Done" },
   { hora: "13:00", nome: "Lunch", detalhe: "1 hour", status: "Done" },
-  { hora: "19:00", nome: "Study a course", detalhe: "1 hour · Interface Design", status: "Now" },
-  { hora: "22:00", nome: "Reading", detalhe: "30 min · Dom Casmurro", status: "Later" },
+  {
+    hora: "19:00",
+    nome: "Study a course",
+    detalhe: "1 hour · Interface Design",
+    status: "Now",
+  },
+  {
+    hora: "22:00",
+    nome: "Reading",
+    detalhe: "30 min · Dom Casmurro",
+    status: "Later",
+  },
 ];
 
 function obterInicioDaSemana(data: Date) {
@@ -139,7 +154,6 @@ export function Routine() {
       <main className={styles.page}>
         <header className={styles.pageHeader}>
           <div>
-            <span className={styles.breadcrumb}>Library / Routine</span>
             <h1>Routine</h1>
             <p>Weekly habits and daily schedule</p>
           </div>
@@ -153,7 +167,11 @@ export function Routine() {
                 <ChevronLeft size={16} />
               </button>
               <span>
-                {formatarData(datasDaSemana[0], { day: "numeric" })} – {formatarData(datasDaSemana[6], { day: "numeric", month: "short" })}
+                {formatarData(datasDaSemana[0], { day: "numeric" })} –{" "}
+                {formatarData(datasDaSemana[6], {
+                  day: "numeric",
+                  month: "short",
+                })}
               </span>
               <button
                 type="button"
@@ -221,14 +239,16 @@ export function Routine() {
                     );
                   })}
                   <span className={styles.habitTotal}>
-                    {habito.diasConcluidos.filter(Boolean).length}/{habito.diasAtivos.length}
+                    {habito.diasConcluidos.filter(Boolean).length}/
+                    {habito.diasAtivos.length}
                   </span>
                 </div>
               ))}
             </div>
 
             <p className={styles.weekHint}>
-              Click a day to mark or unmark it. Longest streak: 12 days (reading)
+              Click a day to mark or unmark it. Longest streak: 12 days
+              (reading)
             </p>
           </section>
 
@@ -236,7 +256,13 @@ export function Routine() {
             <header className={styles.todayHeader}>
               <div>
                 <h2>Today</h2>
-                <p>{formatarData(hoje, { weekday: "long", day: "numeric", month: "short" })}</p>
+                <p>
+                  {formatarData(hoje, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </p>
               </div>
             </header>
 
