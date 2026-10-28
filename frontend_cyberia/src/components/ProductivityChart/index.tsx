@@ -1,111 +1,180 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  LinearScale,
+  Tooltip,
+  type ChartOptions,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import { Card } from "../Card";
 import styles from "./styles.module.css";
 
-type ProductivityDay = {
-  date: Date;
-  activities: number;
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+
+type HabitCompletion = {
+  date: string;
+  completed: boolean;
 };
 
-const weeklyActivityCounts = [3, 2, 4, 1, 4, 4, 3];
+type CompletionResponse = HabitCompletion[] | { results?: HabitCompletion[] };
+type ProductivityChartProps = { showDetails?: boolean };
+const sampleWeekCounts = [3, 2, 4, 1, 4, 4, 3];
 
-function createDemoWeek(): ProductivityDay[] {
+function getLocalDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getCurrentWeek() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const mondayOffset = (today.getDay() + 6) % 7;
   const monday = new Date(today);
-  monday.setDate(today.getDate() - mondayOffset);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
 
-  return weeklyActivityCounts.map((activities, index) => {
+  return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
-
-    return {
-      date,
-      activities: date > today ? 0 : activities,
-    };
+    return date;
   });
 }
 
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-  }).format(date);
+function getCompletionDateKey(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return getLocalDateKey(new Date(year, month - 1, day));
 }
 
-type ProductivityChartProps = {
-  showDetails?: boolean;
-};
+export function ProductivityChart({ showDetails = true }: ProductivityChartProps) {
+  const [completions, setCompletions] = useState<HabitCompletion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const week = useMemo(getCurrentWeek, []);
+  const todayKey = getLocalDateKey(new Date());
 
-export function ProductivityChart({
-  showDetails = true,
-}: ProductivityChartProps) {
-  const days = createDemoWeek();
-  const today = new Date();
-  const todayIndex = (today.getDay() + 6) % 7;
-  const todayActivities = days[todayIndex].activities;
-  const weeklyActivities = days.reduce((total, day) => total + day.activities, 0);
-  const maxActivities = Math.max(...days.map((day) => day.activities), 1);
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadCompletions() {
+      try {
+        const response = await fetch("/api/v1/habit-completions/", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Could not load habit completions (${response.status})`);
+        }
+
+        const data: CompletionResponse = await response.json();
+        setCompletions(Array.isArray(data) ? data : data.results ?? []);
+      } catch {
+        if (!controller.signal.aborted) {
+          setHasError(true);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadCompletions();
+    return () => controller.abort();
+  }, []);
+
+  const dailyCounts = week.map((date, index) => {
+    if (hasError) return sampleWeekCounts[index];
+
+    const dateKey = getLocalDateKey(date);
+    return completions.filter((completion) =>
+      completion.completed && getCompletionDateKey(completion.date) === dateKey,
+    ).length;
+  });
+  const todayCount = dailyCounts.find((_, index) => getLocalDateKey(week[index]) === todayKey) ?? 0;
+  const weeklyCount = dailyCounts.reduce((total, count) => total + count, 0);
+  const weekLabels = week.map((date) => {
+    const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" })
+      .format(date)
+      .toLowerCase();
+    return getLocalDateKey(date) === todayKey ? "today" : weekday;
+  });
+
+  const chartData = {
+    labels: weekLabels,
+    datasets: [
+      {
+        data: dailyCounts,
+        backgroundColor: week.map((date) =>
+          getLocalDateKey(date) === todayKey ? "#0ba878" : "#9edac8",
+        ),
+        borderRadius: 6,
+        borderSkipped: false as const,
+        maxBarThickness: 30,
+      },
+    ],
+  };
+
+  const chartOptions: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: ({ parsed }) => `${parsed.y} habit ${parsed.y === 1 ? "completion" : "completions"}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: "rgba(128, 128, 128, 0.16)" },
+        border: { display: false },
+        ticks: { color: "#777", font: { size: 10 } },
+      },
+      y: {
+        beginAtZero: true,
+        suggestedMax: Math.max(...dailyCounts, 1),
+        ticks: { stepSize: 1, precision: 0, color: "#777", font: { size: 10 } },
+        grid: { color: "rgba(128, 128, 128, 0.16)" },
+        border: { display: false },
+      },
+    },
+  };
 
   return (
-    <section
-      id="productivity"
-      className={styles.panel}
-      aria-labelledby="productivity-title"
+    <Card
+      title="Productivity"
+      action={showDetails ? { label: "Details ›", href: "/insights" } : undefined}
+      className={styles.productivityCard}
     >
-      <div className={styles.header}>
-        <h3 id="productivity-title">Productivity</h3>
-        {showDetails && <a href="/insights">Details ›</a>}
-      </div>
-
       <div className={styles.summary}>
         <div>
-          <span>Today, {formatDate(today)}</span>
-          <strong>{todayActivities} {todayActivities === 1 ? "record" : "records"}</strong>
+          <span>Today</span>
+          <strong>{isLoading ? "—" : `${todayCount} ${todayCount === 1 ? "completion" : "completions"}`}</strong>
         </div>
         <div className={styles.weekSummary}>
           <span>This week</span>
-          <strong>{weeklyActivities} records</strong>
+          <strong>{isLoading ? "—" : `${weeklyCount} ${weeklyCount === 1 ? "completion" : "completions"}`}</strong>
         </div>
       </div>
 
       <div
         className={styles.chart}
         role="img"
-        aria-label={`Productivity this week: ${weeklyActivities} records across seven days`}
+        aria-label={`Habit completions this week: ${weeklyCount} across seven days`}
       >
-        {days.map((day, index) => {
-          const weekday = new Intl.DateTimeFormat("en-US", {
-            weekday: "short",
-          })
-            .format(day.date)
-            .toLowerCase();
-          const isToday = index === todayIndex;
-          const height = `${(day.activities / maxActivities) * 100}%`;
-
-          return (
-            <div className={styles.chartDay} key={day.date.toISOString()}>
-              <span className={styles.chartCount}>{day.activities || ""}</span>
-              <div className={styles.barTrack}>
-                <span
-                  className={[
-                    styles.bar,
-                    isToday && styles.barToday,
-                    day.activities === 0 && styles.barEmpty,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  style={{ height }}
-                  title={`${day.date.toLocaleDateString("en-US")}: ${day.activities} records`}
-                />
-              </div>
-              <span className={isToday ? styles.todayLabel : styles.dayLabel}>
-                {isToday ? "today" : weekday}
-              </span>
-            </div>
-          );
-        })}
+        <Bar data={chartData} options={chartOptions} />
       </div>
-    </section>
+      <p className={styles.note}>
+        {hasError
+          ? "Sample data · sign in to see your routine history"
+          : "Based on completed routine habits"}
+      </p>
+    </Card>
   );
 }
