@@ -1,4 +1,3 @@
-import { Plus } from "lucide-react";
 import { Card } from "../Card";
 import { ProgressBar } from "../ProgressBar";
 import styles from "./styles.module.css";
@@ -21,7 +20,11 @@ const habits = [
 
 const meals = [
   { name: "Breakfast", description: "Tapioca with cheese", time: "07:15" },
-  { name: "Lunch", description: "Grilled fish, rice, and beans", time: "12:40" },
+  {
+    name: "Lunch",
+    description: "Grilled fish, rice, and beans",
+    time: "12:40",
+  },
   { name: "Snack", description: "Not recorded yet", time: "—" },
   { name: "Dinner", description: "Not recorded yet", time: "—" },
 ];
@@ -69,10 +72,6 @@ export function Home() {
     <main className={styles.home}>
       <header className={styles.pageHeader}>
         <span>{getTodayDate()}</span>
-        <a className={styles.addAction} href="/books">
-          <Plus aria-hidden="true" size={15} />
-          Add a book
-        </a>
       </header>
 
       <section className={styles.dashboard} aria-label="Dashboard overview">
@@ -82,8 +81,17 @@ export function Home() {
           className={styles.readingCard}
         >
           <div className={styles.bookCoverFrame}>
-            <img className={styles.bookBackdrop} src={cleanCodeCover} alt="" aria-hidden="true" />
-            <img className={styles.bookCover} src={cleanCodeCover} alt="Clean Code cover" />
+            <img
+              className={styles.bookBackdrop}
+              src={cleanCodeCover}
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              className={styles.bookCover}
+              src={cleanCodeCover}
+              alt="Clean Code cover"
+            />
           </div>
           <div className={styles.bookDetails}>
             <strong>Clean Code</strong>
