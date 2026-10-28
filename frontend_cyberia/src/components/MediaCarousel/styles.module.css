@@ -34,11 +34,6 @@
   overflow-x: auto;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-
-.viewport::-webkit-scrollbar {
-  display: none;
 }
 
 .track {

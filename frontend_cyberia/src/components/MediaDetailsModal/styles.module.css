@@ -1,0 +1,77 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: min(70vh, 680px);
+  padding: 20px 24px 24px;
+}
+
+.overview {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.poster {
+  width: 148px;
+  max-height: 222px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: var(--bg-surface-alt);
+  object-fit: cover;
+}
+
+.posterPlaceholder {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--bg-surface-alt),
+    var(--bg-surface-alt) 7px,
+    var(--border-subtle) 7px,
+    var(--border-subtle) 8px
+  );
+}
+
+.metadata { min-width: 0; }
+.metadata h3 { margin: 0 0 8px; font-size: 18px; }
+.eyebrow { margin: 0 0 8px; color: var(--link-color); font-size: 10px; letter-spacing: 1px; }
+.muted { color: var(--text-muted); }
+.metadata p { margin: 0 0 8px; font-size: 13px; }
+
+.status {
+  display: inline-flex;
+  margin-top: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+  font-size: 11px;
+}
+
+.section,
+.review {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+}
+
+.section h3,
+.review h3 { margin: 0 0 10px; font-size: 14px; }
+.section p,
+.review p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+
+.seasons { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.seasons li { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
+.seasons li span:last-child { color: var(--text-muted); }
+
+.rating { display: flex; align-items: center; gap: 3px; margin-bottom: 10px; }
+.rating > span { color: var(--border-strong); font-size: 20px; }
+.rating > span[data-filled="true"] { color: var(--primary); }
+.rating small { margin-left: 8px; color: var(--text-muted); font-size: 11px; }
+.attribution { margin: 0; color: var(--text-muted); font-size: 10px; }
+
+@media (max-width: 520px) {
+  .content { padding: 16px; }
+  .poster { width: 100px; max-height: 150px; }
+  .overview { gap: 14px; }
+  .metadata h3 { font-size: 16px; }
+}

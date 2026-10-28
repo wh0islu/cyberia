@@ -43,17 +43,26 @@
   background: var(--bg-surface-alt);
 }
 
-.filterPills a {
+.filterPills button {
+  border: 0;
   padding: 8px 12px;
   border-radius: 999px;
+  background: transparent;
   color: var(--text-muted);
+  font: inherit;
   font-size: 12px;
   white-space: nowrap;
+  cursor: pointer;
 }
 
-.filterPills .activeFilter {
+.filterPills button.activeFilter {
   background: var(--nav-active-bg);
   color: var(--nav-active-text);
+}
+
+.filterPills button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .filterControls {
@@ -107,17 +116,38 @@
 
 .moviesPage .seriesCard {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
+  grid-template-columns: 112px minmax(0, 1fr);
   align-items: center;
-  gap: 18px;
-  min-height: 204px;
+  gap: 16px;
+  min-height: 188px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--bg-surface-alt);
+  cursor: pointer;
+}
+
+.moviesPage .seriesCard:focus-visible,
+.moviesPage .watchedItem:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 .seriesPoster {
-  width: 150px;
-  height: 188px;
-  border: 1px solid var(--border-strong);
+  width: 112px;
+  height: 164px;
+  border: 0;
+  border-radius: 12px;
   object-fit: cover;
+}
+
+.posterPlaceholder {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--bg-surface-alt),
+    var(--bg-surface-alt) 7px,
+    var(--border-subtle) 7px,
+    var(--border-subtle) 8px
+  );
 }
 
 .seriesDetails h3,
@@ -126,29 +156,56 @@
 }
 
 .seriesDetails h3 {
-  font-size: 17px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .seriesDetails p,
 .watchedItem p {
-  margin-top: 5px;
+  margin: 4px 0 0;
   color: var(--text-muted);
   font-size: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.progressHeader strong {
+  color: var(--text-default);
+  font-size: 24px;
+  line-height: 1;
 }
 
 .progress {
   margin-top: 12px;
 }
 
-.seriesDetails small {
-  display: block;
-  margin-top: 10px;
-  color: var(--text-muted);
-  font-size: 10px;
+.seriesDetails :global([role="progressbar"]) {
+  height: 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--white);
 }
 
-.seriesDetails :global(button) {
-  margin-top: 14px;
+.seriesDetails :global([role="progressbar"] > div) {
+  border-radius: inherit;
+  background: var(--progress-fill);
+}
+
+.seriesDetails small {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .watchedGrid {
@@ -159,6 +216,7 @@
 
 .moviesPage .watchedItem {
   min-width: 0;
+  cursor: pointer;
 }
 
 .watchedItem > img {
@@ -166,8 +224,16 @@
   width: 100%;
   height: auto;
   aspect-ratio: 3 / 4;
-  border: 1px solid var(--border-strong);
+  border: 0;
+  border-radius: 12px;
   object-fit: cover;
+}
+
+.watchedItem > .posterPlaceholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
 }
 
 .watchedItem h3 {
@@ -186,6 +252,80 @@
   margin-top: 5px;
   color: var(--text-muted);
   font-size: 10px;
+}
+
+.statusLabel {
+  min-height: 30px;
+}
+
+.cardStatus {
+  position: relative;
+  width: fit-content;
+  margin-top: 0;
+}
+
+.progressEditor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.progressEditor label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.progressEditor input {
+  width: 76px;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.progressEditor input[type="number"]::-webkit-inner-spin-button,
+.progressEditor input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.progressEditor input:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.statusSelect {
+  width: auto;
+  min-width: 112px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  font-size: 12px;
+}
+
+.emptyState {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
 }
 
 @media (max-width: 800px) {
