@@ -43,7 +43,7 @@ const registeredDays = new Set([
 export function Meals() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  async function handleSalvarRefeicao(_dados: unknown) {
+  function handleSaveMeal(_data: unknown) {
     setIsModalOpen(false);
   }
 
@@ -172,7 +172,7 @@ export function Meals() {
       >
         <MealForm
           initial={undefined}
-          onSubmit={handleSalvarRefeicao}
+          onSubmit={handleSaveMeal}
           onCancel={() => setIsModalOpen(false)}
         />
       </FormModal>

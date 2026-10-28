@@ -7,6 +7,8 @@ import {
   FormFooter,
   XIcon,
 } from "../components/FormFields";
+import { ScrollArea } from "../components/ScrollArea";
+import { DatePicker } from "../components/DatePicker";
 
 type MealFormData = {
   meal: string;
@@ -37,7 +39,12 @@ const MEALS = [
 
 const TAGS = ["Homemade", "Eating out", "Delivery", "Quick", "Healthy"];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const date = new Date();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+};
 const nowTime = () => new Date().toTimeString().slice(0, 5);
 
 export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
@@ -52,6 +59,7 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
   });
   const [draft, setDraft] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [dateError, setDateError] = useState(false);
   const set = <Key extends keyof MealFormData>(key: Key) =>
     (value: MealFormData[Key]) =>
       setData((previousData) => ({ ...previousData, [key]: value }));
@@ -71,6 +79,11 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!data.date) {
+      setDateError(true);
+      return;
+    }
+    setDateError(false);
     setSubmitting(true);
     try {
       // Include any text still in the input that has not been added yet.
@@ -85,12 +98,17 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
 
   return (
     <form className="form" onSubmit={handleSubmit}>
-      <div className="form__body">
+      <ScrollArea className="form__body">
         <Segmented hideLabel label="Meal" options={MEALS} value={data.meal} onChange={set("meal")} />
 
         <div className="row">
           <Field label="Date" required>
-            <input className="in" type="date" required value={data.date} onChange={setFromInput("date")} />
+            <DatePicker required value={data.date} onChange={set("date")} />
+            {dateError && (
+              <small className="field-error" role="alert">
+                Choose a date to continue.
+              </small>
+            )}
           </Field>
           <Field label="Time">
             <input className="in" type="time" value={data.time} onChange={setFromInput("time")} />
@@ -133,7 +151,7 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
         </div>
 
         <ChipGroup label="Tags" options={TAGS} value={data.tags} onChange={set("tags")} />
-      </div>
+      </ScrollArea>
 
       <FormFooter submitLabel="Log meal" onCancel={onCancel} submitting={submitting} />
     </form>
