@@ -53,11 +53,11 @@ class Book(models.Model):
     genre = models.CharField(max_length=2, choices=GENRE_OPTIONS, blank=True)
     year = models.IntegerField(blank=True, null=True, help_text='Year of the book')
     number_of_pages = models.PositiveIntegerField(blank=True, null=True, help_text='Number of pages')
-    current_page = models.PositiveIntegerField(default=0, help_text='Actual page reading')
+    current_page = models.PositiveIntegerField(default=0, help_text='Current page being read')
     started_on = models.DateField(blank=True, null=True)
     notes = models.TextField(blank=True)
-    status = models.CharField(null=True, default='NR', choices=BOOK_OPTIONS)
-    language = models.CharField(null=True, blank=True, choices=LANGUAGE_OPTIONS)
+    status = models.CharField(max_length=2, choices=BOOK_OPTIONS, default='NR')
+    language = models.CharField(max_length=5, choices=LANGUAGE_OPTIONS, blank=True)
     cover = models.ImageField(upload_to='books/covers/', blank=True, null=True)
 
     def __str__(self):
