@@ -75,8 +75,9 @@
 .page .courseList { gap: 8px; padding: 8px; }
 
 .page .courseCard {
+  position: relative;
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr) auto;
+  grid-template-columns: 96px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 10px;
@@ -84,13 +85,39 @@
   background: var(--bg-surface-alt);
 }
 
-.page .selectedCourse { outline: 1px solid var(--text-default); }
+.page .selectedCourse {
+  box-shadow: inset 0 0 0 1px var(--border-subtle), inset 3px 0 0 var(--link-color);
+}
+
+.courseSelect {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.courseSelect:hover { box-shadow: inset 0 0 0 1px var(--border-subtle); }
+.courseSelect:focus-visible { outline: 2px solid var(--link-color); outline-offset: 2px; }
 
 .courseCover {
   width: 96px;
   height: 62px;
   border-radius: 10px;
   object-fit: cover;
+}
+
+.courseCoverPlaceholder {
+  display: grid;
+  width: 96px;
+  height: 62px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 20px;
 }
 
 .courseInfo { min-width: 0; }
@@ -117,10 +144,10 @@
   font-size: 9px;
 }
 
-.courseActions { align-self: center; }
-.courseActions :global(button) { min-height: 32px; padding: 0 13px; font-size: 10px; }
-
 .page .detailsCard { gap: 10px; padding: 16px; }
+.detailsHint { margin: 0; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+.detailsHeader { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.detailsHeader :global(button) { min-height: 30px; padding: 0 10px; font-size: 10px; }
 .detailLabel { color: var(--text-muted); font-size: 10px; }
 .detailsCard h2 { margin: 0; font-size: 15px; font-weight: 600; }
 .detailProgress { height: 5px; border: 0; border-radius: 999px; }
@@ -168,6 +195,6 @@
   .searchBox { flex: 1; }
   .page .courseCard { grid-template-columns: 64px minmax(0, 1fr); }
   .courseCover { width: 64px; height: 64px; }
-  .courseActions { grid-column: 2; justify-self: start; }
+  .courseCoverPlaceholder { width: 64px; height: 64px; }
   .courseMeta { flex-direction: column; gap: 2px; }
 }

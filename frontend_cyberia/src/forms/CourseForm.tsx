@@ -29,7 +29,7 @@ type CourseFormData = {
   modules: string[];
 };
 
-type CourseSubmission = Omit<
+export type CourseSubmission = Omit<
   CourseFormData,
   "total_lessons" | "done_lessons" | "goal_date" | "sources"
 > & {
@@ -39,8 +39,11 @@ type CourseSubmission = Omit<
   sources: CleanedSource[];
 };
 
+export type CourseFormInitial = Partial<CourseFormData>;
+
 type CourseFormProps = {
-  initial?: Partial<CourseFormData>;
+  initial?: CourseFormInitial;
+  coverUrl?: string | null;
   onSubmit: (data: CourseSubmission) => void | Promise<void>;
   onCancel: () => void;
 };
@@ -58,9 +61,11 @@ export const COURSE_FORMATS: SourceFormat[] = [
 
 /* Replace these values with the choices from your Course model. */
 const STATUS = [
-  { value: "QUEUE", label: "Queued" },
-  { value: "ONGOING", label: "In progress" },
-  { value: "DONE", label: "Completed" },
+  { value: "NS", label: "Queued" },
+  { value: "IP", label: "In progress" },
+  { value: "CD", label: "Completed" },
+  { value: "PA", label: "Paused" },
+  { value: "RY", label: "Reviewing" },
 ];
 
 const empty = {
@@ -68,7 +73,7 @@ const empty = {
   title: "",
   platform: "",
   instructor: "",
-  status: "ONGOING",
+  status: "IP",
   total_lessons: "",
   done_lessons: "",
   goal_date: "",
@@ -77,10 +82,11 @@ const empty = {
   modules: [],
 };
 
-export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
+export function CourseForm({ initial, coverUrl, onSubmit, onCancel }: CourseFormProps) {
   const [data, setData] = useState<CourseFormData>({ ...empty, ...initial });
   const [newModule, setNewModule] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const set = <Key extends keyof CourseFormData>(key: Key) =>
     (value: CourseFormData[Key]) =>
       setData((previousData) => ({ ...previousData, [key]: value }));
@@ -89,11 +95,13 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
       event: ChangeEvent<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >,
-    ) =>
+    ) => {
+      const value = event.currentTarget.value;
       setData((previousData) => ({
         ...previousData,
-        [key]: event.currentTarget.value,
+        [key]: value,
       }));
+    };
 
   function addModule() {
     const name = newModule.trim();
@@ -104,7 +112,9 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
+    setError("");
     try {
       await onSubmit({
         ...data,
@@ -113,6 +123,8 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
         goal_date: data.goal_date || null,
         sources: cleanSources(data.sources, COURSE_FORMATS),
       });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unable to save course.");
     } finally {
       setSubmitting(false);
     }
@@ -121,8 +133,9 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
   return (
     <form className="form" onSubmit={handleSubmit}>
       <ScrollArea className="form__body">
+        {error && <p role="alert">{error}</p>}
         <div className="row row--nowrap" style={{ alignItems: "flex-start" }}>
-          <ImageDrop label="Image" shape="thumb" value={data.image} onChange={set("image")} />
+          <ImageDrop label="Image" shape="thumb" value={data.image} imageUrl={coverUrl} onChange={set("image")} />
           <Field label="Course name" required>
             <input className="in" required autoFocus placeholder="E.g., Interface Design" value={data.title} onChange={setFromInput("title")} />
           </Field>
@@ -133,7 +146,7 @@ export function CourseForm({ initial, onSubmit, onCancel }: CourseFormProps) {
             <input className="in" placeholder="E.g., Udemy, YouTube…" value={data.platform} onChange={setFromInput("platform")} />
           </Field>
           <Field label="Instructor">
-            <input className="in" placeholder="Name" value={data.instructor} onChange={setFromInput("instructor")} />
+            <input className="in" maxLength={500} placeholder="Name" value={data.instructor} onChange={setFromInput("instructor")} />
           </Field>
         </div>
 
