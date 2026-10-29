@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import {
   Field,
   Segmented,
@@ -9,6 +9,7 @@ import {
 } from "../components/FormFields";
 import { ScrollArea } from "../components/ScrollArea";
 import { DatePicker } from "../components/DatePicker";
+import { TimePicker } from "../components/TimePicker";
 
 type MealFormData = {
   meal: string;
@@ -24,10 +25,6 @@ type MealFormProps = {
   onSubmit: (data: MealFormData) => void | Promise<void>;
   onCancel: () => void;
 };
-
-type StringField = {
-  [Key in keyof MealFormData]: MealFormData[Key] extends string ? Key : never;
-}[keyof MealFormData];
 
 const MEALS = [
   { value: "BREAKFAST", label: "Breakfast" },
@@ -63,13 +60,6 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
   const set = <Key extends keyof MealFormData>(key: Key) =>
     (value: MealFormData[Key]) =>
       setData((previousData) => ({ ...previousData, [key]: value }));
-  const setFromInput = (key: StringField) =>
-    (event: ChangeEvent<HTMLInputElement>) =>
-      setData((previousData) => ({
-        ...previousData,
-        [key]: event.currentTarget.value,
-      }));
-
   function addItem() {
     const item = draft.trim();
     if (!item) return;
@@ -111,7 +101,7 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
             )}
           </Field>
           <Field label="Time">
-            <input className="in" type="time" value={data.time} onChange={setFromInput("time")} />
+            <TimePicker value={data.time} onChange={set("time")} />
           </Field>
         </div>
 
