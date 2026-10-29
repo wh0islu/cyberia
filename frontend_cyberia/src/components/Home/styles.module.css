@@ -99,6 +99,17 @@
   box-shadow: 0 6px 20px rgb(0 0 0 / 30%);
 }
 
+.coverPlaceholder {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.emptyMessage {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .bookDetails {
   display: flex;
   flex-direction: column;
