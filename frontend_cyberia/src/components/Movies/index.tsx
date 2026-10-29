@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Plus } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Plus, Search } from "lucide-react";
 import { MediaForm } from "../../forms";
+import type { MediaSubmission } from "../../forms/MediaForm";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
@@ -14,14 +15,18 @@ import styles from "./styles.module.css";
 
 type MediaKind = "movie" | "series";
 type MediaStatus = "NW" | "WG" | "WT" | "PA" | "RW" | "WD";
-type MediaFilter = "all" | "movie" | "series" | "watchlist";
+type MediaFilter = "all" | "watching" | "wantToWatch" | "watched";
 
 type MediaItem = {
   key: string;
+  persistedId?: number;
   kind: MediaKind;
   tmdbId: number;
   title: string;
+  year?: number | null;
+  genre?: string;
   cover: string | null;
+  synopsis: string;
   status: MediaStatus;
   updatedAt: number;
   rating?: number;
@@ -30,85 +35,96 @@ type MediaItem = {
   currentSeason?: number;
   currentEpisode?: number;
   episodesInSeason?: number;
+  seasonEpisodeCounts?: Record<number, number>;
+  numberOfSeasons?: number;
+  numberOfEpisodes?: number;
 };
 
-const initialMediaItems: MediaItem[] = [
-  {
-    key: "cangaco-novo",
-    kind: "series",
-    tmdbId: 0,
-    title: "Cangaço Novo",
-    cover: null,
-    status: "WT",
-    updatedAt: 2,
-    currentSeason: 1,
-    currentEpisode: 5,
-    episodesInSeason: 10,
-  },
-  {
-    key: "big-bang-theory",
-    kind: "series",
-    tmdbId: 1418,
-    title: "The Big Bang Theory",
-    cover: null,
-    status: "WT",
-    updatedAt: 1,
-    currentSeason: 1,
-    currentEpisode: 2,
-    episodesInSeason: 8,
-  },
-  {
-    key: "the-batman",
-    kind: "movie",
-    tmdbId: 414906,
-    title: "The Batman",
-    cover: null,
-    status: "WG",
-    updatedAt: 3,
-    currentMinute: 72,
-    runtimeMinutes: 185,
-  },
-  {
-    key: "central-do-brasil",
-    kind: "movie",
-    tmdbId: 666,
-    title: "Central do Brasil",
-    cover: null,
-    status: "WT",
-    updatedAt: 0,
-    rating: 3,
-  },
-  {
-    key: "interestelar",
-    kind: "movie",
-    tmdbId: 0,
-    title: "Interestelar",
-    cover: null,
-    status: "WT",
-    updatedAt: 0,
-    rating: 5,
-  },
-  {
-    key: "duna-parte-dois",
-    kind: "movie",
-    tmdbId: 0,
-    title: "Duna: Parte Dois",
-    cover: null,
-    status: "WT",
-    updatedAt: 0,
-    rating: 4,
-  },
-  {
-    key: "bacurau",
-    kind: "movie",
-    tmdbId: 594718,
-    title: "Bacurau",
-    cover: null,
-    status: "WT",
-    updatedAt: 0,
-    rating: 5,
-  },
-];
+type MediaProgress = {
+  currentMinute?: number;
+  currentSeason?: number;
+  currentEpisode?: number;
+};
+
+type TmdbProgressDetails = {
+  runtime: number | null;
+  seasons: { number: number; episode_count: number }[];
+};
+
+async function fetchProgressDetails(item: MediaItem, signal?: AbortSignal) {
+  if (!isWatching(item) || !item.tmdbId) return null;
+
+  const response = await fetch(`/api/v1/tmdb/${item.kind}/${item.tmdbId}/`, { signal });
+  if (!response.ok) return null;
+
+  const details: TmdbProgressDetails = await response.json();
+  return {
+    runtimeMinutes: details.runtime ?? undefined,
+    seasonEpisodeCounts: Object.fromEntries(
+      details.seasons.map((season) => [season.number, season.episode_count]),
+    ),
+  };
+}
+
+type ProgressDetails = NonNullable<Awaited<ReturnType<typeof fetchProgressDetails>>>;
+
+function withProgressDetails(item: MediaItem, details: ProgressDetails): MediaItem {
+  return {
+    ...item,
+    ...details,
+    episodesInSeason: details.seasonEpisodeCounts[item.currentSeason ?? 1] ?? item.episodesInSeason,
+  };
+}
+
+type MediaApiResponse = {
+  id: number;
+  title: string;
+  genre: string;
+  year?: number | null;
+  start_year?: number | null;
+  status: MediaStatus;
+  tmdb_id: number | null;
+  tmdb_poster_path: string | null;
+  cover: string | null;
+  tmdb_synopsis?: string;
+  current_minute?: number | null;
+  current_season?: number | null;
+  current_episode?: number | null;
+  number_of_seasons?: number | null;
+  number_of_episodes?: number | null;
+};
+
+function apiItemToMediaItem(item: MediaApiResponse, kind: MediaKind): MediaItem {
+  return {
+    key: `${kind}-${item.id}`,
+    persistedId: item.id,
+    kind,
+    tmdbId: item.tmdb_id ?? 0,
+    title: item.title,
+    year: kind === "movie" ? item.year : item.start_year,
+    genre: item.genre,
+    cover: item.cover || (item.tmdb_poster_path
+      ? `https://image.tmdb.org/t/p/w500${item.tmdb_poster_path}`
+      : null),
+    synopsis: item.tmdb_synopsis ?? "",
+    status: item.status,
+    updatedAt: Date.now() + item.id,
+    currentMinute: item.current_minute ?? undefined,
+    currentSeason: item.current_season ?? undefined,
+    currentEpisode: item.current_episode ?? undefined,
+    numberOfSeasons: item.number_of_seasons ?? undefined,
+    numberOfEpisodes: item.number_of_episodes ?? undefined,
+  };
+}
+
+function mediaApiError(data: unknown): string {
+  if (typeof data === "string") return data;
+  if (Array.isArray(data)) return data.map(mediaApiError).join(" ");
+  if (data && typeof data === "object") {
+    return Object.entries(data).map(([field, value]) => `${field}: ${mediaApiError(value)}`).join("; ");
+  }
+  return "Unable to save this title.";
+}
 
 const statusOptions = {
   movie: [
@@ -142,9 +158,17 @@ function getStatusLabel(item: MediaItem) {
 function getDetailsItem(item: MediaItem): MediaDetailsItem {
   return {
     kind: item.kind,
+    persistedId: item.persistedId,
     tmdbId: item.tmdbId,
     title: item.title,
     cover: item.cover,
+    synopsis: item.synopsis,
+    year: item.year ? String(item.year) : undefined,
+    genre: item.genre,
+    runtimeMinutes: item.runtimeMinutes,
+    numberOfSeasons: item.numberOfSeasons,
+    numberOfEpisodes: item.numberOfEpisodes,
+    seasonEpisodeCounts: item.seasonEpisodeCounts,
     status: getStatusLabel(item),
     rating: item.rating,
     currentMinute: item.currentMinute,
@@ -153,75 +177,178 @@ function getDetailsItem(item: MediaItem): MediaDetailsItem {
   };
 }
 
-export function Movies() {
+function MediaProgressEditor({
+  item,
+  error,
+  onSave,
+  onStatusChange,
+}: {
+  item: MediaItem;
+  error: string;
+  onSave: (item: MediaItem, progress: MediaProgress) => Promise<void>;
+  onStatusChange: (itemKey: string, status: MediaStatus) => Promise<void>;
+}) {
+  const [minute, setMinute] = useState(String(item.currentMinute ?? ""));
+  const [season, setSeason] = useState(String(item.currentSeason ?? ""));
+  const [episode, setEpisode] = useState(String(item.currentEpisode ?? ""));
+  const [saving, setSaving] = useState(false);
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(item, item.kind === "movie"
+        ? { currentMinute: minute === "" ? undefined : Number(minute) }
+        : {
+            currentSeason: season === "" ? undefined : Number(season),
+            currentEpisode: episode === "" ? undefined : Number(episode),
+          });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form
+      className={styles.progressEditor}
+      onSubmit={(event) => void save(event)}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      {item.kind === "movie" ? (
+        <label>
+          Minute
+          <input
+            type="number"
+            min="0"
+            max={item.runtimeMinutes}
+            aria-label={`Current minute for ${item.title}`}
+            value={minute}
+            onChange={(event) => setMinute(event.currentTarget.value)}
+          />
+        </label>
+      ) : (
+        <>
+          <label>
+            Season
+            <input
+              type="number"
+              min="1"
+              aria-label={`Current season for ${item.title}`}
+              value={season}
+              onChange={(event) => setSeason(event.currentTarget.value)}
+            />
+          </label>
+          <label>
+            Episode
+            <input
+              type="number"
+              min="1"
+              max={item.seasonEpisodeCounts?.[Number(season)]}
+              aria-label={`Current episode for ${item.title}`}
+              value={episode}
+              onChange={(event) => setEpisode(event.currentTarget.value)}
+            />
+          </label>
+        </>
+      )}
+      <DefaultButton type="submit" size="sm" disabled={saving}>
+        {saving ? "Saving..." : "Save"}
+      </DefaultButton>
+      <div className={styles.cardStatus}>
+        <Select
+          compact
+          className={styles.statusSelect}
+          value={item.status}
+          aria-label={`Status for ${item.title}`}
+          onChange={(event) => void onStatusChange(item.key, event.currentTarget.value as MediaStatus)}
+        >
+          {statusOptions[item.kind].map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </Select>
+      </div>
+      {error && <small role="alert">{error}</small>}
+    </form>
+  );
+}
+
+export function Movies({ onCollectionChange }: { onCollectionChange?: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaDetailsItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<MediaFilter>("all");
-  const [mediaItems, setMediaItems] = useState(initialMediaItems);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [search, setSearch] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+  const [genreFilter, setGenreFilter] = useState("");
+  const [progressErrors, setProgressErrors] = useState<Record<string, string>>({});
   const lastUpdatedAt = useRef(Date.now());
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadTmdbPosters() {
-      const results = await Promise.all(
-        initialMediaItems.map(async (item) => {
-          try {
-            const query = new URLSearchParams({ type: item.kind, query: item.title });
-            const response = await fetch(`/api/v1/media-search/?${query}`, {
-              signal: controller.signal,
-            });
-            if (!response.ok) return null;
+    async function loadSavedMedia() {
+      try {
+        const [moviesResponse, seriesResponse] = await Promise.all([
+          fetch("/api/v1/movies/", { signal: controller.signal, credentials: "include" }),
+          fetch("/api/v1/series/", { signal: controller.signal, credentials: "include" }),
+        ]);
+        if (!moviesResponse.ok || !seriesResponse.ok) {
+          throw new Error("Could not load your movies and series.");
+        }
 
-            const payload: {
-              results: {
-                tmdb_id: number;
-                title: string;
-                poster_url: string | null;
-              }[];
-            } = await response.json();
-            const normalizedTitle = item.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            const exactMatch = payload.results.find((result) =>
-              result.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === normalizedTitle,
-            );
-            const match =
-              (exactMatch?.poster_url ? exactMatch : null) ??
-              exactMatch ??
-              payload.results.find((result) => result.poster_url) ??
-              payload.results[0];
+        const [movies, series]: [MediaApiResponse[], MediaApiResponse[]] = await Promise.all([
+          moviesResponse.json(),
+          seriesResponse.json(),
+        ]);
+        if (controller.signal.aborted) return;
 
-            if (!match) return null;
-            return { key: item.key, tmdbId: match.tmdb_id, title: match.title, cover: match.poster_url };
-          } catch {
-            return null;
-          }
-        }),
-      );
+        const savedItems = [
+          ...movies.map((movie) => apiItemToMediaItem(movie, "movie")),
+          ...series.map((show) => apiItemToMediaItem(show, "series")),
+        ];
+        setMediaItems(savedItems);
+        setLoading(false);
 
-      if (controller.signal.aborted) return;
-      setMediaItems((currentItems) =>
-        currentItems.map((item) => {
-          const tmdbItem = results.find((result) => result?.key === item.key);
-          return tmdbItem
-            ? { ...item, tmdbId: tmdbItem.tmdbId, title: tmdbItem.title, cover: tmdbItem.cover }
-            : item;
-        }),
-      );
+        await Promise.allSettled(savedItems.filter((item) => isWatching(item) && item.tmdbId).map(async (item) => {
+          const details = await fetchProgressDetails(item, controller.signal);
+          if (!details || controller.signal.aborted) return;
+
+          setMediaItems((currentItems) => currentItems.map((currentItem) =>
+            currentItem.key === item.key ? withProgressDetails(currentItem, details) : currentItem,
+          ));
+        }));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setLoadError(error instanceof Error ? error.message : "Could not load your movies and series.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
     }
 
-    void loadTmdbPosters();
+    void loadSavedMedia();
     return () => controller.abort();
   }, []);
 
   const filteredItems = mediaItems.filter((item) => {
-    if (activeFilter === "movie") return item.kind === "movie";
-    if (activeFilter === "series") return item.kind === "series";
-    if (activeFilter === "watchlist") return item.status === "NW";
+    if (search && !item.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())) return false;
+    if (yearFilter && String(item.year ?? "") !== yearFilter) return false;
+    if (genreFilter && item.genre !== genreFilter) return false;
+    if (activeFilter === "watching") return isWatching(item);
+    if (activeFilter === "wantToWatch") return item.status === "NW";
+    if (activeFilter === "watched") return isWatched(item);
     return true;
   });
-  const recentInProgressItems = activeFilter === "all"
-    ? filteredItems.filter(isWatching).sort((first, second) => second.updatedAt - first.updatedAt).slice(0, 2)
-    : [];
+  const availableYears = [...new Set(mediaItems.map((item) => item.year).filter((year): year is number => year != null))].sort((a, b) => b - a);
+  const availableGenres = [...new Set(mediaItems.map((item) => item.genre).filter((genre): genre is string => !!genre))].sort();
+  const watchingItems = filteredItems
+    .filter(isWatching)
+    .sort((first, second) => second.updatedAt - first.updatedAt);
+  const recentInProgressItems = activeFilter === "all" ? watchingItems.slice(0, 2) : watchingItems;
   const recentItemKeys = new Set(recentInProgressItems.map((item) => item.key));
   const libraryItems = filteredItems.filter(
     (item) =>
@@ -230,9 +357,14 @@ export function Movies() {
   );
 
   function openMedia(item: MediaItem) {
-    if (!item.tmdbId) return;
     setSelectedMedia(getDetailsItem(item));
   }
+
+  const handleSynopsisSaved = useCallback((kind: MediaKind, id: number, synopsis: string) => {
+    setMediaItems((items) => items.map((item) =>
+      item.kind === kind && item.persistedId === id ? { ...item, synopsis } : item,
+    ));
+  }, []);
 
   function handleMediaCardKeyDown(
     event: KeyboardEvent<HTMLElement>,
@@ -244,123 +376,167 @@ export function Movies() {
     }
   }
 
-  function updateStatus(itemKey: string, status: string) {
-    const updatedAt = ++lastUpdatedAt.current;
-    setMediaItems((currentItems) =>
-      currentItems.map((item) =>
-        item.key === itemKey
-          ? { ...item, status: status as MediaStatus, updatedAt }
-          : item,
-      ),
-    );
+  async function updateStatus(itemKey: string, status: MediaStatus) {
+    const item = mediaItems.find((entry) => entry.key === itemKey);
+    if (!item?.persistedId) return;
+
+    const csrf = document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith("csrftoken="))
+      ?.split("=")[1];
+
+    try {
+      const response = await fetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}),
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error ? mediaApiError(error) : `Request failed (${response.status}).`);
+      }
+
+      setProgressErrors((errors) => ({ ...errors, [itemKey]: "" }));
+      setMediaItems((currentItems) => currentItems.map((currentItem) =>
+        currentItem.key === itemKey
+          ? { ...currentItem, status, updatedAt: ++lastUpdatedAt.current }
+          : currentItem,
+      ));
+
+      const updatedItem = { ...item, status };
+      if (isWatching(updatedItem)) {
+        const details = await fetchProgressDetails(updatedItem).catch(() => null);
+        if (details) {
+          setMediaItems((currentItems) => currentItems.map((currentItem) =>
+            currentItem.key === itemKey ? withProgressDetails(currentItem, details) : currentItem,
+          ));
+        }
+      }
+    } catch (error) {
+      setProgressErrors((errors) => ({
+        ...errors,
+        [itemKey]: error instanceof Error ? error.message : "Could not update status.",
+      }));
+    }
   }
 
-  function updateProgress(
-    itemKey: string,
-    field: "currentMinute" | "currentSeason" | "currentEpisode",
-    value: string,
-  ) {
-    const updatedAt = ++lastUpdatedAt.current;
-    setMediaItems((currentItems) =>
-      currentItems.map((item) =>
-        item.key === itemKey
-          ? { ...item, [field]: value === "" ? undefined : Number(value), updatedAt }
-          : item,
-      ),
-    );
+  async function saveProgress(item: MediaItem, progress: MediaProgress) {
+    if (!item.persistedId) return;
+
+    const body = item.kind === "movie"
+      ? { current_minute: progress.currentMinute ?? null }
+      : { current_season: progress.currentSeason ?? null, current_episode: progress.currentEpisode ?? null };
+    const csrf = document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith("csrftoken="))
+      ?.split("=")[1];
+
+    try {
+      const response = await fetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}),
+        },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error ? mediaApiError(error) : `Request failed (${response.status}).`);
+      }
+
+      const saved: MediaApiResponse = await response.json();
+      setMediaItems((currentItems) => currentItems.map((currentItem) =>
+        currentItem.key === item.key
+          ? {
+              ...currentItem,
+              currentMinute: saved.current_minute ?? undefined,
+              currentSeason: saved.current_season ?? undefined,
+              currentEpisode: saved.current_episode ?? undefined,
+              episodesInSeason: currentItem.seasonEpisodeCounts?.[saved.current_season ?? 1]
+                ?? currentItem.episodesInSeason,
+              updatedAt: ++lastUpdatedAt.current,
+            }
+          : currentItem,
+      ));
+      setProgressErrors((errors) => ({ ...errors, [item.key]: "" }));
+    } catch (error) {
+      setProgressErrors((errors) => ({
+        ...errors,
+        [item.key]: error instanceof Error ? error.message : "Could not save progress.",
+      }));
+    }
   }
 
-  function saveProgress(itemKey: string) {
-    const updatedAt = ++lastUpdatedAt.current;
-    setMediaItems((currentItems) =>
-      currentItems.map((item) =>
-        item.key === itemKey ? { ...item, updatedAt } : item,
-      ),
-    );
-  }
+  async function handleSalvarMidia(data: MediaSubmission) {
+    const body = new FormData();
+    body.append("title", data.title.trim());
+    body.append("genre", data.genre);
+    body.append("status", data.status);
+    body.append("sources", JSON.stringify(data.sources));
+    if (data.year !== null) body.append(data.kind === "movie" ? "year" : "start_year", String(data.year));
+    if (data.tmdb_id !== null) body.append("tmdb_id", String(data.tmdb_id));
+    if (data.tmdb_poster_path) body.append("tmdb_poster_path", data.tmdb_poster_path);
+    body.append("tmdb_synopsis", data.tmdb_synopsis);
+    if (data.poster) body.append("cover", data.poster);
+    if (data.kind === "movie") {
+      if (data.current_minute !== null) body.append("current_minute", String(data.current_minute));
+    } else {
+      if (data.number_of_seasons !== null) body.append("number_of_seasons", String(data.number_of_seasons));
+      if (data.number_of_episodes !== null) body.append("number_of_episodes", String(data.number_of_episodes));
+      if (data.current_season !== null) body.append("current_season", String(data.current_season));
+      if (data.current_episode !== null) body.append("current_episode", String(data.current_episode));
+    }
 
-  function renderProgressEditor(item: MediaItem) {
-    if (!isWatching(item)) return null;
+    const csrf = document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith("csrftoken="))
+      ?.split("=")[1];
+    const response = await fetch(`/api/v1/${data.kind === "movie" ? "movies" : "series"}/`, {
+      method: "POST",
+      body,
+      credentials: "include",
+      headers: csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {},
+    });
+    const result: MediaApiResponse | Record<string, unknown> | null = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(result ? mediaApiError(result) : `Request failed (${response.status}).`);
+    }
 
-    return (
-      <div
-        className={styles.progressEditor}
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => event.stopPropagation()}
-      >
-        {item.kind === "movie" ? (
-          <label>
-            Minute
-            <input
-              type="number"
-              min="0"
-              aria-label={`Current minute for ${item.title}`}
-              value={item.currentMinute ?? ""}
-              onChange={(event) => updateProgress(item.key, "currentMinute", event.currentTarget.value)}
-            />
-          </label>
-        ) : (
-          <>
-            <label>
-              Season
-              <input
-                type="number"
-                min="1"
-                aria-label={`Current season for ${item.title}`}
-                value={item.currentSeason ?? ""}
-                onChange={(event) => updateProgress(item.key, "currentSeason", event.currentTarget.value)}
-              />
-            </label>
-            <label>
-              Episode
-              <input
-                type="number"
-                min="1"
-                aria-label={`Current episode for ${item.title}`}
-                value={item.currentEpisode ?? ""}
-                onChange={(event) => updateProgress(item.key, "currentEpisode", event.currentTarget.value)}
-              />
-            </label>
-          </>
-        )}
-        <DefaultButton
-          size="sm"
-          onClick={() => saveProgress(item.key)}
-        >
-          Save
-        </DefaultButton>
-        <div className={styles.cardStatus}>
-          <Select
-            compact
-            className={styles.statusSelect}
-            value={item.status}
-            aria-label={`Status for ${item.title}`}
-            onChange={(event) => updateStatus(item.key, event.currentTarget.value)}
-          >
-            {statusOptions[item.kind].map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </Select>
-        </div>
-      </div>
-    );
-  }
-
-  async function handleSalvarMidia(_dados: unknown) {
+    const saved = apiItemToMediaItem(result as MediaApiResponse, data.kind);
+    saved.rating = data.rating ?? undefined;
+    saved.episodesInSeason = data.seasons.find((season) => season.number === data.current_season)?.episode_count;
+    setMediaItems((currentItems) => [saved, ...currentItems]);
+    onCollectionChange?.();
+    void fetchProgressDetails(saved).then((details) => {
+      if (!details) return;
+      setMediaItems((currentItems) => currentItems.map((item) =>
+        item.key === saved.key ? withProgressDetails(item, details) : item,
+      ));
+    }).catch(() => undefined);
+    setActiveFilter("all");
+    setSearch("");
+    setYearFilter("");
+    setGenreFilter("");
     setIsModalOpen(false);
   }
 
   const filterCounts: Record<MediaFilter, number> = {
     all: mediaItems.length,
-    movie: mediaItems.filter((item) => item.kind === "movie").length,
-    series: mediaItems.filter((item) => item.kind === "series").length,
-    watchlist: mediaItems.filter((item) => item.status === "NW").length,
+    watching: mediaItems.filter(isWatching).length,
+    wantToWatch: mediaItems.filter((item) => item.status === "NW").length,
+    watched: mediaItems.filter(isWatched).length,
   };
   const filters: { value: MediaFilter; label: string }[] = [
     { value: "all", label: `All (${filterCounts.all})` },
-    { value: "movie", label: `Movies (${filterCounts.movie})` },
-    { value: "series", label: `Series (${filterCounts.series})` },
-    { value: "watchlist", label: `Watchlist (${filterCounts.watchlist})` },
+    { value: "watching", label: `Watching (${filterCounts.watching})` },
+    { value: "wantToWatch", label: `Want to watch (${filterCounts.wantToWatch})` },
+    { value: "watched", label: `Watched (${filterCounts.watched})` },
   ];
 
   return (
@@ -369,15 +545,26 @@ export function Movies() {
         <section className={styles.pageIntro}>
           <div>
             <h1>Movies &amp; Series</h1>
-            <p>[n] movies · [n] series · [n] hours watched</p>
+            <p>{mediaItems.filter((item) => item.kind === "movie").length} movies · {mediaItems.filter((item) => item.kind === "series").length} series</p>
           </div>
-          <DefaultButton
-            size="sm"
-            icon={<Plus aria-hidden="true" />}
-            onClick={() => setIsModalOpen(true)}
-          >
-            Add movie or series
-          </DefaultButton>
+          <div className={styles.pageActions}>
+            <label className={styles.searchBox}>
+              <Search size={18} aria-hidden="true" />
+              <input
+                type="search"
+                placeholder="Search your library"
+                value={search}
+                onChange={(event) => setSearch(event.currentTarget.value)}
+              />
+            </label>
+            <DefaultButton
+              size="sm"
+              icon={<Plus aria-hidden="true" />}
+              onClick={() => setIsModalOpen(true)}
+            >
+              Add movie or series
+            </DefaultButton>
+          </div>
         </section>
 
         <Card
@@ -402,27 +589,26 @@ export function Movies() {
           <div className={styles.filterControls}>
             <label>
               Year
-              <Select compact defaultValue="2026" aria-label="Filter by year">
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
+              <Select compact value={yearFilter} onChange={(event) => setYearFilter(event.currentTarget.value)} aria-label="Filter by year">
+                <option value="">All</option>
+                {availableYears.map((year) => <option key={year} value={year}>{year}</option>)}
               </Select>
             </label>
             <label>
               Genre
-              <Select compact defaultValue="all" aria-label="Filter by genre">
-                <option value="all">All</option>
-                <option value="action">Action</option>
-                <option value="comedy">Comedy</option>
-                <option value="drama">Drama</option>
+              <Select compact value={genreFilter} onChange={(event) => setGenreFilter(event.currentTarget.value)} aria-label="Filter by genre">
+                <option value="">All</option>
+                {availableGenres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}
               </Select>
             </label>
           </div>
         </Card>
 
-        {recentInProgressItems.length > 0 && (
-          <section className={styles.inProgressSection}>
-            <h2>Recently in progress</h2>
+        {loading && <p role="status">Loading movies and series...</p>}
+        {loadError && <p role="alert">{loadError} Reload the page to retry.</p>}
+
+        {!loading && !loadError && recentInProgressItems.length > 0 && (
+          <Card title={activeFilter === "watching" ? "Watching" : "Recently in progress"} className={`${styles.sectionPanel} ${styles.inProgressSection}`}>
             <div className={styles.seriesGrid}>
               {recentInProgressItems.map((item) => (
                 <Card
@@ -439,11 +625,11 @@ export function Movies() {
                   {item.cover ? (
                     <img className={styles.seriesPoster} src={item.cover} alt={`${item.title} poster`} />
                   ) : (
-                    <div className={`${styles.seriesPoster} ${styles.posterPlaceholder}`} aria-label="Poster loading" />
+                    <div className={`${styles.seriesPoster} ${styles.posterPlaceholder}`} aria-label="No poster available" />
                   )}
                   <div className={styles.seriesDetails}>
                     <h3>{item.title}</h3>
-                    {item.kind === "movie" && item.currentMinute != null && item.runtimeMinutes != null ? (
+                    {item.kind === "movie" && item.currentMinute != null && item.runtimeMinutes != null && item.runtimeMinutes > 0 ? (
                       <>
                         <div className={styles.progressHeader}>
                           <span>Minute {item.currentMinute} of {item.runtimeMinutes} min</span>
@@ -454,31 +640,37 @@ export function Movies() {
                           max={item.runtimeMinutes}
                           className={styles.progress}
                         />
-                        <small>{item.runtimeMinutes - item.currentMinute} min left</small>
+                        <small>{Math.max(0, item.runtimeMinutes - item.currentMinute)} min left</small>
                       </>
-                    ) : item.kind === "series" && item.currentEpisode != null && item.episodesInSeason != null ? (
+                    ) : item.kind === "series" && item.currentEpisode != null && item.episodesInSeason != null && item.episodesInSeason > 0 ? (
                       <>
                         <div className={styles.progressHeader}>
                           <span>S{item.currentSeason} · ep. {item.currentEpisode} of {item.episodesInSeason}</span>
                           <strong>{Math.round((item.currentEpisode / item.episodesInSeason) * 100)}%</strong>
                         </div>
                         <ProgressBar value={item.currentEpisode} max={item.episodesInSeason} className={styles.progress} />
-                        <small>{item.episodesInSeason - item.currentEpisode} episodes left this season</small>
+                        <small>{Math.max(0, item.episodesInSeason - item.currentEpisode)} episodes left this season</small>
                       </>
                     ) : (
-                      <p>Progress not set</p>
+                      <p>{item.kind === "movie"
+                        ? item.currentMinute == null ? "Set the current minute" : "Loading or unavailable runtime"
+                        : item.currentEpisode == null ? "Set the current episode" : "Loading or unavailable episode count"}</p>
                     )}
-                    {renderProgressEditor(item)}
+                    <MediaProgressEditor
+                      item={item}
+                      error={progressErrors[item.key] ?? ""}
+                      onSave={saveProgress}
+                      onStatusChange={updateStatus}
+                    />
                   </div>
                 </Card>
               ))}
             </div>
-          </section>
+          </Card>
         )}
 
-        <section className={styles.watchedSection}>
-          <h2>{activeFilter === "watchlist" ? "Watchlist" : "Library"}</h2>
-          {libraryItems.length > 0 ? (
+        {!loading && !loadError && (libraryItems.length > 0 ? (
+          <Card title={activeFilter === "wantToWatch" ? "Want to watch" : activeFilter === "watched" ? "Watched" : "Library"} className={`${styles.sectionPanel} ${styles.watchedSection}`}>
             <div className={styles.watchedGrid}>
               {libraryItems.map((item) => (
                 <Card
@@ -495,24 +687,31 @@ export function Movies() {
                   {item.cover ? (
                     <img src={item.cover} alt={`${item.title} poster`} loading="lazy" />
                   ) : (
-                    <div className={styles.posterPlaceholder} aria-label="Poster loading" />
+                    <div className={styles.posterPlaceholder} aria-label="No poster available" />
                   )}
                   <h3>{item.title}</h3>
-                  <p>{item.kind === "series" ? "Series" : "Movie"} · [year]</p>
+                  <p>{item.kind === "series" ? "Series" : "Movie"}{item.year ? ` · ${item.year}` : ""}</p>
                   {isWatched(item) && item.rating != null ? (
                     <strong>{"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}</strong>
                   ) : (
                     <small className={styles.statusLabel}>{getStatusLabel(item)}</small>
                   )}
-                  {renderProgressEditor(item)}
-                  {!isWatched(item) && (
+                  {isWatching(item) && (
+                    <MediaProgressEditor
+                      item={item}
+                      error={progressErrors[item.key] ?? ""}
+                      onSave={saveProgress}
+                      onStatusChange={updateStatus}
+                    />
+                  )}
+                  {!isWatched(item) && !isWatching(item) && (
                     <div className={styles.cardStatus} onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
                       <Select
                         compact
                         className={styles.statusSelect}
                         value={item.status}
                         aria-label={`Status for ${item.title}`}
-                        onChange={(event) => updateStatus(item.key, event.currentTarget.value)}
+                        onChange={(event) => void updateStatus(item.key, event.currentTarget.value as MediaStatus)}
                       >
                         {statusOptions[item.kind].map((option) => (
                           <option key={option.value} value={option.value}>{option.label}</option>
@@ -520,13 +719,18 @@ export function Movies() {
                       </Select>
                     </div>
                   )}
+                  {!isWatching(item) && progressErrors[item.key] && (
+                    <small role="alert">{progressErrors[item.key]}</small>
+                  )}
                 </Card>
               ))}
             </div>
-          ) : (
-            <p className={styles.emptyState}>There are no titles in this section yet.</p>
-          )}
-        </section>
+          </Card>
+        ) : recentInProgressItems.length > 0 ? null : (
+          <p className={styles.emptyState}>
+            {mediaItems.length === 0 ? "Your library is empty. Add your first movie or series." : "No titles match these filters."}
+          </p>
+        ))}
       </main>
 
       <FormModal
@@ -544,6 +748,7 @@ export function Movies() {
       <MediaDetailsModal
         item={selectedMedia}
         onClose={() => setSelectedMedia(null)}
+        onSynopsisSaved={handleSynopsisSaved}
       />
     </>
   );

@@ -1,6 +1,8 @@
 .moviesPage {
   width: 100%;
   padding: 28px 24px 48px;
+  color: var(--text-default);
+  container-type: inline-size;
 }
 
 .pageIntro {
@@ -19,6 +21,39 @@
 .pageIntro p {
   color: var(--text-muted);
   font-size: 13px;
+}
+
+.pageActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 220px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+}
+
+.searchBox input::placeholder {
+  color: var(--text-muted);
 }
 
 .moviesPage .filters {
@@ -98,14 +133,9 @@
   outline-offset: 2px;
 }
 
-.inProgressSection,
-.watchedSection {
-  margin-top: 30px;
-}
-
-.inProgressSection h2,
-.watchedSection h2 {
-  margin-bottom: 14px;
+.moviesPage .sectionPanel {
+  margin-top: 20px;
+  padding: 18px;
 }
 
 .seriesGrid {
@@ -153,6 +183,10 @@
 .seriesDetails h3,
 .watchedItem h3 {
   font-size: 15px;
+}
+
+.seriesDetails {
+  min-width: 0;
 }
 
 .seriesDetails h3 {
@@ -210,12 +244,15 @@
 
 .watchedGrid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 14px;
 }
 
 .moviesPage .watchedItem {
   min-width: 0;
+  padding: 0;
+  gap: 4px;
+  background: transparent;
   cursor: pointer;
 }
 
@@ -320,6 +357,7 @@
 }
 
 .emptyState {
+  margin-top: 20px;
   padding: 24px;
   border-radius: 16px;
   background: var(--bg-surface);
@@ -328,30 +366,41 @@
   text-align: center;
 }
 
-@media (max-width: 800px) {
-  .seriesGrid {
-    grid-template-columns: 1fr;
-  }
-
+@container (max-width: 1200px) {
   .watchedGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 560px) {
-  .moviesPage {
-    width: calc(100% - 32px);
-  }
-
+@container (max-width: 900px) {
   .pageIntro {
     align-items: flex-start;
     flex-direction: column;
   }
 
+  .pageActions {
+    width: 100%;
+  }
+
+  .searchBox {
+    flex: 1;
+  }
+
+  .seriesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .watchedGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 680px) {
   .moviesPage .filters {
     align-items: stretch;
-    flex-wrap: wrap;
-    gap: 12px 16px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
   }
 
   .filterPills {
@@ -362,6 +411,19 @@
   .filterControls {
     width: 100%;
     margin-left: 0;
+    flex-wrap: wrap;
+  }
+}
+
+@container (max-width: 480px) {
+  .pageActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchBox {
+    flex: none;
+    width: 100%;
   }
 
   .moviesPage .seriesCard {
@@ -374,6 +436,12 @@
   }
 
   .watchedGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .moviesPage {
+    padding: 24px 16px 56px;
   }
 }

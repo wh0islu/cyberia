@@ -23,6 +23,7 @@ type MediaFormData = {
   poster: File | null;
   tmdb_id: number | null;
   tmdb_poster_path: string | null;
+  tmdb_synopsis: string;
   poster_url: string | null;
   title: string;
   year: string;
@@ -38,7 +39,7 @@ type MediaFormData = {
   sources: FormSource[];
 };
 
-type MediaSubmission = Omit<
+export type MediaSubmission = Omit<
   MediaFormData,
   "year" | "current_minute" | "current_season" | "episode" | "season_episodes" | "rating" | "watched_at" | "sources" | "poster_url"
 > & {
@@ -109,6 +110,7 @@ const empty: MediaFormData = {
   poster: null,
   tmdb_id: null,
   tmdb_poster_path: null,
+  tmdb_synopsis: "",
   poster_url: null,
   title: "",
   year: "",
@@ -136,6 +138,7 @@ export function MediaForm({
 }: MediaFormProps) {
   const [data, setData] = useState<MediaFormData>({ ...empty, ...initial });
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [tmdbResults, setTmdbResults] = useState<TmdbResult[]>([]);
   const [tmdbGenreOptions, setTmdbGenreOptions] = useState<string[]>([]);
   const [searching, setSearching] = useState(false);
@@ -220,6 +223,7 @@ export function MediaForm({
       genre: "",
       tmdb_id: null,
       tmdb_poster_path: null,
+      tmdb_synopsis: "",
       poster_url: null,
       season_episodes: [""],
       current_minute: "",
@@ -241,6 +245,7 @@ export function MediaForm({
       genre: result.genres[0] ?? "",
       tmdb_id: result.tmdb_id,
       tmdb_poster_path: result.tmdb_poster_path,
+      tmdb_synopsis: result.overview ?? "",
       poster_url: result.poster_url,
       poster: null,
       ...(data.kind === "series" ? { season_episodes: [""] } : {}),
@@ -289,6 +294,7 @@ export function MediaForm({
       genre: "",
       tmdb_id: null,
       tmdb_poster_path: null,
+      tmdb_synopsis: "",
       poster_url: null,
       season_episodes: [""],
       current_minute: "",
@@ -327,7 +333,9 @@ export function MediaForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
+    setSubmitError("");
     try {
       const { season_episodes, ...formData } = data;
       const status = data.status === "WANT"
@@ -360,6 +368,8 @@ export function MediaForm({
         watched_at: data.status === "WATCHED" ? data.watched_at || null : null,
         sources: cleanSources(data.sources, MEDIA_FORMATS),
       });
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Could not save this title.");
     } finally {
       setSubmitting(false);
     }
@@ -537,6 +547,7 @@ export function MediaForm({
         </Field>
       </ScrollArea>
 
+      {submitError && <p className="field-error" role="alert">{submitError}</p>}
       <FormFooter submitLabel="Save" onCancel={onCancel} submitting={submitting} />
     </form>
   );

@@ -24,14 +24,14 @@ type Option = {
 
 function getOptions(children: ReactNode): Option[] {
   return Children.toArray(children).flatMap((child) => {
-    if (!isValidElement<{ value?: string; disabled?: boolean; children?: ReactNode }>(child)) {
+    if (!isValidElement<{ value?: string | number; disabled?: boolean; children?: ReactNode }>(child)) {
       return [];
     }
 
     if (child.type === "option") {
       const label = String(child.props.children ?? "");
       return [{
-        value: child.props.value ?? label,
+        value: String(child.props.value ?? label),
         label,
         disabled: child.props.disabled ?? false,
       }];

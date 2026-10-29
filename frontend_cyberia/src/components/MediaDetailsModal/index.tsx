@@ -5,11 +5,17 @@ import styles from "./styles.module.css";
 
 export type MediaDetailsItem = {
   kind: "movie" | "series";
+  persistedId?: number;
   title: string;
   cover: string | null;
   tmdbId: number;
+  synopsis?: string;
   year?: string;
   genre?: string;
+  runtimeMinutes?: number;
+  numberOfSeasons?: number;
+  numberOfEpisodes?: number;
+  seasonEpisodeCounts?: Record<number, number>;
   status?: string;
   rating?: number;
   review?: string;
@@ -33,9 +39,10 @@ type TmdbMediaDetails = {
 type MediaDetailsModalProps = {
   item: MediaDetailsItem | null;
   onClose: () => void;
+  onSynopsisSaved?: (kind: "movie" | "series", id: number, synopsis: string) => void;
 };
 
-export function MediaDetailsModal({ item, onClose }: MediaDetailsModalProps) {
+export function MediaDetailsModal({ item, onClose, onSynopsisSaved }: MediaDetailsModalProps) {
   const [details, setDetails] = useState<TmdbMediaDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,9 +56,13 @@ export function MediaDetailsModal({ item, onClose }: MediaDetailsModalProps) {
 
     const selectedItem = item;
     const controller = new AbortController();
-    setLoading(true);
     setError("");
     setDetails(null);
+    if (selectedItem.synopsis?.trim() || !selectedItem.tmdbId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
 
     async function loadDetails() {
       try {
@@ -64,6 +75,32 @@ export function MediaDetailsModal({ item, onClose }: MediaDetailsModalProps) {
           throw new Error(payload.detail || "Could not load title details.");
         }
         setDetails(payload);
+        if (payload.overview && selectedItem.persistedId) {
+          try {
+            const csrf = document.cookie
+              .split("; ")
+              .find((cookie) => cookie.startsWith("csrftoken="))
+              ?.split("=")[1];
+            const saved = await fetch(
+              `/api/v1/${selectedItem.kind === "movie" ? "movies" : "series"}/${selectedItem.persistedId}/`,
+              {
+                method: "PATCH",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}),
+                },
+                body: JSON.stringify({ tmdb_synopsis: payload.overview }),
+                signal: controller.signal,
+              },
+            );
+            if (saved.ok && !controller.signal.aborted) {
+              onSynopsisSaved?.(selectedItem.kind, selectedItem.persistedId, payload.overview);
+            }
+          } catch {
+            // The fetched synopsis remains visible if saving the legacy record fails.
+          }
+        }
       } catch (loadError) {
         if (loadError instanceof DOMException && loadError.name === "AbortError") return;
         setError(loadError instanceof Error ? loadError.message : "Could not load title details.");
@@ -74,10 +111,12 @@ export function MediaDetailsModal({ item, onClose }: MediaDetailsModalProps) {
 
     void loadDetails();
     return () => controller.abort();
-  }, [item]);
+  }, [item, onSynopsisSaved]);
 
   const title = details?.title || item?.title || "Title details";
   const rating = item?.rating ?? 0;
+  const seasonCounts = details?.seasons ?? Object.entries(item?.seasonEpisodeCounts ?? {})
+    .map(([number, episode_count]) => ({ number: Number(number), episode_count }));
 
   return (
     <FormModal
@@ -106,15 +145,15 @@ export function MediaDetailsModal({ item, onClose }: MediaDetailsModalProps) {
                   .filter(Boolean)
                   .join(" · ") || "Details from TMDB"}
               </p>
-              {item.kind === "movie" && details?.runtime != null && (
-                <p className={styles.muted}>{details.runtime} min</p>
+              {item.kind === "movie" && (details?.runtime ?? item.runtimeMinutes) != null && (
+                <p className={styles.muted}>{details?.runtime ?? item.runtimeMinutes} min</p>
               )}
               {item.kind === "movie" && item.currentMinute != null && (
                 <p className={styles.muted}>Your progress: minute {item.currentMinute}</p>
               )}
-              {item.kind === "series" && details?.number_of_seasons != null && (
+              {item.kind === "series" && (details?.number_of_seasons ?? item.numberOfSeasons) != null && (
                 <p className={styles.muted}>
-                  {details.number_of_seasons} seasons · {details.number_of_episodes ?? 0} episodes
+                  {details?.number_of_seasons ?? item.numberOfSeasons} seasons · {details?.number_of_episodes ?? item.numberOfEpisodes ?? 0} episodes
                 </p>
               )}
               {item.kind === "series" && item.currentSeason != null && (
@@ -134,15 +173,15 @@ export function MediaDetailsModal({ item, onClose }: MediaDetailsModalProps) {
             ) : error ? (
               <p className={styles.muted} role="status">{error}</p>
             ) : (
-              <p>{details?.overview || "No synopsis is available for this title."}</p>
+              <p>{item.synopsis || details?.overview || "No synopsis is available for this title."}</p>
             )}
           </section>
 
-          {item.kind === "series" && details?.seasons.length ? (
+          {item.kind === "series" && seasonCounts.length > 0 ? (
             <section className={styles.section}>
               <h3>Seasons</h3>
               <ul className={styles.seasons}>
-                {details.seasons.map((season) => (
+                {seasonCounts.map((season) => (
                   <li key={season.number}>
                     <span>Season {season.number}</span>
                     <span>{season.episode_count} episodes</span>
