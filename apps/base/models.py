@@ -33,7 +33,6 @@ class Book(models.Model):
         ('RE', 'READING'),
         ('NR', 'NOT READING'),
         ('FD', 'FINISHED'),
-        ('RW', 'REVIEWING'),
     ]
 
     LANGUAGE_OPTIONS = [('PT', 'PORTUGUESE'), ('EN', 'ENGLISH')]
@@ -49,12 +48,13 @@ class Book(models.Model):
     ]
 
     title = models.CharField(max_length=100, help_text="Book's title")
-    author = models.CharField(max_length=100, help_text="Author's name")
+    author = models.CharField(max_length=500, help_text="Book authors")
     genre = models.CharField(max_length=2, choices=GENRE_OPTIONS, blank=True)
     year = models.IntegerField(blank=True, null=True, help_text='Year of the book')
     number_of_pages = models.PositiveIntegerField(blank=True, null=True, help_text='Number of pages')
     current_page = models.PositiveIntegerField(default=0, help_text='Current page being read')
     started_on = models.DateField(blank=True, null=True)
+    last_read_at = models.DateTimeField(blank=True, null=True)
     notes = models.TextField(blank=True)
     status = models.CharField(max_length=2, choices=BOOK_OPTIONS, default='NR')
     language = models.CharField(max_length=5, choices=LANGUAGE_OPTIONS, blank=True)
@@ -174,9 +174,12 @@ class Course(models.Model):
     LANGUAGE_OPTIONS = [('PT', 'PORTUGUESE'), ('EN', 'ENGLISH')]
 
     title = models.CharField(max_length=255, help_text='Python 3.15 programming course')
-    instructor = models.CharField(max_length=255, blank=True, null=True, help_text='Lorem')
+    instructor = models.CharField(max_length=500, blank=True, null=True, help_text='Course instructors')
     platform = models.CharField(max_length=100, blank=True, null=True)
     number_of_lessons = models.PositiveIntegerField(blank=True, null=True)
+    completed_lessons = models.PositiveIntegerField(default=0)
+    goal_date = models.DateField(blank=True, null=True)
+    modules = models.JSONField(default=list, blank=True)
     status = models.CharField(max_length=2, default='NS', choices=COURSE_OPTIONS)
     language = models.CharField(max_length=2, blank=True, null=True, choices=LANGUAGE_OPTIONS)
     url = models.URLField(blank=True, null=True)
@@ -220,6 +223,7 @@ class Movie(models.Model):
     imdb_id = models.CharField(max_length=20, blank=True, null=True)
     tmdb_id = models.PositiveIntegerField(blank=True, null=True)
     tmdb_poster_path = models.CharField(max_length=255, blank=True, null=True)
+    tmdb_synopsis = models.TextField(blank=True, default='')
     cover = models.ImageField(upload_to='movies/covers/', blank=True, null=True)
 
     def __str__(self):
@@ -268,6 +272,7 @@ class Series(models.Model):
     imdb_id = models.CharField(max_length=20, blank=True, null=True)
     tmdb_id = models.PositiveIntegerField(blank=True, null=True)
     tmdb_poster_path = models.CharField(max_length=255, blank=True, null=True)
+    tmdb_synopsis = models.TextField(blank=True, default='')
     cover = models.ImageField(upload_to='series/covers/', blank=True, null=True)
 
     def __str__(self):

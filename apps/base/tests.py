@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from PIL import Image
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from apps.base.models import Book
+from apps.base.models import Book, Movie, Series
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -114,3 +114,33 @@ class BookApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class MediaSynopsisApiTests(APITestCase):
+    def test_movie_synopsis_is_saved_and_returned(self):
+        response = self.client.post(
+            reverse('base:movies_api'),
+            {'title': 'Example movie', 'status': 'NW', 'tmdb_id': 42,
+             'tmdb_synopsis': 'A saved movie synopsis.'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertEqual(Movie.objects.get().tmdb_synopsis, 'A saved movie synopsis.')
+        detail = self.client.get(reverse('base:movie_api', args=[response.data['id']]))
+        self.assertEqual(detail.data['tmdb_synopsis'], 'A saved movie synopsis.')
+
+    def test_series_synopsis_can_be_added_to_existing_record(self):
+        series = Series.objects.create(title='Example series')
+        self.assertEqual(series.tmdb_synopsis, '')
+
+        response = self.client.patch(
+            reverse('base:series_detail_api', args=[series.pk]),
+            {'tmdb_synopsis': 'A saved series synopsis.'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        series.refresh_from_db()
+        self.assertEqual(series.tmdb_synopsis, 'A saved series synopsis.')
+        self.assertEqual(response.data['tmdb_synopsis'], 'A saved series synopsis.')

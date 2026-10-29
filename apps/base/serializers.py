@@ -1,3 +1,5 @@
+import json
+
 from apps.base.models import (
     Book,
     BookSource,
@@ -14,6 +16,7 @@ from apps.base.models import (
 )
 from rest_framework import serializers
 from django.db import transaction
+from django.utils import timezone
 
 
 # Books
@@ -59,7 +62,20 @@ class BookSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        if validated_data.get('status') == 'RE' and validated_data.get('current_page', 0) > 0:
+            validated_data['last_read_at'] = timezone.now()
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        status = validated_data.get('status', instance.status)
+        page_changed = (
+            'current_page' in validated_data
+            and validated_data['current_page'] != instance.current_page
+        )
+        started_reading = status == 'RE' and instance.status != 'RE'
+        if status == 'RE' and (page_changed or started_reading):
+            validated_data['last_read_at'] = timezone.now()
+        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         pages = attrs.get('number_of_pages', getattr(self.instance, 'number_of_pages', None))
@@ -81,13 +97,14 @@ class BookSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer):
             'number_of_pages',
             'current_page',
             'started_on',
+            'last_read_at',
             'notes',
             'status',
             'language',
             'cover',
             'sources',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'last_read_at']
 
 
 class BooksSerializer(serializers.ModelSerializer):
@@ -104,13 +121,14 @@ class BooksSerializer(serializers.ModelSerializer):
             'number_of_pages',
             'current_page',
             'started_on',
+            'last_read_at',
             'notes',
             'status',
             'language',
             'cover',
             'sources',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'last_read_at']
 
 
 # Movies
@@ -130,7 +148,7 @@ class MovieSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer)
         model = Movie
         fields = [
             'id', 'title', 'genre', 'year', 'director', 'status', 'current_minute', 'language',
-            'imdb_id', 'tmdb_id', 'tmdb_poster_path', 'cover', 'sources',
+            'imdb_id', 'tmdb_id', 'tmdb_poster_path', 'tmdb_synopsis', 'cover', 'sources',
         ]
         read_only_fields = ['id']
 
@@ -154,7 +172,7 @@ class SeriesSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer
             'id', 'title', 'genre', 'original_title', 'start_year', 'end_year',
             'number_of_seasons', 'number_of_episodes', 'current_season',
             'current_episode', 'status',
-            'imdb_id', 'tmdb_id', 'tmdb_poster_path', 'cover', 'sources',
+            'imdb_id', 'tmdb_id', 'tmdb_poster_path', 'tmdb_synopsis', 'cover', 'sources',
         ]
         read_only_fields = ['id']
 
@@ -208,15 +226,49 @@ class CourseSourceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class CourseModulesField(serializers.ListField):
+    def to_representation(self, value):
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                value = [value] if value else []
+        if isinstance(value, str):
+            value = [value] if value else []
+        if not isinstance(value, list):
+            value = []
+        return super().to_representation(value)
+
+
 class CourseSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer):
     sources = CourseSourceSerializer(many=True, required=False)
+    modules = CourseModulesField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+    )
     source_model = CourseSource
     source_parent_field = 'course'
+
+    def validate(self, attrs):
+        total_lessons = attrs.get(
+            'number_of_lessons',
+            getattr(self.instance, 'number_of_lessons', None),
+        )
+        completed_lessons = attrs.get(
+            'completed_lessons',
+            getattr(self.instance, 'completed_lessons', 0),
+        )
+        if total_lessons is not None and completed_lessons > total_lessons:
+            raise serializers.ValidationError({
+                'completed_lessons': 'Completed lessons cannot exceed the total lessons.'
+            })
+        return attrs
 
     class Meta:
         model = Course
         fields = [
             'id', 'title', 'instructor', 'platform', 'number_of_lessons',
+            'completed_lessons', 'goal_date', 'modules',
             'status', 'language', 'url', 'cover', 'certificate_available',
             'certificate_obtained', 'sources',
         ]

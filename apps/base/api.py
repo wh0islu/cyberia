@@ -316,6 +316,18 @@ def book_api(request, pk):
 
 
 # Movies
+def _media_request_data(request):
+    data = {key: request.data.get(key) for key in request.data}
+    sources = data.get('sources')
+    if isinstance(sources, str):
+        try:
+            data['sources'] = json.loads(sources)
+        except json.JSONDecodeError:
+            pass
+    return data
+
+
+@ensure_csrf_cookie
 @api_view(http_method_names=['GET', 'POST'])
 def movies_api_collection(request):
     if request.method == 'GET':
@@ -323,7 +335,7 @@ def movies_api_collection(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = MovieSerializer(data=request.data, context={'request': request})
+        serializer = MovieSerializer(data=_media_request_data(request), context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -340,7 +352,7 @@ def movie_api(request, pk):
     elif request.method == 'PATCH':
         serializer = MovieSerializer(
             movie,
-            data=request.data,
+            data=_media_request_data(request),
             partial=True,
             context={'request': request},
         )
@@ -354,6 +366,7 @@ def movie_api(request, pk):
 
 
 # Series
+@ensure_csrf_cookie
 @api_view(http_method_names=['GET', 'POST'])
 def series_api_collection(request):
     if request.method == 'GET':
@@ -361,7 +374,7 @@ def series_api_collection(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = SeriesSerializer(data=request.data, context={'request': request})
+        serializer = SeriesSerializer(data=_media_request_data(request), context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -378,7 +391,7 @@ def series_api(request, pk):
     elif request.method == 'PATCH':
         serializer = SeriesSerializer(
             series,
-            data=request.data,
+            data=_media_request_data(request),
             partial=True,
             context={'request': request},
         )
@@ -436,6 +449,20 @@ def meal_api(request, pk):
 
 
 # Courses
+def _course_request_data(request):
+    data = {key: request.data.get(key) for key in request.data}
+    if data.get('goal_date') == '':
+        data['goal_date'] = None
+    for field in ('sources', 'modules'):
+        value = data.get(field)
+        if isinstance(value, str):
+            try:
+                data[field] = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+    return data
+
+
 @api_view(http_method_names=['GET', 'POST'])
 def courses_api_collection(request):
     if request.method == 'GET':
@@ -443,7 +470,7 @@ def courses_api_collection(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = CourseSerializer(data=request.data, context={'request': request})
+        serializer = CourseSerializer(data=_course_request_data(request), context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -460,7 +487,7 @@ def course_api(request, pk):
     elif request.method == 'PATCH':
         serializer = CourseSerializer(
             course,
-            data=request.data,
+            data=_course_request_data(request),
             partial=True,
             context={'request': request},
         )
