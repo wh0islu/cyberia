@@ -37,6 +37,12 @@
   font-size: 12px;
 }
 
+.error {
+  margin: 0 6px 16px;
+  color: var(--error);
+  font-size: 12px;
+}
+
 .headerActions,
 .weekControls {
   display: flex;
@@ -201,6 +207,14 @@
 }
 
 .dayEmpty:disabled:hover {
+  outline: 0;
+}
+
+.dayScheduled:disabled {
+  cursor: default;
+}
+
+.dayScheduled:disabled:hover {
   outline: 0;
 }
 

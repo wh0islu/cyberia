@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from "react";
 import { Field, Switch, FormFooter } from "../components/FormFields";
 import { ScrollArea } from "../components/ScrollArea";
 import { Select } from "../components/Select";
+import { TimePicker } from "../components/TimePicker";
 
 type HabitFormData = {
   name: string;
@@ -113,7 +114,7 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
 
         <div className="row">
           <Field label="Time">
-            <input className="in" type="time" value={data.time} onChange={(e) => set("time")(e.target.value)} />
+            <TimePicker value={data.time} onChange={set("time")} />
           </Field>
           <Field label="Goal">
             <input className="in" placeholder="E.g., 20 pages, 2 L" value={data.goal} onChange={(e) => set("goal")(e.target.value)} />
