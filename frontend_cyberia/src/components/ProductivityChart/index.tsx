@@ -20,7 +20,6 @@ type HabitCompletion = {
 
 type CompletionResponse = HabitCompletion[] | { results?: HabitCompletion[] };
 type ProductivityChartProps = { showDetails?: boolean };
-const sampleWeekCounts = [3, 2, 4, 1, 4, 4, 3];
 
 function getLocalDateKey(date: Date) {
   const year = date.getFullYear();
@@ -52,7 +51,7 @@ export function ProductivityChart({ showDetails = true }: ProductivityChartProps
   const [completions, setCompletions] = useState<HabitCompletion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const week = useMemo(getCurrentWeek, []);
+  const week = useMemo(() => getCurrentWeek(), []);
   const todayKey = getLocalDateKey(new Date());
 
   useEffect(() => {
@@ -86,9 +85,7 @@ export function ProductivityChart({ showDetails = true }: ProductivityChartProps
     return () => controller.abort();
   }, []);
 
-  const dailyCounts = week.map((date, index) => {
-    if (hasError) return sampleWeekCounts[index];
-
+  const dailyCounts = week.map((date) => {
     const dateKey = getLocalDateKey(date);
     return completions.filter((completion) =>
       completion.completed && getCompletionDateKey(completion.date) === dateKey,
@@ -163,17 +160,19 @@ export function ProductivityChart({ showDetails = true }: ProductivityChartProps
         </div>
       </div>
 
-      <div
-        className={styles.chart}
-        role="img"
-        aria-label={`Habit completions this week: ${weeklyCount} across seven days`}
-      >
-        <Bar data={chartData} options={chartOptions} />
-      </div>
+      {isLoading || hasError ? (
+        <p className={styles.message}>{isLoading ? "Loading habit activity..." : "Could not load habit activity."}</p>
+      ) : (
+        <div
+          className={styles.chart}
+          role="img"
+          aria-label={`Habit completions this week: ${weeklyCount} across seven days`}
+        >
+          <Bar data={chartData} options={chartOptions} />
+        </div>
+      )}
       <p className={styles.note}>
-        {hasError
-          ? "Sample data · sign in to see your routine history"
-          : "Based on completed routine habits"}
+        Based on completed routine habits
       </p>
     </Card>
   );

@@ -96,6 +96,20 @@
   white-space: nowrap;
 }
 
+.emptyMessage,
+.dataNote {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.emptyMessage {
+  margin: 14px 0;
+}
+
+.dataNote {
+  margin: 0;
+}
+
 .monthStats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
