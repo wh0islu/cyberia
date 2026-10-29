@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, type FormEvent } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, SquarePen } from "lucide-react";
 import { BookForm } from "../../forms";
-import type { BookSubmission } from "../../forms/BookForm";
+import type { BookFormInitial, BookSubmission } from "../../forms/BookForm";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
@@ -17,11 +17,27 @@ type Book = {
   number_of_pages: number | null;
   status: string;
   cover: string | null;
+  genre: string;
+  year: number | null;
+  started_on: string | null;
+  last_read_at: string | null;
+  notes: string;
+  language: string;
+  sources: { format: string; location: string | null; url: string | null }[];
 };
 
 const statuses: Record<string, string> = {
-  RE: "Reading", NR: "Want to read", FD: "Read", RW: "Reviewing",
+  RE: "Reading", NR: "Want to read", FD: "Read",
 };
+
+function bookStatus(book: Book) {
+  return book.status === "RW" ? "RE" : book.status;
+}
+
+function authorPreview(authors: string) {
+  const names = authors.split(",").map((name) => name.trim()).filter(Boolean);
+  return names.length > 2 ? `${names.slice(0, 2).join(", ")}…` : authors;
+}
 
 function apiError(value: unknown): string {
   if (typeof value === "string") return value;
@@ -79,7 +95,7 @@ function ReadingBookCard({ book, onSave }: { book: Book; onSave: (book: Book) =>
       <BookCover book={book} className={styles.readingCover} />
       <div className={styles.readingDetails}>
         <h3>{book.title}</h3>
-        <p>{book.author} · {total ?? "Unknown"} pages</p>
+        <p title={book.author}>{authorPreview(book.author)} · {total ?? "Unknown"} pages</p>
         <div className={styles.readingProgressHeader}>
           <span>p. {book.current_page} / {total ?? "?"}</span><strong>{percentage}%</strong>
         </div>
@@ -96,8 +112,9 @@ function ReadingBookCard({ book, onSave }: { book: Book; onSave: (book: Book) =>
   );
 }
 
-export function Books() {
+export function Books({ onCollectionChange }: { onCollectionChange?: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -129,18 +146,60 @@ export function Books() {
       if (source.location) body.append(`sources[${index}]location`, source.location);
       if (source.url) body.append(`sources[${index}]url`, source.url);
     });
-    const book: Book = await requestBooks("", { method: "POST", body });
-    setBooks((previous) => [...previous, book]);
+    const book: Book = editingBook
+      ? await requestBooks(`${editingBook.id}/`, { method: "PATCH", body })
+      : await requestBooks("", { method: "POST", body });
+    if (editingBook) updateBook(book);
+    else {
+      setBooks((previous) => [...previous, book]);
+      onCollectionChange?.();
+    }
     setIsModalOpen(false);
+    setEditingBook(null);
   }
 
-  const visible = books.filter((book) => (!filter || book.status === filter) &&
+  const visible = books.filter((book) => (!filter || bookStatus(book) === filter) &&
     `${book.title} ${book.author}`.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => sort === "title" ? a.title.localeCompare(b.title) : b.id - a.id);
-  const reading = visible.filter((book) => book.status === "RE" || book.status === "RW");
-  const shelf = visible.filter((book) => book.status !== "RE" && book.status !== "RW");
+  const reading = visible
+    .filter((book) => bookStatus(book) === "RE")
+    .sort((first, second) => {
+      const firstReadAt = Date.parse(first.last_read_at ?? first.started_on ?? "") || 0;
+      const secondReadAt = Date.parse(second.last_read_at ?? second.started_on ?? "") || 0;
+      return secondReadAt - firstReadAt || second.id - first.id;
+    });
+  const displayedReading = filter === "RE" ? reading : reading.slice(0, 2);
+  const shelf = visible.filter((book) => bookStatus(book) !== "RE");
   function updateBook(updated: Book) {
     setBooks((previous) => previous.map((book) => book.id === updated.id ? updated : book));
+  }
+
+  function openBookForm(book: Book | null = null) {
+    setEditingBook(book);
+    setIsModalOpen(true);
+  }
+
+  function closeBookForm() {
+    setIsModalOpen(false);
+    setEditingBook(null);
+  }
+
+  function getBookFormInitial(book: Book): BookFormInitial {
+    return {
+      title: book.title,
+      author: book.author,
+      pages: String(book.number_of_pages ?? ""),
+      genre: book.genre ?? "",
+      status: bookStatus(book),
+      current_page: String(book.current_page ?? 0),
+      started_at: book.started_on ?? "",
+      notes: book.notes ?? "",
+      sources: book.sources?.map((source) => ({
+        format: source.format,
+        location: source.location ?? "",
+        url: source.url ?? "",
+      })) ?? [],
+    };
   }
 
   return (
@@ -150,13 +209,13 @@ export function Books() {
           <div><h1>Books</h1><p>{books.length} books · {books.reduce((sum, book) => sum + book.current_page, 0)} pages read</p></div>
           <div className={styles.pageActions}>
             <label className={styles.searchBox}><Search size={18} aria-hidden="true" /><input type="search" placeholder="Search your library" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} disabled={loading || !!error} onClick={() => setIsModalOpen(true)}>Add book</DefaultButton>
+            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} disabled={loading || !!error} onClick={() => openBookForm()}>Add book</DefaultButton>
           </div>
         </section>
         <nav className={styles.filters} aria-label="Book filters">
           <div className={styles.filterPills}>
             {[["", "All"], ...Object.entries(statuses)].map(([value, label]) => (
-              <a key={value} href="#books" className={filter === value ? styles.activeFilter : undefined} aria-current={filter === value ? "true" : undefined} onClick={(event) => { event.preventDefault(); setFilter(value); }}>{label} ({books.filter((book) => !value || book.status === value).length})</a>
+              <a key={value} href="#books" className={filter === value ? styles.activeFilter : undefined} aria-current={filter === value ? "true" : undefined} onClick={(event) => { event.preventDefault(); setFilter(value); }}>{label} ({books.filter((book) => !value || bookStatus(book) === value).length})</a>
             ))}
           </div>
           <label className={styles.sortControl}>Sort<Select compact value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort books"><option value="latest">Latest added</option><option value="title">Title</option></Select></label>
@@ -164,23 +223,51 @@ export function Books() {
         {loading && <p role="status">Loading books...</p>}
         {error && <p role="alert">{error} Reload the page to retry.</p>}
         {!loading && !error && visible.length === 0 && <p>{books.length ? "No matching books." : "Your library is empty. Add your first book."}</p>}
-        <Card title="Currently reading" className={styles.sectionPanel} id="reading">
-          <div className={styles.readingGrid}>{reading.map((book) => <ReadingBookCard key={book.id} book={book} onSave={updateBook} />)}</div>
-        </Card>
-        <Card title="Bookshelf" className={styles.shelfSection} id="books">
-          <div className={styles.shelfGrid}>
-            {shelf.map((book) => (
-              <article className={styles.shelfBook} key={book.id}>
-                <BookCover book={book} className={styles.shelfCover} /><h3>{book.title}</h3><p>{book.author}</p>
-                {book.status === "FD" && <ProgressBar value={100} max={100} className={styles.shelfProgress} />}
-                <span className={`${styles.bookBadge} ${styles[`bookBadge--${(statuses[book.status] ?? "").toLowerCase().replaceAll(" ", "-")}`]}`}><span aria-hidden="true" />{statuses[book.status] ?? book.status}</span>
-              </article>
-            ))}
-          </div>
-        </Card>
+        {reading.length > 0 && (filter === "" || filter === "RE") && (
+          <Card title="Currently reading" className={styles.sectionPanel} id="reading">
+            <div className={styles.readingGrid}>{displayedReading.map((book) => <ReadingBookCard key={book.id} book={book} onSave={updateBook} />)}</div>
+          </Card>
+        )}
+        {shelf.length > 0 && filter !== "RE" && (
+          <Card title={filter === "NR" ? "Want to read" : "Bookshelf"} className={styles.shelfSection} id="books">
+            <div className={styles.shelfGrid}>
+              {shelf.map((book) => (
+                <article className={styles.shelfBook} key={book.id}>
+                  <BookCover book={book} className={styles.shelfCover} /><h3>{book.title}</h3><p title={book.author}>{authorPreview(book.author)}</p>
+                  {book.status === "FD" && <ProgressBar value={100} max={100} className={styles.shelfProgress} />}
+                  <div className={styles.shelfStatusRow}>
+                    <span className={`${styles.bookBadge} ${styles[`bookBadge--${(statuses[book.status] ?? "").toLowerCase().replaceAll(" ", "-")}`]}`}>
+                      <span aria-hidden="true" />{statuses[book.status] ?? book.status}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.editStatusButton}
+                      aria-label={`Edit ${book.title}`}
+                      title="Edit book"
+                      onClick={() => openBookForm(book)}
+                    >
+                      <SquarePen size={15} aria-hidden="true" />
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Card>
+        )}
       </main>
-      <FormModal open={isModalOpen} title="Add book" description="Add a book to your library." onClose={() => setIsModalOpen(false)}>
-        <BookForm onSubmit={handleSaveBook} onCancel={() => setIsModalOpen(false)} />
+      <FormModal
+        open={isModalOpen}
+        title={editingBook ? "Edit book" : "Add book"}
+        description={editingBook ? "Update this book in your library." : "Add a book to your library."}
+        onClose={closeBookForm}
+      >
+        <BookForm
+          key={editingBook?.id ?? "new-book"}
+          initial={editingBook ? getBookFormInitial(editingBook) : undefined}
+          coverUrl={editingBook?.cover}
+          onSubmit={handleSaveBook}
+          onCancel={closeBookForm}
+        />
       </FormModal>
     </>
   );

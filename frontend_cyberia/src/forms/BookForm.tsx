@@ -37,8 +37,11 @@ export type BookSubmission = Omit<
   sources: CleanedSource[];
 };
 
+export type BookFormInitial = Partial<BookFormData>;
+
 type BookFormProps = {
-  initial?: Partial<BookFormData>;
+  initial?: BookFormInitial;
+  coverUrl?: string | null;
   onSubmit: (data: BookSubmission) => void | Promise<void>;
   onCancel: () => void;
 };
@@ -89,7 +92,6 @@ const STATUS = [
   { value: "NR", label: "Want to read" },
   { value: "RE", label: "Reading" },
   { value: "FD", label: "Read" },
-  { value: "RW", label: "Reviewing" },
 ];
 
 const GENRES = [
@@ -116,7 +118,7 @@ const empty = {
   sources: [{ format: "PH", location: "", url: "" }],
 };
 
-export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
+export function BookForm({ initial, coverUrl, onSubmit, onCancel }: BookFormProps) {
   const [data, setData] = useState<BookFormData>({ ...empty, ...initial });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -148,10 +150,10 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
         ...data,
         pages: Number(data.pages),
         current_page:
-          (data.status === "RE" || data.status === "RW") && data.current_page !== ""
+          data.status === "RE" && data.current_page !== ""
             ? Number(data.current_page)
             : 0,
-        started_at: (data.status === "RE" || data.status === "RW") ? data.started_at || null : null,
+        started_at: data.status === "RE" ? data.started_at || null : null,
         sources: cleanSources(data.sources, BOOK_FORMATS),
       });
     } catch (error) {
@@ -170,6 +172,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
             label="Add cover"
             shape="cover"
             value={data.cover}
+            imageUrl={coverUrl}
             onChange={set("cover")}
           />
           <div
@@ -195,6 +198,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
               <input
                 className="in"
                 required
+                maxLength={500}
                 placeholder="E.g., Machado de Assis"
                 value={data.author}
                 onChange={setFromInput("author")}
@@ -236,7 +240,7 @@ export function BookForm({ initial, onSubmit, onCancel }: BookFormProps) {
           onChange={set("status")}
         />
 
-        {(data.status === "RE" || data.status === "RW") && (
+        {data.status === "RE" && (
           <div className="row">
             <Field label="Current page">
               <input

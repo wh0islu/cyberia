@@ -221,6 +221,68 @@
 .bookBadge--abandoned > span:first-child { background: #eab308; }
 .bookBadge .badgeRating { display: inline-flex; align-items: center; gap: 3px; width: auto; height: auto; flex: none; border-radius: 0; background: transparent; }
 
+.shelfStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.shelfStatusRow .bookBadge {
+  margin-top: 0;
+}
+
+.shelfStatusRow > span {
+  width: auto;
+}
+
+.shelfStatusSelect {
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  font-size: 11px;
+}
+
+.editStatusButton {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.editStatusButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-default);
+}
+
+.editStatusButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.editStatusButton:disabled {
+  cursor: not-allowed;
+}
+
+.statusSaving,
+.statusError {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.statusError {
+  color: var(--error);
+}
+
 .pageForm {
   display: flex;
   align-items: center;
