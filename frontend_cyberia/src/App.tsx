@@ -11,8 +11,49 @@ import "./styles/global.css";
 import "./styles/theme.css";
 import styles from "./App.module.css";
 
+async function fetchCollectionCount(section: string, signal: AbortSignal) {
+  const response = await fetch(`/api/v1/${section}/`, {
+    signal,
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error(`Could not load ${section}.`);
+  const items: unknown = await response.json();
+  if (!Array.isArray(items)) throw new Error(`Unexpected ${section} response.`);
+  return items.length;
+}
+
 export function App() {
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+  const [counts, setCounts] = useState<{ books?: number; movies?: number; routine?: number; courses?: number }>({});
+  const [countVersion, setCountVersion] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadCounts() {
+      const [books, movies, series, habits, courses] = await Promise.allSettled(
+        ["books", "movies", "series", "habits", "courses"].map((section) =>
+          fetchCollectionCount(section, controller.signal),
+        ),
+      );
+      if (controller.signal.aborted) return;
+
+      setCounts({
+        books: books.status === "fulfilled" ? books.value : undefined,
+        movies: movies.status === "fulfilled" && series.status === "fulfilled"
+          ? movies.value + series.value : undefined,
+        routine: habits.status === "fulfilled" ? habits.value : undefined,
+        courses: courses.status === "fulfilled" ? courses.value : undefined,
+      });
+    }
+
+    void loadCounts();
+    return () => controller.abort();
+  }, [currentPath, countVersion]);
+
+  function refreshCounts() {
+    setCountVersion((version) => version + 1);
+  }
 
   useEffect(() => {
     const updateCurrentPath = () => setCurrentPath(window.location.pathname);
@@ -52,11 +93,11 @@ export function App() {
   }
 
   const pages: Record<string, ReactNode> = {
-    "/books": <Books />,
-    "/movies/series": <Movies />,
+    "/books": <Books onCollectionChange={refreshCounts} />,
+    "/movies/series": <Movies onCollectionChange={refreshCounts} />,
     "/meals": <Meals />,
-    "/courses": <Courses />,
-    "/routine": <Routine />,
+    "/courses": <Courses onCollectionChange={refreshCounts} />,
+    "/routine": <Routine onCollectionChange={refreshCounts} />,
     "/insights": <Insights />,
   };
 
@@ -64,7 +105,7 @@ export function App() {
     <div className={styles.app}>
       <Sidebar
         currentPath={currentPath}
-        counts={{ books: 26, movies: 44, routine: 5, meals: 16, courses: 3 }}
+        counts={counts}
         onNavigate={navigateTo}
       />
       <div className={styles.app__conteudo}>

@@ -24,7 +24,7 @@ const icons = {
   avatar: UserRound,
 };
 
-type SectionCountKey = "books" | "movies" | "routine" | "meals" | "courses";
+type SectionCountKey = "books" | "movies" | "routine" | "courses";
 type NavigationItem = {
   id: keyof typeof icons;
   name: string;
@@ -47,7 +47,7 @@ const navigationGroups: NavigationGroup[] = [
       { id: "books", name: "Books", href: "/books", countKey: "books" },
       { id: "movies", name: "Movies & Series", href: "/movies/series", countKey: "movies" },
       { id: "routine", name: "Routine", href: "/routine", countKey: "routine" },
-      { id: "meals", name: "Meals", href: "/meals", countKey: "meals" },
+      { id: "meals", name: "Meals", href: "/meals" },
       { id: "courses", name: "Courses", href: "/courses", countKey: "courses" },
     ],
   },
@@ -68,7 +68,9 @@ function useTheme() {
     else delete raiz.dataset.theme;
     try {
       localStorage.setItem("theme", theme);
-    } catch {}
+    } catch {
+      // The theme still works when browser storage is unavailable.
+    }
   }, [theme]);
 
   return [theme, setTheme] as const;
