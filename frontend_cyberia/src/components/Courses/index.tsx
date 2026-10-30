@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, SquarePen } from "lucide-react";
+import { MonitorPlay, Plus, Search, SquarePen } from "lucide-react";
 import { CourseForm } from "../../forms";
 import type { CourseFormInitial, CourseSubmission } from "../../forms/CourseForm";
 import { Card } from "../Card";
+import { DatePicker } from "../DatePicker";
 import { DefaultButton } from "../DefaultButton";
+import { Switch } from "../FormFields";
 import { FormModal } from "../FormModal";
 import { ProgressBar } from "../ProgressBar";
 import styles from "./styles.module.css";
@@ -57,6 +59,18 @@ function instructorsPreview(instructors: string | null) {
   return names.length > 2 ? `${names.slice(0, 2).join(", ")}…` : instructors;
 }
 
+function courseInitials(title: string) {
+  const words = title.match(/[A-Za-z0-9]+/g) ?? [];
+  return words.slice(0, 3).map((word) => word[0]).join("").toUpperCase() || "—";
+}
+
+function formatGoalDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" })
+    .format(new Date(year, month - 1, day));
+}
+
 function getErrorMessage(value: unknown): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value.map(getErrorMessage).join(" ");
@@ -97,6 +111,8 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [detailError, setDetailError] = useState("");
+  const [detailSaving, setDetailSaving] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -128,6 +144,7 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
   const selectedCourse = visibleCourses.find((course) => course.id === selectedCourseId) ?? null;
 
   function openCourseForm(course: Course | null = null) {
+    setDetailError("");
     setEditingCourse(course);
     setIsModalOpen(true);
   }
@@ -183,6 +200,24 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
     closeCourseForm();
   }
 
+  async function updateCourseDetails(course: Course, changes: Partial<Pick<Course, "goal_date" | "certificate_available">>) {
+    if (detailSaving) return;
+    setDetailSaving(true);
+    setDetailError("");
+    try {
+      const saved = normalizeCourse(await requestCourses(`${course.id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(changes),
+      }));
+      setCourses((current) => current.map((item) => item.id === saved.id ? saved : item));
+    } catch (cause) {
+      setDetailError(cause instanceof Error ? cause.message : "Could not update course details.");
+    } finally {
+      setDetailSaving(false);
+    }
+  }
+
   const progress = selectedCourse?.number_of_lessons
     ? Math.min(100, Math.round(selectedCourse.completed_lessons / selectedCourse.number_of_lessons * 100))
     : 0;
@@ -200,28 +235,17 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
               {statusCounts.IP ?? 0} in progress · {statusCounts.CD ?? 0} completed · {courses.length} total
             </p>
           </div>
-          <div className={styles.headerActions}>
-            <label className={styles.searchBox}>
-              <Search aria-hidden="true" />
-              <input
-                type="search"
-                placeholder="Search your library"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
-            </label>
-            <DefaultButton
-              size="sm"
-              icon={<Plus aria-hidden="true" />}
-              disabled={loading || !!error}
-              onClick={() => openCourseForm()}
-            >
-              Add course
-            </DefaultButton>
-          </div>
+          <DefaultButton
+            size="sm"
+            icon={<Plus aria-hidden="true" />}
+            disabled={loading || !!error}
+            onClick={() => openCourseForm()}
+          >
+            Add course
+          </DefaultButton>
         </header>
 
-        <Card className={styles.tabsCard}>
+        <Card className={styles.toolbar}>
           <nav className={styles.tabs} aria-label="Filter courses">
             {["IP", "CD", "NS", "PA", "RY"].map((status) => (
               <button
@@ -238,21 +262,34 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
               </button>
             ))}
           </nav>
+          <label className={styles.searchBox}>
+            <Search aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Search your library"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </label>
         </Card>
 
-        {loading && <p role="status">Loading courses...</p>}
-        {error && <p role="alert">{error}</p>}
-        {!loading && !error && courses.length === 0 && <p>Your course library is empty. Add your first course.</p>}
+        {loading && <p className={styles.pageMessage} role="status">Loading courses…</p>}
+        {error && <p className={styles.error} role="alert">{error}</p>}
 
-        {!loading && !error && courses.length > 0 && (
+        {!loading && !error && (
           <div className={styles.contentGrid}>
-            <Card className={styles.courseList} aria-label={`${statusLabels[filter]} courses`}>
-              {visibleCourses.length === 0 ? (
-                <p>No courses in this section match your search.</p>
+            <section className={styles.courseList} aria-label={`${statusLabels[filter]} courses`}>
+              {courses.length === 0 ? (
+                <div className={styles.emptyList}>Your course library is empty. Add your first course.</div>
+              ) : visibleCourses.length === 0 ? (
+                <div className={styles.emptyList}>{search ? `No courses found for “${search}”.` : "No courses in this section."}</div>
               ) : visibleCourses.map((course) => {
                 const total = course.number_of_lessons ?? 0;
                 const courseProgress = total ? Math.min(100, Math.round(course.completed_lessons / total * 100)) : 0;
                 const selected = course.id === selectedCourse?.id;
+                const certificateLabel = course.certificate_obtained
+                  ? "Certificate obtained"
+                  : course.certificate_available ? "Certificate available" : "No certificate";
                 return (
                   <Card
                     as="article"
@@ -269,69 +306,79 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
                     {course.cover ? (
                       <img className={styles.courseCover} src={course.cover} alt={`${course.title} cover`} loading="lazy" />
                     ) : (
-                      <div className={styles.courseCoverPlaceholder} aria-hidden="true">{course.title.slice(0, 1)}</div>
+                      <div className={styles.courseCoverPlaceholder} aria-hidden="true">{courseInitials(course.title)}</div>
                     )}
                     <div className={styles.courseInfo}>
-                      <div className={styles.courseTitleRow}>
-                        <h2>{course.title}</h2>
-                        <strong>{courseProgress}%</strong>
-                      </div>
+                      <h2>{course.title}</h2>
                       <p title={course.instructor ?? undefined}>
                         {instructorsPreview(course.instructor) || course.platform || "Course"}
                         {course.instructor && course.platform ? ` · ${course.platform}` : ""}
                       </p>
-                      <ProgressBar value={course.completed_lessons} max={total || 1} className={styles.progress} />
-                      <div className={styles.courseMeta}>
-                        <span>Lesson {course.completed_lessons} of {total || "—"}</span>
-                        <span>
-                          {course.goal_date ? `Goal: ${course.goal_date}` : "No goal date"}
-                          {` · certificate: ${course.certificate_available ? "yes" : "no"}`}
-                        </span>
+                      <div className={styles.progressRow}>
+                        <ProgressBar value={course.completed_lessons} max={total || 1} className={styles.progress} />
+                        <span>{course.completed_lessons} of {total || "—"} lessons</span>
+                      </div>
+                    </div>
+                    <div className={styles.courseSide}>
+                      <strong>{courseProgress}%</strong>
+                      <div className={styles.chips}>
+                        <span>{course.goal_date ? `Goal ${formatGoalDate(course.goal_date)}` : "No goal date"}</span>
+                        <span>{certificateLabel}</span>
                       </div>
                     </div>
                   </Card>
                 );
               })}
-            </Card>
+            </section>
 
             {selectedCourse && (
               <Card className={styles.detailsCard}>
-                <div className={styles.detailsHeader}>
-                  <span className={styles.detailLabel}>Details</span>
-                  <DefaultButton
-                    size="sm"
-                    variant="secondary"
-                    icon={<SquarePen size={14} aria-hidden="true" />}
-                    onClick={() => openCourseForm(selectedCourse)}
-                  >
-                    Edit
-                  </DefaultButton>
-                </div>
-                <h2>{selectedCourse.title}</h2>
-                {selectedCourse.instructor && <p title={selectedCourse.instructor}>{instructorsPreview(selectedCourse.instructor)}</p>}
-                <ProgressBar
-                  value={selectedCourse.completed_lessons}
-                  max={selectedCourse.number_of_lessons || 1}
-                  className={styles.detailProgress}
-                />
-                <p className={styles.detailProgressText}>
-                  {selectedCourse.completed_lessons} of {selectedCourse.number_of_lessons ?? "—"} lessons · {progress}%
-                </p>
-                {selectedCourse.modules.length > 0 && (
-                  <div className={styles.modules}>
-                    {selectedCourse.modules.map((module, index) => (
-                      <div className={styles.module} key={`${module}-${index}`}>
-                        <span className={styles.moduleCheck} aria-hidden="true" />
-                        <span>{module}</span>
-                      </div>
-                    ))}
-                  </div>
+                {selectedCourse.cover ? (
+                  <img className={styles.detailCover} src={selectedCourse.cover} alt={`${selectedCourse.title} cover`} />
+                ) : (
+                  <div className={styles.detailCoverPlaceholder} aria-hidden="true">{courseInitials(selectedCourse.title)}</div>
                 )}
+                <h2>{selectedCourse.title}</h2>
+                <p className={styles.detailByline} title={selectedCourse.instructor ?? undefined}>
+                  {[instructorsPreview(selectedCourse.instructor), selectedCourse.platform].filter(Boolean).join(" · ") || "Course"}
+                </p>
+                <div className={styles.detailProgressBlock}>
+                  <strong>{progress}%</strong>
+                  <ProgressBar value={selectedCourse.completed_lessons} max={selectedCourse.number_of_lessons || 1} className={styles.detailProgress} />
+                  <span>
+                    {selectedCourse.completed_lessons} of {selectedCourse.number_of_lessons ?? "—"} lessons completed
+                    {selectedCourse.number_of_lessons != null && ` · ${Math.max(0, selectedCourse.number_of_lessons - selectedCourse.completed_lessons)} remaining`}
+                  </span>
+                </div>
+                <label className={styles.detailField}>
+                  <span>Goal date</span>
+                  <DatePicker
+                    value={selectedCourse.goal_date ?? ""}
+                    disabled={detailSaving}
+                    onChange={(value) => void updateCourseDetails(selectedCourse, { goal_date: value || null })}
+                  />
+                </label>
+                <div className={detailSaving ? styles.controlPending : ""}>
+                  <Switch
+                    label="Certificate available"
+                    description={selectedCourse.certificate_obtained ? "Certificate obtained" : undefined}
+                    checked={selectedCourse.certificate_available}
+                    onChange={(checked) => void updateCourseDetails(selectedCourse, { certificate_available: checked })}
+                  />
+                </div>
+                {detailError && <p className={styles.error} role="alert">{detailError}</p>}
+                <div className={styles.detailActions}>
+                  <DefaultButton variant="secondary" size="sm" onClick={() => { setSelectedCourseId(null); setDetailError(""); }}>Close</DefaultButton>
+                  <DefaultButton size="sm" icon={<SquarePen aria-hidden="true" />} onClick={() => openCourseForm(selectedCourse)}>Edit course</DefaultButton>
+                </div>
               </Card>
             )}
-            {!selectedCourse && visibleCourses.length > 0 && (
+            {!selectedCourse && (
               <Card className={styles.detailsCard}>
-                <p className={styles.detailsHint}>Select a course to see its details and edit it.</p>
+                <div className={styles.detailsHint}>
+                  <MonitorPlay aria-hidden="true" />
+                  <p>Select a course to see its details and edit it.</p>
+                </div>
               </Card>
             )}
           </div>
