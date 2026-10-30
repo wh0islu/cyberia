@@ -84,6 +84,7 @@ type SourcesFieldProps = {
 
 type FormFooterProps = {
   submitLabel: string;
+  cancelLabel?: string;
   onCancel: () => void;
   submitting: boolean;
 };
@@ -442,6 +443,7 @@ export function cleanSources(
 
 export function FormFooter({
   submitLabel,
+  cancelLabel = "Cancel",
   onCancel,
   submitting,
 }: FormFooterProps) {
@@ -452,7 +454,7 @@ export function FormFooter({
       </span>
       <div className="form__actions">
         <DefaultButton variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
+          {cancelLabel}
         </DefaultButton>
         <DefaultButton type="submit" size="sm" disabled={submitting}>
           {submitting ? "Saving…" : submitLabel}

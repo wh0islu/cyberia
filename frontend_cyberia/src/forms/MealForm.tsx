@@ -9,9 +9,10 @@ import {
 } from "../components/FormFields";
 import { ScrollArea } from "../components/ScrollArea";
 import { DatePicker } from "../components/DatePicker";
+import { DefaultButton } from "../components/DefaultButton";
 import { TimePicker } from "../components/TimePicker";
 
-type MealFormData = {
+export type MealFormData = {
   meal: string;
   date: string;
   time: string;
@@ -22,16 +23,18 @@ type MealFormData = {
 
 type MealFormProps = {
   initial?: Partial<MealFormData>;
+  photoUrl?: string | null;
+  submitLabel?: string;
   onSubmit: (data: MealFormData) => void | Promise<void>;
   onCancel: () => void;
 };
 
 const MEALS = [
-  { value: "BREAKFAST", label: "Breakfast" },
-  { value: "LUNCH", label: "Lunch" },
-  { value: "SNACK", label: "Snack" },
-  { value: "DINNER", label: "Dinner" },
-  { value: "OTHER", label: "Other" },
+  { value: "BR", label: "Breakfast" },
+  { value: "LU", label: "Lunch" },
+  { value: "SN", label: "Snack" },
+  { value: "DI", label: "Dinner" },
+  { value: "OT", label: "Other" },
 ];
 
 const TAGS = ["Homemade", "Eating out", "Delivery", "Quick", "Healthy"];
@@ -44,9 +47,9 @@ const today = () => {
 };
 const nowTime = () => new Date().toTimeString().slice(0, 5);
 
-export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
+export function MealForm({ initial, photoUrl, submitLabel = "Log meal", onSubmit, onCancel }: MealFormProps) {
   const [data, setData] = useState<MealFormData>({
-    meal: "LUNCH",
+    meal: "LU",
     date: today(),
     time: nowTime(),
     photo: null,
@@ -105,7 +108,7 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
           </Field>
         </div>
 
-        <ImageDrop label="Add photo (optional)" shape="wide" value={data.photo} onChange={set("photo")} />
+        <ImageDrop label="Add photo (optional)" shape="wide" value={data.photo} imageUrl={photoUrl} onChange={set("photo")} />
 
         <div className="field field--full">
           <span className="lbl">What I ate <span className="req">*</span></span>
@@ -136,14 +139,14 @@ export function MealForm({ initial, onSubmit, onCancel }: MealFormProps) {
                 }
               }}
             />
-            <button type="button" className="add-btn" onClick={addItem}>Add</button>
+            <DefaultButton type="button" variant="secondary" size="sm" onClick={addItem}>Add</DefaultButton>
           </div>
         </div>
 
         <ChipGroup label="Tags" options={TAGS} value={data.tags} onChange={set("tags")} />
       </ScrollArea>
 
-      <FormFooter submitLabel="Log meal" onCancel={onCancel} submitting={submitting} />
+      <FormFooter submitLabel={submitLabel} onCancel={onCancel} submitting={submitting} />
     </form>
   );
 }

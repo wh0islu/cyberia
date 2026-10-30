@@ -405,6 +405,20 @@ def series_api(request, pk):
 
 
 # Meals
+def _meal_request_data(request):
+    data = {key: request.data.get(key) for key in request.data}
+    if 'time' in data and not data['time']:
+        data['time'] = None
+    for field in ('tags', 'items'):
+        value = data.get(field)
+        if isinstance(value, str):
+            try:
+                data[field] = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+    return data
+
+
 @api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def meals_api_collection(request):
@@ -414,7 +428,7 @@ def meals_api_collection(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = MealEntrySerializer(data=request.data, context={'request': request})
+        serializer = MealEntrySerializer(data=_meal_request_data(request), context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -435,7 +449,7 @@ def meal_api(request, pk):
     elif request.method == 'PATCH':
         serializer = MealEntrySerializer(
             meal,
-            data=request.data,
+            data=_meal_request_data(request),
             partial=True,
             context={'request': request},
         )
