@@ -136,20 +136,34 @@ export function Home() {
   const completedHabits = todaysHabits.filter((habit) =>
     habit.completions.some((completion) => completion.date === todayKey && completion.completed),
   ).length;
-  const todaysMeals = mealCategories.map((category) => ({
+  const mealsToday = data.meals.filter((meal) => meal.date === todayKey);
+  const visibleMealCategories = mealsToday.some((meal) => meal.category === "OT")
+    ? [...mealCategories, { code: "OT", name: "Other" }]
+    : mealCategories;
+  const todaysMeals = visibleMealCategories.map((category) => ({
     ...category,
-    meal: data.meals.filter((meal) => meal.category === category.code && meal.date === todayKey)
-      .sort((first, second) => second.id - first.id)[0],
+    meals: mealsToday
+      .filter((meal) => meal.category === category.code)
+      .sort((first, second) => (first.time ?? "99:99").localeCompare(second.time ?? "99:99") || first.id - second.id),
   }));
-  const watchedItems = [
-    ...data.movies.filter((movie) => movie.status === "WT").map((item) => ({ ...item, type: "Movie" })),
-    ...data.series.filter((series) => series.status === "WD").map((item) => ({ ...item, type: "Series" })),
+  const watchingItems = [
+    ...data.movies.filter((movie) => movie.status === "WG").map((item) => ({ ...item, type: "Movie" })),
+    ...data.series.filter((series) => series.status === "WT").map((item) => ({ ...item, type: "Series" })),
   ].sort((first, second) => second.id - first.id).slice(0, 3);
+  const finishedBooks = data.books.filter((book) => book.status === "FD").length;
+  const pagesRead = data.books.reduce((total, book) => total + (
+    book.status === "FD" && book.number_of_pages !== null
+      ? Math.max(book.current_page, book.number_of_pages)
+      : book.current_page
+  ), 0);
+  const watchedTitles = data.movies.filter((movie) => movie.status === "WT").length
+    + data.series.filter((series) => series.status === "WD").length;
+  const lessonsCompleted = data.courses.reduce((total, course) => total + course.completed_lessons, 0);
   const summary: { label: string; value: number; sections: Section[] }[] = [
-    { label: "Books finished", value: data.books.filter((book) => book.status === "FD").length, sections: ["books"] },
-    { label: "Pages read", value: data.books.reduce((total, book) => total + book.current_page, 0), sections: ["books"] },
-    { label: "Titles watched", value: data.movies.filter((movie) => movie.status === "WT").length + data.series.filter((series) => series.status === "WD").length, sections: ["movies", "series"] },
-    { label: "Lessons completed", value: data.courses.reduce((total, course) => total + course.completed_lessons, 0), sections: ["courses"] },
+    { label: "Books finished", value: finishedBooks, sections: ["books"] },
+    { label: "Pages read", value: pagesRead, sections: ["books"] },
+    { label: "Titles watched", value: watchedTitles, sections: ["movies", "series"] },
+    { label: "Lessons completed", value: lessonsCompleted, sections: ["courses"] },
   ];
 
   function sectionMessage(sections: Section[], empty: string) {
@@ -246,26 +260,34 @@ export function Home() {
           className={styles.mealsCard}
         >
           <div className={styles.mealList}>
-            {todaysMeals.map(({ code, name, meal }) => (
+            {todaysMeals.map(({ code, name, meals }) => {
+              const itemNames = meals.flatMap((meal) => meal.items.map((item) => item.name));
+              const timeLabel = meals.length === 1
+                ? meals[0].time?.slice(0, 5) ?? "—"
+                : meals.length > 1 ? `${meals.length} logs` : "—";
+              return (
               <div className={styles.mealItem} key={code}>
                 <div>
                   <strong>{name}</strong>
-                  <small>{meal ? (meal.items.length ? meal.items.map((item) => item.name).join(", ") : "Meal logged") : sectionMessage(["meals"], "Not recorded yet")}</small>
+                  <small>{meals.length
+                    ? itemNames.length ? itemNames.join(", ") : `${meals.length === 1 ? "Meal" : "Meals"} logged`
+                    : sectionMessage(["meals"], "Not recorded yet")}</small>
                 </div>
-                <time>{meal?.time?.slice(0, 5) ?? "—"}</time>
+                <time>{timeLabel}</time>
               </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
 
         <Card
-          title="Watched titles"
+          title="Currently watching"
           action={{ label: "View all ›", href: "/movies/series" }}
-          className={styles.watchedCard}
+          className={styles.watchingCard}
         >
-          <div className={styles.watchedList}>
-            {watchedItems.map((item) => (
-              <figure className={styles.watchedItem} key={`${item.type}-${item.id}`}>
+          <div className={styles.watchingList}>
+            {watchingItems.map((item) => (
+              <figure className={styles.watchingItem} key={`${item.type}-${item.id}`}>
                 {mediaCover(item) ? <img src={mediaCover(item)!} alt={`Poster of ${item.title}`} loading="lazy" /> : <div className={styles.posterPlaceholder} role="img" aria-label={`No poster for ${item.title}`} />}
                 <figcaption>
                   <strong>{item.title}</strong>
@@ -276,7 +298,7 @@ export function Home() {
               </figure>
             ))}
           </div>
-          {!watchedItems.length && <p className={styles.emptyMessage}>{sectionMessage(["movies", "series"], "No watched titles yet.")}</p>}
+          {!watchingItems.length && <p className={styles.emptyMessage}>{sectionMessage(["movies", "series"], "No movies or series in progress.")}</p>}
         </Card>
 
         <Card title="Library summary" className={styles.summaryCard}>

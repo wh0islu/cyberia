@@ -49,7 +49,7 @@
 .coursesCard,
 .routineCard,
 .mealsCard,
-.watchedCard,
+.watchingCard,
 .summaryCard {
   box-sizing: border-box;
 }
@@ -290,7 +290,7 @@
   flex-shrink: 0;
 }
 
-.watchedList {
+.watchingList {
   display: grid;
   flex: 1;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -298,12 +298,12 @@
   gap: 14px;
 }
 
-.watchedItem {
+.watchingItem {
   min-width: 0;
   margin: 0;
 }
 
-.watchedItem img,
+.watchingItem img,
 .posterPlaceholder {
   display: block;
   width: 100%;
@@ -323,7 +323,7 @@
   );
 }
 
-.watchedItem figcaption {
+.watchingItem figcaption {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -331,7 +331,7 @@
   margin-top: 7px;
 }
 
-.watchedItem figcaption strong {
+.watchingItem figcaption strong {
   overflow: hidden;
   font-size: 10px;
   font-weight: 500;
@@ -339,7 +339,7 @@
   white-space: nowrap;
 }
 
-.watchedItem figcaption small {
+.watchingItem figcaption small {
   color: var(--text-muted);
   font-size: 10px;
 }
