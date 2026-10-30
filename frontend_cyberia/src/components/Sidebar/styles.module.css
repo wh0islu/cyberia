@@ -80,7 +80,6 @@
 .sidebar--collapsed .sidebar__link-nome,
 .sidebar--collapsed .sidebar__contagem,
 .sidebar--collapsed .sidebar__grupo-titulo,
-.sidebar--collapsed .sidebar__tema,
 .sidebar--collapsed .sidebar__perfil-texto {
   display: none;
 }
@@ -169,51 +168,6 @@
   flex-direction: column;
   gap: 12px;
 }
-.sidebar__tema {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0 6px;
-}
-.sidebar__tema .sidebar__grupo-titulo {
-  padding: 0;
-}
-
-/* segmented selector (reusable on other screens) */
-.seg {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--bg-surface-alt);
-}
-.seg button {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-.seg button svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-.seg button[aria-pressed="true"] {
-  background: var(--nav-active-bg);
-  color: var(--nav-active-text);
-}
-
 /* perfil */
 .sidebar__perfil {
   display: flex;

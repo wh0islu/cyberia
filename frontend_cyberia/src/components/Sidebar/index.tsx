@@ -1,8 +1,6 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import styles from "./styles.module.css";
 import {
-  SunIcon,
-  MoonIcon,
   House,
   LibraryBig,
   MonitorPlay,
@@ -53,29 +51,6 @@ const navigationGroups: NavigationGroup[] = [
   },
 ] as const;
 
-function useTheme() {
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    try {
-      return localStorage.getItem("theme") === "light" ? "light" : "dark";
-    } catch {
-      return "dark";
-    }
-  });
-
-  useEffect(() => {
-    const raiz = document.documentElement;
-    if (theme === "light") raiz.dataset.theme = "light";
-    else delete raiz.dataset.theme;
-    try {
-      localStorage.setItem("theme", theme);
-    } catch {
-      // The theme still works when browser storage is unavailable.
-    }
-  }, [theme]);
-
-  return [theme, setTheme] as const;
-}
-
 type SidebarProps = {
   currentPath?: string;
   counts?: Partial<Record<SectionCountKey, number>>;
@@ -89,7 +64,6 @@ export function Sidebar({
   user = { name: "My profile", subtitle: "Personal account" },
   onNavigate,
 }: SidebarProps) {
-  const [theme, setTheme] = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   function handleNavigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
@@ -171,28 +145,6 @@ export function Sidebar({
       </nav>
 
       <div className={styles["sidebar__rodape"]}>
-        <div className={styles["sidebar__tema"]}>
-          <span className={styles["sidebar__grupo-titulo"]}>Theme</span>
-          <div className={styles.seg} role="group" aria-label="Theme">
-            <button
-              type="button"
-              aria-pressed={theme === "dark"}
-              onClick={() => setTheme("dark")}
-            >
-              <MoonIcon aria-hidden="true" />
-              Dark
-            </button>
-            <button
-              type="button"
-              aria-pressed={theme === "light"}
-              onClick={() => setTheme("light")}
-            >
-              <SunIcon aria-hidden="true" />
-              Light
-            </button>
-          </div>
-        </div>
-
         <a
           href="/profile"
           className={styles["sidebar__perfil"]}
