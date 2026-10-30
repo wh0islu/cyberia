@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { HabitForm } from "../../forms";
+import { Card } from "../Card";
+import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
+import { ProgressBar } from "../ProgressBar";
 import styles from "./styles.module.css";
 
 type Completion = { id: number; habit: number; date: string; completed: boolean };
@@ -91,6 +94,7 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
   }, []);
 
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const todayKey = dateKey(today);
   const todayWeekday = (today.getDay() + 6) % 7;
   const weekStart = getWeekStart(today);
@@ -100,6 +104,7 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
     date.setDate(weekStart.getDate() + index);
     return date;
   });
+  const currentWeekIsVisible = weekDates.some((date) => dateKey(date) === todayKey);
   const scheduledCount = habits.reduce((total, habit) => total + habit.weekdays.length, 0);
   const completedCount = habits.reduce(
     (total, habit) => total + weekDates.filter((date, index) =>
@@ -107,8 +112,11 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
     ).length, 0,
   );
   const percentage = scheduledCount ? Math.round(completedCount / scheduledCount * 100) : 0;
-  const todaysHabits = habits.filter((habit) => habit.weekdays.includes(todayWeekday))
-    .sort((a, b) => (a.time ?? "99:99").localeCompare(b.time ?? "99:99"));
+  const todaysHabits = currentWeekIsVisible
+    ? habits.filter((habit) => habit.weekdays.includes(todayWeekday))
+      .sort((a, b) => (a.time ?? "99:99").localeCompare(b.time ?? "99:99"))
+    : [];
+  const todayCompletedCount = todaysHabits.filter((habit) => isCompleted(habit, todayKey)).length;
 
   async function toggleCompletion(habit: Habit, date: Date) {
     const day = dateKey(date);
@@ -156,77 +164,133 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
     }
   }
 
+  function openHabitForm() {
+    setFormError("");
+    setIsModalOpen(true);
+  }
+
   return (
     <>
       <main className={styles.page}>
         <header className={styles.pageHeader}>
-          <div><h1>Routine</h1><p>Weekly habits and daily schedule</p></div>
+          <div>
+            <h1>Routine</h1>
+            <p>{habits.length} {habits.length === 1 ? "habit" : "habits"} · {completedCount} completed this week</p>
+          </div>
           <div className={styles.headerActions}>
-            <div className={styles.weekControls} aria-label="Navigate weeks">
-              <button type="button" aria-label="Previous week" onClick={() => setWeekOffset((offset) => offset - 1)}><ChevronLeft size={16} /></button>
+            <div className={styles.weekControls} role="group" aria-label="Choose week">
+              <DefaultButton className={styles.iconButton} variant="ghost" size="sm" icon={<ChevronLeft aria-hidden="true" />} aria-label="Previous week" onClick={() => setWeekOffset((offset) => offset - 1)} />
               <span>{formatDate(weekDates[0], { day: "numeric", month: "short" })} – {formatDate(weekDates[6], { day: "numeric", month: "short" })}</span>
-              <button type="button" aria-label="Next week" onClick={() => setWeekOffset((offset) => offset + 1)}><ChevronRight size={16} /></button>
+              <DefaultButton className={styles.iconButton} variant="ghost" size="sm" icon={<ChevronRight aria-hidden="true" />} aria-label="Next week" onClick={() => setWeekOffset((offset) => offset + 1)} />
             </div>
-            <button className={styles.primaryButton} type="button" onClick={() => { setFormError(""); setIsModalOpen(true); }}>
-              <Plus size={16} aria-hidden="true" /> New habit
-            </button>
+            {weekOffset !== 0 && <DefaultButton variant="secondary" size="sm" onClick={() => setWeekOffset(0)}>Current week</DefaultButton>}
+            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} onClick={openHabitForm}>New habit</DefaultButton>
           </div>
         </header>
+
         {error && <p className={styles.error} role="alert">{error}</p>}
-        <div className={styles.columns}>
-          <section className={styles.weekPanel}>
-            <header className={styles.panelHeader}><h2>Weekly habits</h2><span>{percentage}% complete</span></header>
-            <div className={styles.weekGrid}>
-              <div className={styles.gridCorner} />
-              {weekDates.map((date, index) => <div className={styles.dayHeading} key={dateKey(date)}>
-                <span>{weekdays[index]}</span><time dateTime={dateKey(date)}>{formatDate(date, { day: "numeric" })}</time>
-              </div>)}
-              <span className={styles.totalHeading}>Total</span>
-              {habits.map((habit) => <div className={styles.habitRow} key={habit.id}>
-                <span className={styles.habitName} title={habit.name}>{habit.name}</span>
+
+        <section className={styles.summary} aria-label="Week summary">
+          <Card className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Week completion</span>
+            <strong className={styles.summaryValue}>{percentage}%</strong>
+            <ProgressBar className={styles.summaryProgress} value={completedCount} max={scheduledCount || 1} />
+          </Card>
+          <Card className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Completed days</span>
+            <strong className={styles.summaryValue}>{completedCount} of {scheduledCount}</strong>
+            <p>Only scheduled days are counted.</p>
+          </Card>
+          <Card className={styles.summaryCard}>
+            <span className={styles.summaryLabel}>Today</span>
+            <strong className={styles.summaryValue}>{currentWeekIsVisible ? `${todayCompletedCount} of ${todaysHabits.length}` : "—"}</strong>
+            <p>{currentWeekIsVisible ? "habits completed today" : "outside this week"}</p>
+          </Card>
+        </section>
+
+        <div className={styles.contentGrid}>
+          <Card className={styles.weekPanel}>
+            <header className={styles.panelHeader}>
+              <h2>Weekly habits</h2>
+              <span>Select a scheduled day to mark it</span>
+            </header>
+            <div className={styles.tableScroll}>
+              <div className={styles.weekGrid}>
+                <span />
                 {weekDates.map((date, index) => {
-                  const day = dateKey(date);
-                  const scheduled = habit.weekdays.includes(index);
-                  const done = isCompleted(habit, day);
-                  return <button
-                    className={done ? styles.dayDone : scheduled ? styles.dayScheduled : styles.dayEmpty}
-                    type="button"
-                    key={day}
-                    aria-label={`${habit.name}, ${formatDate(date, { weekday: "long", month: "short", day: "numeric" })}${done ? ", completed" : ", not completed"}`}
-                    aria-pressed={done}
-                    disabled={!scheduled || day > todayKey || pendingDays.includes(`${habit.id}-${day}`)}
-                    onClick={() => void toggleCompletion(habit, date)}
-                  >{done ? "✓" : ""}</button>;
+                  const isToday = dateKey(date) === todayKey;
+                  return <div className={`${styles.dayHeading} ${isToday ? styles.todayColumn : ""}`} key={dateKey(date)}>
+                    <span>{weekdays[index]}</span>
+                    <time className={isToday ? styles.todayDate : ""} dateTime={dateKey(date)}>{formatDate(date, { day: "numeric" })}</time>
+                    <small>{isToday ? "Today" : ""}</small>
+                  </div>;
                 })}
-                <span className={styles.habitTotal}>
-                  {weekDates.filter((date, index) => habit.weekdays.includes(index) && isCompleted(habit, dateKey(date))).length}/{habit.weekdays.length}
-                </span>
-              </div>)}
+                <span className={styles.totalHeading}>Total</span>
+
+                {habits.map((habit) => {
+                  const habitCompleted = weekDates.filter((date, index) => habit.weekdays.includes(index) && isCompleted(habit, dateKey(date))).length;
+                  return <div className={styles.habitRow} key={habit.id}>
+                    <span className={styles.habitName} title={habit.name}>{habit.name}</span>
+                    {weekDates.map((date, index) => {
+                      const day = dateKey(date);
+                      const scheduled = habit.weekdays.includes(index);
+                      const done = isCompleted(habit, day);
+                      const missed = scheduled && day < todayKey && !done;
+                      const pending = pendingDays.includes(`${habit.id}-${day}`);
+                      const stateClass = done ? styles.dayDone : missed ? styles.dayMissed : scheduled ? styles.dayScheduled : styles.dayEmpty;
+                      return <div className={`${styles.daySlot} ${day === todayKey ? styles.todayColumn : ""}`} key={day}>
+                        <button className={`${styles.dayCell} ${stateClass}`} type="button" aria-label={`${habit.name}, ${formatDate(date, { weekday: "long", month: "short", day: "numeric" })}${done ? ", completed" : scheduled ? ", scheduled" : ", not scheduled"}`} aria-pressed={done} disabled={!scheduled || day > todayKey || pending} onClick={() => void toggleCompletion(habit, date)}>
+                          {done ? <Check aria-hidden="true" /> : !scheduled ? <span aria-hidden="true">–</span> : null}
+                        </button>
+                      </div>;
+                    })}
+                    <div className={styles.habitTotal}>
+                      <span>{habitCompleted}/{habit.weekdays.length}</span>
+                      <ProgressBar value={habitCompleted} max={habit.weekdays.length || 1} />
+                    </div>
+                  </div>;
+                })}
+              </div>
             </div>
-            {loading && <p className={styles.weekHint}>Loading habits…</p>}
-            {!loading && !error && habits.length === 0 && <p className={styles.weekHint}>No habits yet. Create your first habit.</p>}
-            {habits.length > 0 && <p className={styles.weekHint}>Click a scheduled day to mark or unmark it.</p>}
-          </section>
-          <section className={styles.todayPanel}>
-            <header className={styles.todayHeader}><div><h2>Today</h2>
+
+            {loading && <p className={styles.panelMessage}>Loading habits…</p>}
+            {!loading && !error && habits.length === 0 && <p className={styles.panelMessage}>No habits yet. Create your first habit.</p>}
+            <div className={styles.legend} aria-label="Legend">
+              <span><i className={styles.legendDone} />Done</span>
+              <span><i className={styles.legendScheduled} />Scheduled</span>
+              <span><i className={styles.legendMissed} />Missed</span>
+              <span><i className={styles.legendEmpty} />Not scheduled</span>
+            </div>
+          </Card>
+
+          <Card className={styles.todayPanel}>
+            <header className={styles.todayHeader}>
+              <h2>Today</h2>
               <p>{formatDate(today, { weekday: "long", day: "numeric", month: "short" })}</p>
-            </div></header>
-            <div className={styles.agendaList}>
-              {todaysHabits.map((habit) => {
-                const done = isCompleted(habit, todayKey);
-                return <article className={styles.agendaItem} key={habit.id}>
-                  <time>{habit.time?.slice(0, 5) ?? "—"}</time>
-                  <div className={styles.agendaDetails}>
-                    <div><h3>{habit.name}</h3>{habit.goal && <p>{habit.goal}</p>}</div>
-                    <span className={done ? styles.statusDone : styles.statusLater}>{done ? "Done" : "Pending"}</span>
-                  </div>
-                </article>;
-              })}
-              {!loading && !error && todaysHabits.length === 0 && <p className={styles.weekHint}>No habits scheduled today.</p>}
-            </div>
-          </section>
+            </header>
+            {!currentWeekIsVisible ? (
+              <p className={styles.panelMessage}>Today is outside this week. Return to the current week to update it.</p>
+            ) : (
+              <div className={styles.todayList}>
+                {todaysHabits.map((habit) => {
+                  const done = isCompleted(habit, todayKey);
+                  return <article className={styles.todayItem} key={habit.id}>
+                    <div className={styles.todayInfo}>
+                      <strong>{habit.name}</strong>
+                      <span className={done ? styles.statusDone : ""}>{done ? "Done" : "Pending"}</span>
+                    </div>
+                    <button className={`${styles.todayCheck} ${done ? styles.todayCheckDone : ""}`} type="button" aria-label={`Mark ${habit.name} ${done ? "as pending" : "as done"}`} aria-pressed={done} disabled={pendingDays.includes(`${habit.id}-${todayKey}`)} onClick={() => void toggleCompletion(habit, today)}>
+                      {done && <Check aria-hidden="true" />}
+                    </button>
+                  </article>;
+                })}
+                {!loading && !error && todaysHabits.length === 0 && <p className={styles.panelMessage}>No habits scheduled today.</p>}
+              </div>
+            )}
+          </Card>
         </div>
       </main>
+
       <FormModal open={isModalOpen} title="New habit" description="It will appear in the weekly tracker and today's schedule." onClose={() => setIsModalOpen(false)}>
         {formError && <p className={styles.error} role="alert">{formError}</p>}
         <HabitForm onSubmit={handleCreateHabit} onCancel={() => setIsModalOpen(false)} />
