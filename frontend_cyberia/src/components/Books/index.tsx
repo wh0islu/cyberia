@@ -5,6 +5,7 @@ import type { BookFormInitial, BookSubmission } from "../../forms/BookForm";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
+import { HorizontalCarousel } from "../HorizontalCarousel";
 import { ProgressBar } from "../ProgressBar";
 import { Select } from "../Select";
 import styles from "./styles.module.css";
@@ -62,7 +63,7 @@ async function requestBooks(path = "", options: RequestInit = {}) {
 
 function BookCover({ book, className }: { book: Book; className: string }) {
   return book.cover ? (
-    <img className={className} src={book.cover} alt={`${book.title} cover`} loading="lazy" />
+    <img className={className} src={book.cover} alt={`${book.title} cover`} loading="lazy" draggable={false} />
   ) : <div className={className} role="img" aria-label="No cover">No cover</div>;
 }
 
@@ -169,7 +170,7 @@ export function Books({ onCollectionChange }: { onCollectionChange?: () => void 
       return secondReadAt - firstReadAt || second.id - first.id;
     });
   const displayedReading = filter === "RE" ? reading : reading.slice(0, 2);
-  const shelf = visible.filter((book) => bookStatus(book) !== "RE");
+  const shelf = filter ? visible.filter((book) => bookStatus(book) !== "RE") : visible;
   function updateBook(updated: Book) {
     setBooks((previous) => previous.map((book) => book.id === updated.id ? updated : book));
   }
@@ -230,7 +231,7 @@ export function Books({ onCollectionChange }: { onCollectionChange?: () => void 
         )}
         {shelf.length > 0 && filter !== "RE" && (
           <Card title={filter === "NR" ? "Want to read" : "Bookshelf"} className={styles.shelfSection} id="books">
-            <div className={styles.shelfGrid}>
+            <HorizontalCarousel label="Bookshelf carousel">
               {shelf.map((book) => (
                 <article className={styles.shelfBook} key={book.id}>
                   <BookCover book={book} className={styles.shelfCover} /><h3>{book.title}</h3><p title={book.author}>{authorPreview(book.author)}</p>
@@ -251,7 +252,7 @@ export function Books({ onCollectionChange }: { onCollectionChange?: () => void 
                   </div>
                 </article>
               ))}
-            </div>
+            </HorizontalCarousel>
           </Card>
         )}
       </main>

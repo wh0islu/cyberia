@@ -223,7 +223,7 @@
 }
 
 .seriesDetails :global([role="progressbar"]) {
-  height: 6px;
+  height: 4px;
   overflow: hidden;
   border: 0;
   border-radius: 999px;
@@ -242,18 +242,14 @@
   font-size: 12px;
 }
 
-.watchedGrid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 14px;
-}
-
 .moviesPage .watchedItem {
+  flex: 0 0 calc((100% - 60px) / 6);
   min-width: 0;
   padding: 0;
   gap: 4px;
   background: transparent;
   cursor: pointer;
+  scroll-snap-align: start;
 }
 
 .watchedItem > img {
@@ -367,8 +363,8 @@
 }
 
 @container (max-width: 1200px) {
-  .watchedGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .moviesPage .watchedItem {
+    flex-basis: calc((100% - 36px) / 4);
   }
 }
 
@@ -390,8 +386,8 @@
     grid-template-columns: 1fr;
   }
 
-  .watchedGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .moviesPage .watchedItem {
+    flex-basis: calc((100% - 24px) / 3);
   }
 }
 
@@ -435,8 +431,8 @@
     height: 120px;
   }
 
-  .watchedGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .moviesPage .watchedItem {
+    flex-basis: calc((100% - 12px) / 2);
   }
 }
 

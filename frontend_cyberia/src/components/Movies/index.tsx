@@ -5,6 +5,7 @@ import type { MediaSubmission } from "../../forms/MediaForm";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
+import { HorizontalCarousel } from "../HorizontalCarousel";
 import {
   MediaDetailsModal,
   type MediaDetailsItem,
@@ -671,7 +672,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
 
         {!loading && !loadError && (libraryItems.length > 0 ? (
           <Card title={activeFilter === "wantToWatch" ? "Want to watch" : activeFilter === "watched" ? "Watched" : "Library"} className={`${styles.sectionPanel} ${styles.watchedSection}`}>
-            <div className={styles.watchedGrid}>
+            <HorizontalCarousel label="Movies and series library carousel">
               {libraryItems.map((item) => (
                 <Card
                   as="article"
@@ -685,7 +686,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
                   onKeyDown={(event) => handleMediaCardKeyDown(event, item)}
                 >
                   {item.cover ? (
-                    <img src={item.cover} alt={`${item.title} poster`} loading="lazy" />
+                    <img src={item.cover} alt={`${item.title} poster`} loading="lazy" draggable={false} />
                   ) : (
                     <div className={styles.posterPlaceholder} aria-label="No poster available" />
                   )}
@@ -724,7 +725,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
                   )}
                 </Card>
               ))}
-            </div>
+            </HorizontalCarousel>
           </Card>
         ) : recentInProgressItems.length > 0 ? null : (
           <p className={styles.emptyState}>
