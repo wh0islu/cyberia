@@ -2,11 +2,11 @@
 from io import BytesIO
 from tempfile import TemporaryDirectory
 
-from PIL import Image
+from apps.base.models import Book, Course, MealEntry, Movie, Series
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from apps.base.models import Book, Movie, Series
 from django.urls import reverse
+from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -114,6 +114,144 @@ class BookApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class CourseApiTests(APITestCase):
+    def setUp(self):
+        self.list_url = reverse('base:courses_api')
+
+    def test_frontend_multipart_payload_creates_course(self):
+        response = self.client.post(
+            self.list_url,
+            {
+                'title': 'Django REST Framework',
+                'instructor': 'Example Instructor',
+                'platform': 'Udemy',
+                'status': 'IP',
+                'number_of_lessons': '40',
+                'completed_lessons': '8',
+                'goal_date': '2026-12-01',
+                'certificate_available': 'true',
+                'modules': '["Serializers", "ViewSets"]',
+                'sources': '[{"format":"WEB","location":null,"url":"https://example.com/course"}]',
+            },
+            format='multipart',
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        course = Course.objects.get()
+        assert course.modules == ['Serializers', 'ViewSets']
+        assert course.certificate_available
+        assert course.sources.get().url == 'https://example.com/course'
+
+    def test_detail_panel_fields_can_be_patched_without_losing_course_data(self):
+        completed_lessons = 4
+        course = Course.objects.create(
+            title='Python course',
+            status='IP',
+            number_of_lessons=20,
+            completed_lessons=completed_lessons,
+        )
+
+        response = self.client.patch(
+            reverse('base:course_api', args=[course.pk]),
+            {'goal_date': '2026-11-30', 'certificate_available': True},
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK, response.data
+        course.refresh_from_db()
+        assert course.goal_date.isoformat() == '2026-11-30'
+        assert course.certificate_available
+        assert course.title == 'Python course'
+        assert course.completed_lessons == completed_lessons
+
+    def test_completed_lessons_cannot_exceed_total(self):
+        course = Course.objects.create(title='Course', number_of_lessons=10)
+
+        response = self.client.patch(
+            reverse('base:course_api', args=[course.pk]),
+            {'completed_lessons': 11},
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        course.refresh_from_db()
+        assert course.completed_lessons == 0
+
+
+class MealApiTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='meal-user', password='test-password')
+        self.client.force_authenticate(self.user)
+        self.list_url = reverse('base:meals_api')
+
+    def test_frontend_multipart_payload_creates_meal_with_items_and_tags(self):
+        response = self.client.post(
+            self.list_url,
+            {
+                'category': 'BR',
+                'date': '2026-10-30',
+                'time': '07:15',
+                'tags': '["home", "quick"]',
+                'items': '[{"name":"Coffee"},{"name":"Papaya"}]',
+            },
+            format='multipart',
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        meal = MealEntry.objects.get()
+        assert meal.user == self.user
+        assert meal.tags == ['home', 'quick']
+        assert list(meal.items.values_list('name', flat=True)) == ['Coffee', 'Papaya']
+
+    def test_frontend_multipart_patch_replaces_items_and_clears_tags(self):
+        meal = MealEntry.objects.create(
+            user=self.user,
+            category='LU',
+            date='2026-10-30',
+            tags=['home'],
+        )
+        meal.items.create(name='Rice')
+
+        response = self.client.patch(
+            reverse('base:meal_api', args=[meal.pk]),
+            {
+                'category': 'LU',
+                'date': '2026-10-30',
+                'time': '',
+                'tags': '[]',
+                'items': '[{"name":"Rice and beans"}]',
+            },
+            format='multipart',
+        )
+
+        assert response.status_code == status.HTTP_200_OK, response.data
+        meal.refresh_from_db()
+        assert meal.time is None
+        assert meal.tags == []
+        assert list(meal.items.values_list('name', flat=True)) == ['Rice and beans']
+
+    def test_photo_can_be_uploaded_directly_without_resending_meal_fields(self):
+        meal = MealEntry.objects.create(
+            user=self.user,
+            category='BR',
+            date='2026-10-30',
+        )
+        image = BytesIO()
+        Image.new('RGB', (2, 2)).save(image, format='PNG')
+
+        with TemporaryDirectory() as media_root, self.settings(MEDIA_ROOT=media_root):
+            response = self.client.patch(
+                reverse('base:meal_api', args=[meal.pk]),
+                {'photo': SimpleUploadedFile('meal.png', image.getvalue(), content_type='image/png')},
+                format='multipart',
+            )
+
+            assert response.status_code == status.HTTP_200_OK, response.data
+            meal.refresh_from_db()
+            assert meal.photo.name.startswith('meals/photos/meal')
+            assert meal.category == 'BR'
 
 
 class MediaSynopsisApiTests(APITestCase):
