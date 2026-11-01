@@ -7,14 +7,13 @@ from .models import (
     CourseSource,
     MealEntry,
     MealItem,
+    MealNote,
     Movie,
     MovieSource,
-    Profile,
     Series,
     SeriesSource,
 )
 
-admin.site.register(Profile)
 admin.site.register(Book)
 admin.site.register(BookSource)
 admin.site.register(Course)
@@ -25,3 +24,4 @@ admin.site.register(Series)
 admin.site.register(SeriesSource)
 admin.site.register(MealEntry)
 admin.site.register(MealItem)
+admin.site.register(MealNote)

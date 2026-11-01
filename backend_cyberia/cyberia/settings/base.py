@@ -7,19 +7,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 
-
-
-
-SECRET_KEY = 'django-insecure-@s2ttarugkim31dnv!nb(h^7+&u93c!jko(jxagyc2cphnyyz('
-
-
 DEBUG = True
-
 ALLOWED_HOSTS = []
-
-
-
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,20 +48,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'cyberia.wsgi.application'
 
 
-
-
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
-
-
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -88,21 +63,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
-
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-
-
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = []
@@ -123,6 +87,9 @@ DATABASES = {
 INSTALLED_APPS += ['apps.base', 'rest_framework', 'drf_spectacular']
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'apps.base.csrf.CsrfAuthentication',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
