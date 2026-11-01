@@ -30,7 +30,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-media/
+/media/
+/backend_cyberia/media/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -192,7 +193,7 @@ cython_debug/
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
 #  and can be added to the global gitignore or merged into this file. However, if you prefer, 
 #  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
+.vscode/
 
 # Ruff stuff:
 .ruff_cache/
@@ -211,3 +212,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+/backend_cyberia/static/
+/backups/
