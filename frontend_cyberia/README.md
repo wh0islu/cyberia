@@ -1,78 +1,47 @@
-# React + TypeScript + Vite
+# Cyberia frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React and TypeScript interface for the Cyberia Django REST API.
+See the [backend setup guide](../backend_cyberia/README.md#local-setup) for environment and backend installation.
 
-Currently, two official plugins are available:
+## Organization
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `src/features/books/`: book library, reading progress, and book form.
+- `src/features/media/`: movies, series, viewing progress, and media form.
+- `src/features/courses/`: course library, details, and course form.
+- `src/features/meals/`: meal calendar, entries, and meal form.
+- `src/features/routine/`: habit tracking, schedule, and habit form.
+- `src/features/home/` and `src/features/insights/`: dashboards.
+- `src/components/`: shared buttons, dialogs, fields, navigation, and charts.
+- `src/hooks/`: shared hooks for reading collection data.
+- `src/services/`: API requests, deletion, preloading, and TanStack Query configuration.
+- `src/styles/`: global styles and theme tokens.
+- `tests/`: collection-cache and mutation regression tests.
 
-## React Compiler
+Keep domain-specific forms and styles in their feature. Put components used by
+multiple features in `src/components/`. Use the shared collection services for
+mutations so lists and counters stay synchronized.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Commands
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+Run from `frontend_cyberia/`:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+npm ci
+npm run dev
+npm run build
+npm test
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Vite proxies `/api` to `http://localhost:8000` during development. Production
+assets are generated in `dist/`, which stays outside version control. The
+build splits React, charts, and query dependencies into separate bundles.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Docker
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+Run `docker compose up --build` from the repository root after configuring the
+backend environment file. The Dockerfile builds the SPA with Node and serves
+only the generated files with Nginx. Nginx forwards `/api/`, `/media/`, and
+`/static/` to the backend container, blocks `/admin/`, and supports direct SPA
+route navigation.
+See the [Docker guide](../docs/docker.md).
