@@ -56,7 +56,7 @@ ROOT_URLCONF = 'cyberia.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -117,7 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static_src']
+STATICFILES_DIRS = []
 STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -132,7 +132,7 @@ DATABASES = {
     }
 }
 
-INSTALLED_APPS += ['apps.base', 'rest_framework', 'drf_spectacular', 'widget_tweaks']
+INSTALLED_APPS += ['apps.base', 'rest_framework', 'drf_spectacular']
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -140,11 +140,8 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Cyberia API',
-    'DESCRIPTION': 'API Cyberia (MCP :).',
+    'DESCRIPTION': 'Cyberia:).',
     'VERSION': '1.0.0',
 }
 
-SPOTIFY_CLIENT_ID = config('SPOTIFY_CLIENT_ID', default='')
-SPOTIFY_CLIENT_SECRET = config('SPOTIFY_CLIENT_SECRET', default='')
-SPOTIFY_REFRESH_TOKEN = config('SPOTIFY_REFRESH_TOKEN', default='')
 TMDB_ACCESS_TOKEN = config('TMDB_ACCESS_TOKEN', default='')
