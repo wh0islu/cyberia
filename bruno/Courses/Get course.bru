@@ -1,0 +1,17 @@
+meta {
+  name: Get course
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/courses/{{courseId}}/
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns the course", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

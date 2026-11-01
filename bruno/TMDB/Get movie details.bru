@@ -1,0 +1,17 @@
+meta {
+  name: Get movie details
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/tmdb/movie/603/
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns details when TMDB is configured", function () {
+    expect([200, 503]).to.include(res.getStatus());
+  });
+}

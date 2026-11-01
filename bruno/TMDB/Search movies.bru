@@ -1,0 +1,17 @@
+meta {
+  name: Search movies
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/media-search/?query=matrix&type=movie
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns search results when TMDB is configured", function () {
+    expect([200, 503]).to.include(res.getStatus());
+  });
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Update book
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/books/{{bookId}}/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "status": "RE",
+    "current_page": 10
+  }
+}
+
+tests {
+  test("updates the book", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().current_page).to.equal(10);
+  });
+}

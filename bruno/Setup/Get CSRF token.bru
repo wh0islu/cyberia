@@ -1,0 +1,33 @@
+meta {
+  name: Get CSRF token
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/books/
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+script:post-response {
+  const setCookie = res.getHeader("set-cookie");
+  const cookies = Array.isArray(setCookie) ? setCookie.join("; ") : setCookie || "";
+  const match = cookies.match(/csrftoken=([^;]+)/);
+
+  if (!match) {
+    throw new Error("The backend did not return a CSRF cookie.");
+  }
+
+  bru.setEnvVar("csrfToken", match[1]);
+}
+
+tests {
+  test("returns the books collection", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

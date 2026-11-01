@@ -1,0 +1,21 @@
+meta {
+  name: Delete book
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/books/{{bookId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the book", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

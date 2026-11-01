@@ -1,0 +1,28 @@
+meta {
+  name: Update meal
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/meals/{{mealId}}/
+  body: json
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "category": "DI",
+    "time": "19:00:00"
+  }
+}
+
+tests {
+  test("updates the meal", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

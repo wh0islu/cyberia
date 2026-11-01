@@ -1,0 +1,21 @@
+meta {
+  name: Delete habit
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/habits/{{habitId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the habit", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

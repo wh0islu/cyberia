@@ -1,0 +1,40 @@
+meta {
+  name: Create series
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/series/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "title": "Dark",
+    "genre": "Science fiction",
+    "start_year": 2017,
+    "number_of_seasons": 3,
+    "number_of_episodes": 26,
+    "status": "NW",
+    "sources": []
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("seriesId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a series", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

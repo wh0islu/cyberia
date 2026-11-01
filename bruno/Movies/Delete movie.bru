@@ -1,0 +1,21 @@
+meta {
+  name: Delete movie
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/movies/{{movieId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the movie", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Get series details
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/tmdb/series/70523/
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns details when TMDB is configured", function () {
+    expect([200, 503]).to.include(res.getStatus());
+  });
+}

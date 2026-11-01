@@ -1,0 +1,21 @@
+meta {
+  name: Delete course
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/courses/{{courseId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the course", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: OpenAPI schema
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/schema/
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/vnd.oai.openapi
+}
+
+tests {
+  test("returns the API schema", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}
