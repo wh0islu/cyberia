@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { ApiError, queryClient } from "./queryClient";
 
 export const collections = [
-  "books", "movies", "series", "courses", "meals", "habits", "habit-completions",
+  "books", "movies", "series", "courses", "meals", "meal-notes", "habits", "habit-completions",
 ] as const;
 export type Collection = typeof collections[number];
 export const collectionKey = (name: Collection) => ["collection", name] as const;

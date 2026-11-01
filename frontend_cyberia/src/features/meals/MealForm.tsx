@@ -6,11 +6,11 @@ import {
   ChipGroup,
   FormFooter,
   XIcon,
-} from "../components/FormFields";
-import { ScrollArea } from "../components/ScrollArea";
-import { DatePicker } from "../components/DatePicker";
-import { DefaultButton } from "../components/DefaultButton";
-import { TimePicker } from "../components/TimePicker";
+} from "../../components/FormFields";
+import { ScrollArea } from "../../components/ScrollArea";
+import { DatePicker } from "../../components/DatePicker";
+import { DefaultButton } from "../../components/DefaultButton";
+import { TimePicker } from "../../components/TimePicker";
 
 export type MealFormData = {
   meal: string;

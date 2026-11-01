@@ -2,7 +2,6 @@ import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { SunIcon, MoonIcon } from "lucide-react";
 import styles from "./styles.module.css";
 
-const avatarUrl = "/media/profile/pfp/pfp_qG9jrmo.png";
 const logoPath = "/media/logo.svg";
 
 type AvailableThemes = "dark" | "light";
@@ -74,12 +73,6 @@ export function Menu() {
           </a>
         </li>
       </ul>
-      <div className={styles.navUser}>
-        <a href="/profile" title="Profile">
-          <img className={styles.navUserAvatar} src={avatarUrl} alt="Avatar" />
-        </a>
-        <a href="/logout">Log out</a>
-      </div>
     </nav>
   );
 }

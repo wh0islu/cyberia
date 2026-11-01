@@ -1,16 +1,16 @@
 import { useCollection } from "../../hooks/useCollections";
 import { apiFetch, deleteCollectionItem } from "../../services/collections";
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
 import { useMemo, useState } from "react";
 import { MonitorPlay, Plus, Search, SquarePen } from "lucide-react";
-import { CourseForm } from "../../forms";
-import type { CourseFormInitial, CourseSubmission } from "../../forms/CourseForm";
-import { Card } from "../Card";
-import { DatePicker } from "../DatePicker";
-import { DefaultButton } from "../DefaultButton";
-import { Switch } from "../FormFields";
-import { FormModal } from "../FormModal";
-import { ProgressBar } from "../ProgressBar";
+import { CourseForm } from "./CourseForm";
+import type { CourseFormInitial, CourseSubmission } from "./CourseForm";
+import { Card } from "../../components/Card";
+import { DatePicker } from "../../components/DatePicker";
+import { DefaultButton } from "../../components/DefaultButton";
+import { Switch } from "../../components/FormFields";
+import { FormModal } from "../../components/FormModal";
+import { ProgressBar } from "../../components/ProgressBar";
 import styles from "./styles.module.css";
 
 type Course = {

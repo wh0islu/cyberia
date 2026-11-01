@@ -1,11 +1,11 @@
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
 import {
   BarElement, CategoryScale, Chart as ChartJS, LinearScale, Legend, Tooltip,
   type BarElement as ChartBarElement, type ChartData, type ChartOptions, type Plugin,
 } from "chart.js";
 import { Chart as ReactChart } from "react-chartjs-2";
-import { Card } from "../Card";
-import { ProductivityChart } from "../ProductivityChart";
+import { Card } from "../../components/Card";
+import { ProductivityChart } from "../../components/ProductivityChart";
 import { getMonths, getRecentActivities, localDate, useInsightsData, type Section } from "./data";
 import styles from "./styles.module.css";
 

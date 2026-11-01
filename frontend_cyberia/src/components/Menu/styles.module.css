@@ -22,22 +22,6 @@
   text-decoration: none;
 }
 
-.navUser {
-  grid-column: 3;
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.navUserAvatar {
-  display: block;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 .logoHome {
   grid-column: 1;
   justify-self: start;

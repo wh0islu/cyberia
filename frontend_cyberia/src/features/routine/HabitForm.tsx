@@ -1,8 +1,8 @@
 import { useId, useState, type FormEvent } from "react";
-import { Field, Switch, FormFooter } from "../components/FormFields";
-import { ScrollArea } from "../components/ScrollArea";
-import { Select } from "../components/Select";
-import { TimePicker } from "../components/TimePicker";
+import { Field, Switch, FormFooter } from "../../components/FormFields";
+import { ScrollArea } from "../../components/ScrollArea";
+import { Select } from "../../components/Select";
+import { TimePicker } from "../../components/TimePicker";
 
 type HabitFormData = {
   name: string;

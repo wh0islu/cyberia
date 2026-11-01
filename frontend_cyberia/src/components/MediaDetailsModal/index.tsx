@@ -44,26 +44,20 @@ type MediaDetailsModalProps = {
 };
 
 export function MediaDetailsModal({ item, onClose, onSynopsisSaved }: MediaDetailsModalProps) {
-  const [details, setDetails] = useState<TmdbMediaDetails | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const itemKey = item ? `${item.kind}-${item.tmdbId}-${item.persistedId ?? "new"}` : "";
+  const [detailsResult, setDetailsResult] = useState<{ key: string; value: TmdbMediaDetails } | null>(null);
+  const [errorResult, setErrorResult] = useState<{ key: string; message: string } | null>(null);
+  const details = detailsResult?.key === itemKey ? detailsResult.value : null;
+  const error = errorResult?.key === itemKey ? errorResult.message : "";
+  const loading = !!item && !item.synopsis?.trim() && !!item.tmdbId && !details && !error;
 
   useEffect(() => {
-    if (!item) {
-      setDetails(null);
-      setError("");
-      return;
-    }
+    if (!item) return;
 
     const selectedItem = item;
+    const selectedKey = itemKey;
     const controller = new AbortController();
-    setError("");
-    setDetails(null);
-    if (selectedItem.synopsis?.trim() || !selectedItem.tmdbId) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
+    if (selectedItem.synopsis?.trim() || !selectedItem.tmdbId) return;
 
     async function loadDetails() {
       try {
@@ -75,7 +69,7 @@ export function MediaDetailsModal({ item, onClose, onSynopsisSaved }: MediaDetai
         if (!response.ok) {
           throw new Error(payload.detail || "Could not load title details.");
         }
-        setDetails(payload);
+        setDetailsResult({ key: selectedKey, value: payload });
         if (payload.overview && selectedItem.persistedId) {
           try {
             const csrf = document.cookie
@@ -104,15 +98,16 @@ export function MediaDetailsModal({ item, onClose, onSynopsisSaved }: MediaDetai
         }
       } catch (loadError) {
         if (loadError instanceof DOMException && loadError.name === "AbortError") return;
-        setError(loadError instanceof Error ? loadError.message : "Could not load title details.");
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        setErrorResult({
+          key: selectedKey,
+          message: loadError instanceof Error ? loadError.message : "Could not load title details.",
+        });
       }
     }
 
     void loadDetails();
     return () => controller.abort();
-  }, [item, onSynopsisSaved]);
+  }, [item, itemKey, onSynopsisSaved]);
 
   const title = details?.title || item?.title || "Title details";
   const rating = item?.rating ?? 0;

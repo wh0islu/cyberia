@@ -4,15 +4,15 @@ import {
   Segmented,
   ImageDrop,
   SourcesField,
-  cleanSources,
   FormFooter,
   type FormSource,
   type CleanedSource,
   type SourceFormat,
-} from "../components/FormFields";
-import { ScrollArea } from "../components/ScrollArea";
-import { Select } from "../components/Select";
-import { DatePicker } from "../components/DatePicker";
+} from "../../components/FormFields";
+import { cleanSources } from "../../components/FormFields/sources";
+import { ScrollArea } from "../../components/ScrollArea";
+import { Select } from "../../components/Select";
+import { DatePicker } from "../../components/DatePicker";
 
 type BookFormData = {
   cover: File | null;

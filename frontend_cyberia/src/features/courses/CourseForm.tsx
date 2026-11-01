@@ -5,15 +5,15 @@ import {
   Switch,
   ImageDrop,
   SourcesField,
-  cleanSources,
   FormFooter,
   XIcon,
   type FormSource,
   type CleanedSource,
   type SourceFormat,
-} from "../components/FormFields";
-import { ScrollArea } from "../components/ScrollArea";
-import { DatePicker } from "../components/DatePicker";
+} from "../../components/FormFields";
+import { cleanSources } from "../../components/FormFields/sources";
+import { ScrollArea } from "../../components/ScrollArea";
+import { DatePicker } from "../../components/DatePicker";
 
 type CourseFormData = {
   image: File | null;
@@ -54,7 +54,7 @@ type StringField = {
 }[keyof CourseFormData];
 
 
-export const COURSE_FORMATS: SourceFormat[] = [
+const COURSE_FORMATS: SourceFormat[] = [
   { value: "WEB", label: "Online", location: null, url: { label: "Course link", required: true } },
   { value: "VID", label: "Video", location: { label: "Folder (if downloaded)", placeholder: "E.g., external drive/Courses" }, url: { label: "Video or playlist link" } },
   { value: "LOC", label: "Local files", location: { label: "Folder", placeholder: "E.g., external drive/Courses/Design" }, url: null },

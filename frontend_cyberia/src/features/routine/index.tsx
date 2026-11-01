@@ -1,13 +1,14 @@
 import { useCollection } from "../../hooks/useCollections";
+import { useCurrentDate } from "../../hooks/useCurrentDate";
 import { apiFetch, deleteCollectionItem } from "../../services/collections";
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
 import { useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Plus, SquarePen } from "lucide-react";
-import { HabitForm } from "../../forms";
-import { Card } from "../Card";
-import { DefaultButton } from "../DefaultButton";
-import { FormModal } from "../FormModal";
-import { ProgressBar } from "../ProgressBar";
+import { HabitForm } from "./HabitForm";
+import { Card } from "../../components/Card";
+import { DefaultButton } from "../../components/DefaultButton";
+import { FormModal } from "../../components/FormModal";
+import { ProgressBar } from "../../components/ProgressBar";
 import styles from "./styles.module.css";
 
 type Completion = { id: number; habit: number; date: string; completed: boolean };
@@ -77,8 +78,7 @@ export function Routine() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = useCurrentDate();
   const todayKey = dateKey(today);
   const todayWeekday = (today.getDay() + 6) % 7;
   const weekStart = getWeekStart(today);

@@ -1,6 +1,7 @@
 import {
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -8,9 +9,11 @@ import {
 } from "react";
 import { Camera, Image as ImageIcon, Star, X as XIcon } from "lucide-react";
 import { DefaultButton } from "../DefaultButton";
+import type { FormSource, SourceFormat } from "./sources";
 import "./form.css";
 
 export { XIcon };
+export type { CleanedSource, FormSource, SourceFormat } from "./sources";
 
 type FieldProps = {
   label: string;
@@ -52,25 +55,6 @@ type ImageDropProps = {
   value: File | null;
   imageUrl?: string | null;
   onChange: (file: File | null) => void;
-};
-
-export type SourceFormat = {
-  value: string;
-  label: string;
-  location: { label: string; placeholder: string } | null;
-  url: { label: string; required?: boolean } | null;
-};
-
-export type FormSource = {
-  format: string;
-  location: string;
-  url: string;
-};
-
-export type CleanedSource = {
-  format: string;
-  location: string | null;
-  url: string | null;
 };
 
 type SourcesFieldProps = {
@@ -212,19 +196,14 @@ export function ImageDrop({
 }: ImageDropProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const preview = useMemo(() => value ? URL.createObjectURL(value) : null, [value]);
   const visiblePreview = preview ?? imageUrl ?? null;
 
   useEffect(() => {
-    if (!value) {
-      setPreview(null);
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(value);
-    setPreview(previewUrl);
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [value]);
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     onChange(event.currentTarget.files?.[0] ?? null);
@@ -420,26 +399,6 @@ export function SourcesField({
       </button>
     </div>
   );
-}
-
-export function cleanSources(
-  sources: FormSource[],
-  formats: SourceFormat[],
-): CleanedSource[] {
-  const formatsByValue = Object.fromEntries(
-    formats.map((format) => [format.value, format]),
-  );
-
-  return sources.map((source) => {
-    const format = formatsByValue[source.format];
-    if (!format) return source;
-
-    return {
-      format: source.format,
-      location: format.location ? source.location.trim() || null : null,
-      url: format.url ? source.url.trim() || null : null,
-    };
-  });
 }
 
 export function FormFooter({

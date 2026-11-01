@@ -1,13 +1,14 @@
 import { useCollection } from "../../hooks/useCollections";
+import { useCurrentDate } from "../../hooks/useCurrentDate";
 import { apiFetch, deleteCollectionItem } from "../../services/collections";
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
-import { useMemo, useState } from "react";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
+import { useEffect, useRef, useState } from "react";
 import { Camera, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { MealForm } from "../../forms";
-import type { MealFormData } from "../../forms/MealForm";
-import { Card } from "../Card";
-import { DefaultButton } from "../DefaultButton";
-import { FormModal } from "../FormModal";
+import { MealForm } from "./MealForm";
+import type { MealFormData } from "./MealForm";
+import { Card } from "../../components/Card";
+import { DefaultButton } from "../../components/DefaultButton";
+import { FormModal } from "../../components/FormModal";
 import styles from "./styles.module.css";
 
 type MealItem = { id: number; name: string };
@@ -22,6 +23,7 @@ type MealEntry = {
   created_at: string;
 };
 type MealSlot = { category: string; meal: MealEntry | null };
+type MealNote = { id: number; date: string; text: string; updated_at: string };
 
 const primaryCategories = ["BR", "LU", "SN", "DI"];
 const categoryLabels: Record<string, string> = {
@@ -52,10 +54,6 @@ function parseDate(value: string) {
   return new Date(year, month - 1, day);
 }
 
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
 function getErrorMessage(value: unknown): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value.map(getErrorMessage).join(" ");
@@ -77,9 +75,25 @@ async function requestMeals(path = "", options: RequestInit = {}) {
   return data;
 }
 
+async function saveMealNote(date: string, text: string) {
+  const csrf = document.cookie.split("; ").find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1];
+  const response = await apiFetch("/api/v1/meal-notes/", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}),
+    },
+    body: JSON.stringify({ date, text }),
+  });
+  const payload: unknown = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(payload ? getErrorMessage(payload) : `Request failed (${response.status}).`);
+}
+
 export function Meals() {
-  const today = useMemo(() => startOfDay(new Date()), []);
+  const today = useCurrentDate();
   const { data: meals, loading, error } = useCollection<MealEntry>("meals");
+  const { data: mealNotes, loading: notesLoading, error: notesError } = useCollection<MealNote>("meal-notes");
   const [selectedDate, setSelectedDate] = useState(() => today);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null);
@@ -88,16 +102,12 @@ export function Meals() {
   const [formError, setFormError] = useState("");
   const [actionError, setActionError] = useState("");
   const [uploadingPhotoIds, setUploadingPhotoIds] = useState<number[]>([]);
-  const [notes, setNotes] = useState<Record<string, string>>(() => {
-    try {
-      const stored = localStorage.getItem("cyberia-meal-notes");
-      return stored ? JSON.parse(stored) as Record<string, string> : {};
-    } catch {
-      return {};
-    }
-  });
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const legacyNotesMigrationStarted = useRef(false);
+  const noteSaveTimers = useRef<Record<string, number>>({});
 
   const selectedDateKey = dateKey(selectedDate);
+  const persistedNotes = Object.fromEntries(mealNotes.map((note) => [note.date, note.text]));
   const selectedMeals = meals.filter((meal) => meal.date === selectedDateKey);
   const displayedMeals: MealSlot[] = [
     ...primaryCategories.flatMap<MealSlot>((category) => {
@@ -130,13 +140,69 @@ export function Meals() {
     ? `Today · ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(selectedDate)}`
     : new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" }).format(selectedDate);
 
-  function updateNote(value: string) {
-    const nextNotes = { ...notes, [selectedDateKey]: value };
-    setNotes(nextNotes);
+  useEffect(() => {
+    if (notesLoading || notesError || legacyNotesMigrationStarted.current) return;
+    legacyNotesMigrationStarted.current = true;
     try {
-      localStorage.setItem("cyberia-meal-notes", JSON.stringify(nextNotes));
+      const stored = localStorage.getItem("cyberia-meal-notes");
+      const legacyNotes = stored ? JSON.parse(stored) as Record<string, string> : {};
+      const savedDates = new Set(mealNotes.map((note) => note.date));
+      const pendingNotes = Object.entries(legacyNotes).filter(([date]) => !savedDates.has(date));
+      void Promise.all(pendingNotes.map(([date, text]) => saveMealNote(date, text)))
+        .then(() => localStorage.removeItem("cyberia-meal-notes"))
+        .catch((cause) => setActionError(
+          cause instanceof Error ? cause.message : "Could not migrate the daily notes.",
+        ));
+    } catch {
+      localStorage.removeItem("cyberia-meal-notes");
+    }
+  }, [mealNotes, notesError, notesLoading]);
+
+  useEffect(() => () => {
+    Object.values(noteSaveTimers.current).forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  function updateNote(date: string, text: string) {
+    setNoteDrafts((drafts) => ({ ...drafts, [date]: text }));
+    try {
+      const stored = localStorage.getItem("cyberia-meal-notes");
+      const pendingNotes = stored ? JSON.parse(stored) as Record<string, string> : {};
+      localStorage.setItem("cyberia-meal-notes", JSON.stringify({ ...pendingNotes, [date]: text }));
     } catch (error) {
       void error;
+    }
+    window.clearTimeout(noteSaveTimers.current[date]);
+    noteSaveTimers.current[date] = window.setTimeout(() => void persistNote(date, text), 600);
+  }
+
+  async function persistNote(date: string, pendingText?: string) {
+    const text = pendingText ?? noteDrafts[date];
+    if (text === undefined) return;
+    window.clearTimeout(noteSaveTimers.current[date]);
+    delete noteSaveTimers.current[date];
+    setActionError("");
+    try {
+      await saveMealNote(date, text);
+      setNoteDrafts((drafts) => {
+        if (drafts[date] !== text) return drafts;
+        const nextDrafts = { ...drafts };
+        delete nextDrafts[date];
+        return nextDrafts;
+      });
+      try {
+        const stored = localStorage.getItem("cyberia-meal-notes");
+        const pendingNotes = stored ? JSON.parse(stored) as Record<string, string> : {};
+        if (pendingNotes[date] === text) delete pendingNotes[date];
+        if (Object.keys(pendingNotes).length) {
+          localStorage.setItem("cyberia-meal-notes", JSON.stringify(pendingNotes));
+        } else {
+          localStorage.removeItem("cyberia-meal-notes");
+        }
+      } catch (error) {
+        void error;
+      }
+    } catch (cause) {
+      setActionError(cause instanceof Error ? cause.message : "Could not save the daily note.");
     }
   }
 
@@ -237,7 +303,7 @@ export function Meals() {
           </div>
         </header>
 
-        {(error || actionError) && <p className={styles.error} role="alert">{error || actionError}</p>}
+        {(error || notesError || actionError) && <p className={styles.error} role="alert">{error || notesError || actionError}</p>}
 
         <Card className={styles.summary} aria-label="Day summary">
           <div><span>Meals logged</span><strong>{primaryMealsLogged} of 4</strong></div>
@@ -333,10 +399,12 @@ export function Meals() {
             <Card className={styles.notesCard}>
               <h2>Daily notes</h2>
               <textarea
-                value={notes[selectedDateKey] ?? ""}
+                value={noteDrafts[selectedDateKey] ?? persistedNotes[selectedDateKey] ?? ""}
                 placeholder="How I felt, water, extra snacks…"
                 aria-label="Daily notes"
-                onChange={(event) => updateNote(event.currentTarget.value)}
+                disabled={notesLoading || !!notesError}
+                onChange={(event) => updateNote(selectedDateKey, event.currentTarget.value)}
+                onBlur={() => void persistNote(selectedDateKey)}
               />
             </Card>
           </aside>

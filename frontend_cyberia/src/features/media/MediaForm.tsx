@@ -6,15 +6,15 @@ import {
   Stars,
   ImageDrop,
   SourcesField,
-  cleanSources,
   FormFooter,
   type FormSource,
   type CleanedSource,
   type SourceFormat,
-} from "../components/FormFields";
-import { ScrollArea } from "../components/ScrollArea";
-import { Select } from "../components/Select";
-import { DatePicker } from "../components/DatePicker";
+} from "../../components/FormFields";
+import { cleanSources } from "../../components/FormFields/sources";
+import { ScrollArea } from "../../components/ScrollArea";
+import { Select } from "../../components/Select";
+import { DatePicker } from "../../components/DatePicker";
 
 type MediaKind = "movie" | "series";
 
@@ -85,7 +85,7 @@ type StringField = {
 }[keyof MediaFormData];
 
 
-export const MEDIA_FORMATS: SourceFormat[] = [
+const MEDIA_FORMATS: SourceFormat[] = [
   { value: "STR", label: "Streaming", location: { label: "Service", placeholder: "E.g., Netflix, Hulu" }, url: { label: "Link" } },
   { value: "FILE", label: "File", location: { label: "Folder or device", placeholder: "E.g., external drive/Movies" }, url: null },
   { value: "DVD", label: "DVD", location: { label: "Location", placeholder: "E.g., living room shelf" }, url: null },
@@ -175,9 +175,6 @@ export function MediaForm({
   useEffect(() => {
     const query = data.title.trim();
     if (query.length < 2 || data.tmdb_id !== null) {
-      setTmdbResults([]);
-      setSearching(false);
-      setSearchError("");
       return;
     }
 
@@ -220,6 +217,9 @@ export function MediaForm({
     setEditingSeriesDetails(false);
     setLoadingSeriesDetails(false);
     setSeriesDetailsError("");
+    setTmdbResults([]);
+    setSearching(false);
+    setSearchError("");
     setData((previousData) => ({
       ...previousData,
       title,
@@ -255,6 +255,8 @@ export function MediaForm({
     }));
     setTmdbGenreOptions(result.genres);
     setTmdbResults([]);
+    setSearching(false);
+    setSearchError("");
 
     if (data.kind !== "series") return;
 
@@ -306,6 +308,8 @@ export function MediaForm({
     }));
     setTmdbGenreOptions([]);
     setTmdbResults([]);
+    setSearching(false);
+    setSearchError("");
   }
 
   function updateSeasonEpisodes(index: number, episodeCount: string) {

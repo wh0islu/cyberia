@@ -62,7 +62,7 @@ export function Sidebar({
   counts = {},
   onNavigate,
 }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   function handleNavigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
     if (!onNavigate || href.startsWith("#")) return;

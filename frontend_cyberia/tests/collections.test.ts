@@ -42,12 +42,12 @@ describe("shared collection cache", () => {
     stop();
   });
 
-  it("preloads each of the seven collections only once", async () => {
+  it("preloads each collection only once", async () => {
     const fetchMock = vi.fn(async () => Response.json([]));
     vi.stubGlobal("fetch", fetchMock);
     await Promise.all([preloadCollections(), preloadCollections()]);
-    expect(fetchMock).toHaveBeenCalledTimes(7);
-    expect(new Set(fetchMock.mock.calls.map((call) => call[0])).size).toBe(7);
+    expect(fetchMock).toHaveBeenCalledTimes(8);
+    expect(new Set(fetchMock.mock.calls.map((call) => call[0])).size).toBe(8);
   });
 
   it("keeps authorization failures as errors instead of caching an empty collection", async () => {

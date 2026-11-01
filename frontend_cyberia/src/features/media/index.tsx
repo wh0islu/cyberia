@@ -1,21 +1,21 @@
 import { useQueries } from "@tanstack/react-query";
 import { useCollection } from "../../hooks/useCollections";
 import { apiFetch, deleteCollectionItem } from "../../services/collections";
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
-import { MediaForm } from "../../forms";
-import type { MediaFormData, MediaSubmission } from "../../forms/MediaForm";
-import { Card } from "../Card";
-import { DefaultButton } from "../DefaultButton";
-import { FormModal } from "../FormModal";
-import { HorizontalCarousel } from "../HorizontalCarousel";
+import { MediaForm } from "./MediaForm";
+import type { MediaFormData, MediaSubmission } from "./MediaForm";
+import { Card } from "../../components/Card";
+import { DefaultButton } from "../../components/DefaultButton";
+import { FormModal } from "../../components/FormModal";
+import { HorizontalCarousel } from "../../components/HorizontalCarousel";
 import {
   MediaDetailsModal,
   type MediaDetailsItem,
-} from "../MediaDetailsModal";
-import { ProgressBar } from "../ProgressBar";
-import { Select } from "../Select";
+} from "../../components/MediaDetailsModal";
+import { ProgressBar } from "../../components/ProgressBar";
+import { Select } from "../../components/Select";
 import styles from "./styles.module.css";
 
 type MediaKind = "movie" | "series";

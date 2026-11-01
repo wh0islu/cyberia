@@ -1,16 +1,16 @@
 import { useCollection } from "../../hooks/useCollections";
 import { apiFetch, deleteCollectionItem } from "../../services/collections";
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
 import { useState, type FormEvent } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
-import { BookForm } from "../../forms";
-import type { BookFormInitial, BookSubmission } from "../../forms/BookForm";
-import { Card } from "../Card";
-import { DefaultButton } from "../DefaultButton";
-import { FormModal } from "../FormModal";
-import { HorizontalCarousel } from "../HorizontalCarousel";
-import { ProgressBar } from "../ProgressBar";
-import { Select } from "../Select";
+import { BookForm } from "./BookForm";
+import type { BookFormInitial, BookSubmission } from "./BookForm";
+import { Card } from "../../components/Card";
+import { DefaultButton } from "../../components/DefaultButton";
+import { FormModal } from "../../components/FormModal";
+import { HorizontalCarousel } from "../../components/HorizontalCarousel";
+import { ProgressBar } from "../../components/ProgressBar";
+import { Select } from "../../components/Select";
 import styles from "./styles.module.css";
 
 type Book = {

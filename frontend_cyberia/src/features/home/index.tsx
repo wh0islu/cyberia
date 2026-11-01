@@ -1,7 +1,7 @@
-import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
 import { useCollections } from "../../hooks/useCollections";
-import { Card } from "../Card";
-import { ProgressBar } from "../ProgressBar";
+import { Card } from "../../components/Card";
+import { ProgressBar } from "../../components/ProgressBar";
 import styles from "./styles.module.css";
 
 type Book = {
