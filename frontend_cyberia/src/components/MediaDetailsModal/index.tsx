@@ -1,3 +1,4 @@
+import { apiFetch } from "../../services/collections";
 import { useEffect, useState } from "react";
 import { FormModal } from "../FormModal";
 import { ScrollArea } from "../ScrollArea";
@@ -81,7 +82,7 @@ export function MediaDetailsModal({ item, onClose, onSynopsisSaved }: MediaDetai
               .split("; ")
               .find((cookie) => cookie.startsWith("csrftoken="))
               ?.split("=")[1];
-            const saved = await fetch(
+            const saved = await apiFetch(
               `/api/v1/${selectedItem.kind === "movie" ? "movies" : "series"}/${selectedItem.persistedId}/`,
               {
                 method: "PATCH",

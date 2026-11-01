@@ -29,3 +29,11 @@
     margin-inline: 0;
   }
 }
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}

@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCollection } from "../../hooks/useCollections";
+import { apiFetch } from "../../services/collections";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useMemo, useState } from "react";
 import { Camera, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { MealForm } from "../../forms";
 import type { MealFormData } from "../../forms/MealForm";
@@ -64,7 +67,7 @@ function getErrorMessage(value: unknown): string {
 
 async function requestMeals(path = "", options: RequestInit = {}) {
   const csrf = document.cookie.split("; ").find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1];
-  const response = await fetch(`/api/v1/meals/${path}`, {
+  const response = await apiFetch(`/api/v1/meals/${path}`, {
     ...options,
     credentials: "include",
     headers: { ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}), ...options.headers },
@@ -76,14 +79,12 @@ async function requestMeals(path = "", options: RequestInit = {}) {
 
 export function Meals() {
   const today = useMemo(() => startOfDay(new Date()), []);
-  const [meals, setMeals] = useState<MealEntry[]>([]);
+  const { data: meals, loading, error } = useCollection<MealEntry>("meals");
   const [selectedDate, setSelectedDate] = useState(() => today);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null);
   const [newMealCategory, setNewMealCategory] = useState("LU");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [actionError, setActionError] = useState("");
   const [uploadingPhotoIds, setUploadingPhotoIds] = useState<number[]>([]);
@@ -95,24 +96,6 @@ export function Meals() {
       return {};
     }
   });
-
-  useEffect(() => {
-    const controller = new AbortController();
-    requestMeals("", { signal: controller.signal })
-      .then((data) => {
-        if (!controller.signal.aborted) {
-          if (!Array.isArray(data)) throw new Error("Unexpected meals response.");
-          setMeals(data as MealEntry[]);
-        }
-      })
-      .catch((cause) => {
-        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Could not load meals.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
 
   const selectedDateKey = dateKey(selectedDate);
   const selectedMeals = meals.filter((meal) => meal.date === selectedDateKey);
@@ -197,9 +180,6 @@ export function Meals() {
         method: editingMeal ? "PATCH" : "POST",
         body,
       }) as MealEntry;
-      setMeals((current) => editingMeal
-        ? current.map((meal) => meal.id === saved.id ? saved : meal)
-        : [...current, saved]);
       const savedDate = parseDate(saved.date);
       setSelectedDate(savedDate);
       setCalendarMonth(new Date(savedDate.getFullYear(), savedDate.getMonth(), 1));
@@ -217,8 +197,7 @@ export function Meals() {
     const body = new FormData();
     body.append("photo", file);
     try {
-      const saved = await requestMeals(`${meal.id}/`, { method: "PATCH", body }) as MealEntry;
-      setMeals((current) => current.map((entry) => entry.id === saved.id ? saved : entry));
+      await requestMeals(`${meal.id}/`, { method: "PATCH", body });
     } catch (cause) {
       setActionError(cause instanceof Error ? cause.message : "Could not upload photo.");
     } finally {
@@ -268,7 +247,7 @@ export function Meals() {
 
         <div className={styles.contentGrid}>
           <section className={styles.mealsGrid} aria-label={`Meals for ${selectedDateLabel}`}>
-            {loading && <p className={styles.pageMessage} role="status">Loading meals…</p>}
+            {loading && <LoadingPlaceholder />}
             {!loading && !error && displayedMeals.map(({ category, meal }, index) => (
               <Card as="article" className={`${styles.mealCard} ${!meal ? styles.emptyMeal : ""}`} key={meal?.id ?? `${category}-${index}`}>
                 <header className={styles.mealHeader}>

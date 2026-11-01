@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCollection } from "../../hooks/useCollections";
+import { apiFetch } from "../../services/collections";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useMemo, useState } from "react";
 import { MonitorPlay, Plus, Search, SquarePen } from "lucide-react";
 import { CourseForm } from "../../forms";
 import type { CourseFormInitial, CourseSubmission } from "../../forms/CourseForm";
@@ -87,7 +90,7 @@ async function requestCourses(path = "", options: RequestInit = {}) {
     .split("; ")
     .find((cookie) => cookie.startsWith("csrftoken="))
     ?.split("=")[1];
-  const response = await fetch(`/api/v1/courses/${path}`, {
+  const response = await apiFetch(`/api/v1/courses/${path}`, {
     ...options,
     credentials: "include",
     headers: {
@@ -102,35 +105,17 @@ async function requestCourses(path = "", options: RequestInit = {}) {
   return data;
 }
 
-export function Courses({ onCollectionChange }: { onCollectionChange?: () => void }) {
+export function Courses() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const { data: rawCourses, loading, error } = useCollection<CourseResponse>("courses");
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [filter, setFilter] = useState("IP");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [detailError, setDetailError] = useState("");
   const [detailSaving, setDetailSaving] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    requestCourses()
-      .then((data: CourseResponse[]) => {
-        if (!active) return;
-        setCourses(data.map(normalizeCourse));
-      })
-      .catch((requestError: Error) => {
-        if (active) setError(requestError.message);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const courses = useMemo(() => rawCourses.map(normalizeCourse), [rawCourses]);
 
   const visibleCourses = useMemo(
     () => courses.filter((course) =>
@@ -191,10 +176,7 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
       editingCourse ? `${editingCourse.id}/` : "",
       { method: editingCourse ? "PATCH" : "POST", body },
     ));
-    setCourses((previousCourses) => editingCourse
-      ? previousCourses.map((course) => course.id === saved.id ? saved : course)
-      : [...previousCourses, saved]);
-    if (!editingCourse) onCollectionChange?.();
+
     setSelectedCourseId(saved.id);
     setFilter(saved.status);
     closeCourseForm();
@@ -205,12 +187,11 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
     setDetailSaving(true);
     setDetailError("");
     try {
-      const saved = normalizeCourse(await requestCourses(`${course.id}/`, {
+      await requestCourses(`${course.id}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(changes),
-      }));
-      setCourses((current) => current.map((item) => item.id === saved.id ? saved : item));
+      });
     } catch (cause) {
       setDetailError(cause instanceof Error ? cause.message : "Could not update course details.");
     } finally {
@@ -273,13 +254,16 @@ export function Courses({ onCollectionChange }: { onCollectionChange?: () => voi
           </label>
         </Card>
 
-        {loading && <p className={styles.pageMessage} role="status">Loading courses…</p>}
         {error && <p className={styles.error} role="alert">{error}</p>}
 
-        {!loading && !error && (
+        {!error && (
           <div className={styles.contentGrid}>
-            <section className={styles.courseList} aria-label={`${statusLabels[filter]} courses`}>
-              {courses.length === 0 ? (
+            <section className={styles.courseList} aria-label={`${statusLabels[filter]} courses`} aria-busy={loading}>
+              {loading ? (
+                <div className={styles.emptyList}>
+                  <LoadingPlaceholder compact />
+                </div>
+              ) : courses.length === 0 ? (
                 <div className={styles.emptyList}>Your course library is empty. Add your first course.</div>
               ) : visibleCourses.length === 0 ? (
                 <div className={styles.emptyList}>{search ? `No courses found for “${search}”.` : "No courses in this section."}</div>

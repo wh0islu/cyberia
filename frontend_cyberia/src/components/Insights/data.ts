@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCollections } from "../../hooks/useCollections";
 
 type Book = { id: number; title: string; status: string; current_page: number; last_read_at: string | null };
 type Movie = { id: number; status: string };
@@ -21,52 +21,12 @@ export type Section = keyof InsightsData;
 export type Activity = { id: string; date: Date; hasTime: boolean; category: string; description: string };
 
 const sections: Section[] = ["books", "movies", "series", "courses", "meals", "habits", "habit-completions"];
-const emptyData: InsightsData = {
-  books: [], movies: [], series: [], courses: [], meals: [], habits: [], "habit-completions": [],
-};
 const mealNames: Record<string, string> = {
   BR: "breakfast", LU: "lunch", SN: "a snack", DI: "dinner", OT: "a meal",
 };
 
-async function loadCollection(section: Section, signal: AbortSignal) {
-  const response = await fetch(`/api/v1/${section}/`, { credentials: "include", signal });
-  if (!response.ok) throw new Error(`Could not load ${section} (${response.status})`);
-  const data: unknown = await response.json();
-  if (!Array.isArray(data)) throw new Error(`Unexpected response for ${section}`);
-  return data;
-}
-
 export function useInsightsData() {
-  const [data, setData] = useState<InsightsData>(emptyData);
-  const [failedSections, setFailedSections] = useState<Section[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadInsights() {
-      const results = await Promise.allSettled(
-        sections.map((section) => loadCollection(section, controller.signal)),
-      );
-      if (controller.signal.aborted) return;
-
-      const nextData: InsightsData = { ...emptyData };
-      const failures: Section[] = [];
-      results.forEach((result, index) => {
-        const section = sections[index];
-        if (result.status === "fulfilled") Object.assign(nextData, { [section]: result.value });
-        else failures.push(section);
-      });
-      setData(nextData);
-      setFailedSections(failures);
-      setLoading(false);
-    }
-
-    void loadInsights();
-    return () => controller.abort();
-  }, []);
-
-  return { data, failedSections, loading };
+  return useCollections<InsightsData>(sections);
 }
 
 export function localDate(date: string) {

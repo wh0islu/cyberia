@@ -1,0 +1,54 @@
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 16px 0;
+  opacity: 0;
+  visibility: hidden;
+  animation: reveal 1ms step-end 200ms forwards;
+}
+
+.line,
+.shortLine {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--border-subtle);
+}
+
+.line {
+  width: min(240px, 70%);
+}
+
+.shortLine {
+  width: min(150px, 45%);
+}
+
+.compact {
+  display: inline-flex;
+  min-height: 14px;
+  width: min(150px, 100%);
+  padding: 0;
+  vertical-align: middle;
+}
+
+.compact .line {
+  width: 100%;
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placeholder {
+    animation: none;
+    opacity: 1;
+    visibility: visible;
+  }
+}

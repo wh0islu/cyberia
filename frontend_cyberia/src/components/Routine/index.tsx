@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCollection } from "../../hooks/useCollections";
+import { apiFetch } from "../../services/collections";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { HabitForm } from "../../forms";
 import { Card } from "../Card";
@@ -51,7 +54,7 @@ function errorMessage(value: unknown): string {
 
 async function requestRoutine(path: string, options: RequestInit = {}) {
   const csrf = document.cookie.split("; ").find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1];
-  const response = await fetch(`/api/v1/${path}`, {
+  const response = await apiFetch(`/api/v1/${path}`, {
     ...options,
     credentials: "include",
     headers: { ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}), ...options.headers },
@@ -65,33 +68,13 @@ function isCompleted(habit: Habit, day: string) {
   return habit.completions.some((completion) => completion.date === day && completion.completed);
 }
 
-export function Routine({ onCollectionChange }: { onCollectionChange?: () => void }) {
-  const [habits, setHabits] = useState<Habit[]>([]);
+export function Routine() {
+  const { data: habits, loading, error: queryError } = useCollection<Habit>("habits");
   const [weekOffset, setWeekOffset] = useState(0);
   const [pendingDays, setPendingDays] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    async function loadHabits() {
-      try {
-        const data = await requestRoutine("habits/", { signal: controller.signal });
-        if (!controller.signal.aborted) {
-          if (!Array.isArray(data)) throw new Error("Unexpected habits response.");
-          setHabits(data as Habit[]);
-        }
-      } catch (cause) {
-        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Could not load habits.");
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }
-    void loadHabits();
-    return () => controller.abort();
-  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -127,20 +110,14 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
     setPendingDays((days) => [...days, key]);
     setError("");
     try {
-      const completion = await requestRoutine(
+      await requestRoutine(
         previous ? `habit-completions/${previous.id}/` : "habit-completions/",
         {
           method: previous ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(previous ? { completed } : { habit: habit.id, date: day, completed }),
         },
-      ) as Completion;
-      setHabits((current) => current.map((item) => item.id === habit.id ? {
-        ...item,
-        completions: previous
-          ? item.completions.map((entry) => entry.id === completion.id ? completion : entry)
-          : [...item.completions, completion],
-      } : item));
+      );
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not update this day.");
     } finally {
@@ -151,14 +128,12 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
   async function handleCreateHabit(data: NewHabit) {
     setFormError("");
     try {
-      const habit = await requestRoutine("habits/", {
+      await requestRoutine("habits/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      }) as Habit;
-      setHabits((current) => [...current, habit]);
+      });
       setIsModalOpen(false);
-      onCollectionChange?.();
     } catch (cause) {
       setFormError(cause instanceof Error ? cause.message : "Could not create habit.");
     }
@@ -188,7 +163,7 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
           </div>
         </header>
 
-        {error && <p className={styles.error} role="alert">{error}</p>}
+        {(error || queryError) && <p className={styles.error} role="alert">{error || queryError}</p>}
 
         <section className={styles.summary} aria-label="Week summary">
           <Card className={styles.summaryCard}>
@@ -253,7 +228,7 @@ export function Routine({ onCollectionChange }: { onCollectionChange?: () => voi
               </div>
             </div>
 
-            {loading && <p className={styles.panelMessage}>Loading habits…</p>}
+            {loading && <LoadingPlaceholder />}
             {!loading && !error && habits.length === 0 && <p className={styles.panelMessage}>No habits yet. Create your first habit.</p>}
             <div className={styles.legend} aria-label="Legend">
               <span><i className={styles.legendDone} />Done</span>

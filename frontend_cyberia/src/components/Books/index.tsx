@@ -1,4 +1,7 @@
-﻿import { useEffect, useState, type FormEvent } from "react";
+import { useCollection } from "../../hooks/useCollections";
+import { apiFetch } from "../../services/collections";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useState, type FormEvent } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
 import { BookForm } from "../../forms";
 import type { BookFormInitial, BookSubmission } from "../../forms/BookForm";
@@ -51,7 +54,7 @@ function apiError(value: unknown): string {
 
 async function requestBooks(path = "", options: RequestInit = {}) {
   const csrf = document.cookie.split("; ").find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1];
-  const response = await fetch(`/api/v1/books/${path}`, {
+  const response = await apiFetch(`/api/v1/books/${path}`, {
     ...options,
     credentials: "include",
     headers: { ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}), ...options.headers },
@@ -67,7 +70,7 @@ function BookCover({ book, className }: { book: Book; className: string }) {
   ) : <div className={className} role="img" aria-label="No cover">No cover</div>;
 }
 
-function ReadingBookCard({ book, onSave }: { book: Book; onSave: (book: Book) => void }) {
+function ReadingBookCard({ book }: { book: Book }) {
   const [page, setPage] = useState(String(book.current_page));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -80,12 +83,11 @@ function ReadingBookCard({ book, onSave }: { book: Book; onSave: (book: Book) =>
     setSaving(true);
     setError("");
     try {
-      const updated: Book = await requestBooks(`${book.id}/`, {
+      await requestBooks(`${book.id}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ current_page: Number(page) }),
       });
-      onSave(updated);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unable to save progress.");
     } finally { setSaving(false); }
@@ -113,23 +115,13 @@ function ReadingBookCard({ book, onSave }: { book: Book; onSave: (book: Book) =>
   );
 }
 
-export function Books({ onCollectionChange }: { onCollectionChange?: () => void }) {
+export function Books() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { data: books, loading, error } = useCollection<Book>("books");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("latest");
-
-  useEffect(() => {
-    let active = true;
-    requestBooks().then((data: Book[]) => { if (active) setBooks(data); })
-      .catch((error: Error) => { if (active) setError(error.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
 
   async function handleSaveBook(data: BookSubmission) {
     const body = new FormData();
@@ -147,14 +139,10 @@ export function Books({ onCollectionChange }: { onCollectionChange?: () => void 
       if (source.location) body.append(`sources[${index}]location`, source.location);
       if (source.url) body.append(`sources[${index}]url`, source.url);
     });
-    const book: Book = editingBook
-      ? await requestBooks(`${editingBook.id}/`, { method: "PATCH", body })
-      : await requestBooks("", { method: "POST", body });
-    if (editingBook) updateBook(book);
-    else {
-      setBooks((previous) => [...previous, book]);
-      onCollectionChange?.();
-    }
+    await (editingBook
+      ? requestBooks(`${editingBook.id}/`, { method: "PATCH", body })
+      : requestBooks("", { method: "POST", body }));
+
     setIsModalOpen(false);
     setEditingBook(null);
   }
@@ -171,9 +159,6 @@ export function Books({ onCollectionChange }: { onCollectionChange?: () => void 
     });
   const displayedReading = filter === "RE" ? reading : reading.slice(0, 2);
   const shelf = filter ? visible.filter((book) => bookStatus(book) !== "RE") : visible;
-  function updateBook(updated: Book) {
-    setBooks((previous) => previous.map((book) => book.id === updated.id ? updated : book));
-  }
 
   function openBookForm(book: Book | null = null) {
     setEditingBook(book);
@@ -221,12 +206,12 @@ export function Books({ onCollectionChange }: { onCollectionChange?: () => void 
           </div>
           <label className={styles.sortControl}>Sort<Select compact value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort books"><option value="latest">Latest added</option><option value="title">Title</option></Select></label>
         </nav>
-        {loading && <p role="status">Loading books...</p>}
+        {loading && <LoadingPlaceholder />}
         {error && <p role="alert">{error} Reload the page to retry.</p>}
-        {!loading && !error && visible.length === 0 && <p>{books.length ? "No matching books." : "Your library is empty. Add your first book."}</p>}
+        {!loading && !error && visible.length === 0 && <p className={styles.emptyState}>{books.length ? "No matching books." : "Your library is empty. Add your first book."}</p>}
         {reading.length > 0 && (filter === "" || filter === "RE") && (
           <Card title="Currently reading" className={styles.sectionPanel} id="reading">
-            <div className={styles.readingGrid}>{displayedReading.map((book) => <ReadingBookCard key={book.id} book={book} onSave={updateBook} />)}</div>
+            <div className={styles.readingGrid}>{displayedReading.map((book) => <ReadingBookCard key={book.id} book={book} />)}</div>
           </Card>
         )}
         {shelf.length > 0 && filter !== "RE" && (

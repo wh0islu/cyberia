@@ -1,10 +1,18 @@
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./services/queryClient";
+import { preloadCollections } from "./services/collections";
 import "@fontsource-variable/geist/wght.css";
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from "./App";
 
+// Start once, outside React effects, so StrictMode does not restart preloading.
+void preloadCollections();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   </StrictMode>,
 )

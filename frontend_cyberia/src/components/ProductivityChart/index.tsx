@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useMemo } from "react";
+import { useCollection } from "../../hooks/useCollections";
 import {
   BarElement,
   CategoryScale,
@@ -18,7 +20,6 @@ type HabitCompletion = {
   completed: boolean;
 };
 
-type CompletionResponse = HabitCompletion[] | { results?: HabitCompletion[] };
 type ProductivityChartProps = { showDetails?: boolean };
 
 function getLocalDateKey(date: Date) {
@@ -48,42 +49,10 @@ function getCompletionDateKey(date: string) {
 }
 
 export function ProductivityChart({ showDetails = true }: ProductivityChartProps) {
-  const [completions, setCompletions] = useState<HabitCompletion[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const { data: completions, loading: isLoading, error } = useCollection<HabitCompletion>("habit-completions");
+  const hasError = Boolean(error);
   const week = useMemo(() => getCurrentWeek(), []);
   const todayKey = getLocalDateKey(new Date());
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadCompletions() {
-      try {
-        const response = await fetch("/api/v1/habit-completions/", {
-          credentials: "include",
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Could not load habit completions (${response.status})`);
-        }
-
-        const data: CompletionResponse = await response.json();
-        setCompletions(Array.isArray(data) ? data : data.results ?? []);
-      } catch {
-        if (!controller.signal.aborted) {
-          setHasError(true);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadCompletions();
-    return () => controller.abort();
-  }, []);
 
   const dailyCounts = week.map((date) => {
     const dateKey = getLocalDateKey(date);
@@ -161,7 +130,7 @@ export function ProductivityChart({ showDetails = true }: ProductivityChartProps
       </div>
 
       {isLoading || hasError ? (
-        <p className={styles.message}>{isLoading ? "Loading habit activity..." : "Could not load habit activity."}</p>
+        <p className={styles.message}>{isLoading ? <LoadingPlaceholder /> : "Could not load habit activity."}</p>
       ) : (
         <div
           className={styles.chart}

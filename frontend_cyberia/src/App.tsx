@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCollections } from "./hooks/useCollections";
+import { Activity, useEffect, useState, type ReactNode } from "react";
 import { Home } from "./components/Home";
 import { Books } from "./components/Books";
 import { Courses } from "./components/Courses";
@@ -11,49 +12,18 @@ import "./styles/global.css";
 import "./styles/theme.css";
 import styles from "./App.module.css";
 
-async function fetchCollectionCount(section: string, signal: AbortSignal) {
-  const response = await fetch(`/api/v1/${section}/`, {
-    signal,
-    credentials: "include",
-  });
-  if (!response.ok) throw new Error(`Could not load ${section}.`);
-  const items: unknown = await response.json();
-  if (!Array.isArray(items)) throw new Error(`Unexpected ${section} response.`);
-  return items.length;
-}
-
 export function App() {
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
-  const [counts, setCounts] = useState<{ books?: number; movies?: number; routine?: number; courses?: number }>({});
-  const [countVersion, setCountVersion] = useState(0);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadCounts() {
-      const [books, movies, series, habits, courses] = await Promise.allSettled(
-        ["books", "movies", "series", "habits", "courses"].map((section) =>
-          fetchCollectionCount(section, controller.signal),
-        ),
-      );
-      if (controller.signal.aborted) return;
-
-      setCounts({
-        books: books.status === "fulfilled" ? books.value : undefined,
-        movies: movies.status === "fulfilled" && series.status === "fulfilled"
-          ? movies.value + series.value : undefined,
-        routine: habits.status === "fulfilled" ? habits.value : undefined,
-        courses: courses.status === "fulfilled" ? courses.value : undefined,
-      });
-    }
-
-    void loadCounts();
-    return () => controller.abort();
-  }, [currentPath, countVersion]);
-
-  function refreshCounts() {
-    setCountVersion((version) => version + 1);
-  }
+  const { data, failedSections } = useCollections<{
+    books: unknown[]; movies: unknown[]; series: unknown[]; habits: unknown[]; courses: unknown[];
+  }>(["books", "movies", "series", "habits", "courses"]);
+  const counts = {
+    books: failedSections.includes("books") ? undefined : data.books.length,
+    movies: failedSections.includes("movies") || failedSections.includes("series")
+      ? undefined : data.movies.length + data.series.length,
+    routine: failedSections.includes("habits") ? undefined : data.habits.length,
+    courses: failedSections.includes("courses") ? undefined : data.courses.length,
+  };
 
   useEffect(() => {
     const updateCurrentPath = () => setCurrentPath(window.location.pathname);
@@ -93,13 +63,16 @@ export function App() {
   }
 
   const pages: Record<string, ReactNode> = {
-    "/books": <Books onCollectionChange={refreshCounts} />,
-    "/movies/series": <Movies onCollectionChange={refreshCounts} />,
+    "/": <Home />,
+    "/books": <Books />,
+    "/movies/series": <Movies />,
     "/meals": <Meals />,
-    "/courses": <Courses onCollectionChange={refreshCounts} />,
-    "/routine": <Routine onCollectionChange={refreshCounts} />,
+    "/courses": <Courses />,
+    "/routine": <Routine />,
     "/insights": <Insights />,
   };
+
+  const activePath = pages[currentPath] ? currentPath : "/";
 
   return (
     <div className={styles.app}>
@@ -109,7 +82,14 @@ export function App() {
         onNavigate={navigateTo}
       />
       <div className={styles.app__conteudo}>
-        {pages[currentPath] ?? <Home />}
+        {Object.entries(pages).map(([path, page]) => (
+          <Activity
+            key={path}
+            mode={activePath === path ? "visible" : "hidden"}
+          >
+            <div className={styles.page}>{page}</div>
+          </Activity>
+        ))}
       </div>
     </div>
   );

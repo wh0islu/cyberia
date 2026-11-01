@@ -1,3 +1,4 @@
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import {
   BarElement, CategoryScale, Chart as ChartJS, LinearScale, Legend, Tooltip,
   type BarElement as ChartBarElement, type ChartData, type ChartOptions, type Plugin,
@@ -112,7 +113,7 @@ export function Insights() {
               <span className={styles.category}>{activity.category}</span>
               <span className={styles.description}>{activity.description}</span>
             </div>)}
-          </div> : <p className={styles.emptyMessage}>{loading ? "Loading..." : activityError
+          </div> : <p className={styles.emptyMessage}>{loading ? <LoadingPlaceholder compact /> : activityError
             ? "Could not load all recent activity." : "No recorded activity in the last 7 days."}</p>}
           {activityError && activities.length > 0 && <p className={styles.dataNote}>Some activity could not be loaded.</p>}
         </Card>
@@ -134,7 +135,7 @@ export function Insights() {
 
       <Card title="Activity by month" className={styles.trendCard}>
         <p className={styles.demoNote}>Dated records by type · last 6 months</p>
-        {loading ? <p className={styles.emptyMessage}>Loading...</p> : chartUnavailable
+        {loading ? <LoadingPlaceholder /> : chartUnavailable
           ? <p className={styles.emptyMessage}>Could not load monthly activity.</p>
           : !hasMonthlyActivity
           ? <p className={styles.emptyMessage}>No dated activity in the last 6 months.</p> :

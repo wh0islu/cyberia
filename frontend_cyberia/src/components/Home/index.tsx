@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useCollections } from "../../hooks/useCollections";
 import { Card } from "../Card";
 import { ProgressBar } from "../ProgressBar";
 import styles from "./styles.module.css";
@@ -54,17 +55,11 @@ type DashboardData = {
 };
 type Section = keyof DashboardData;
 
-const emptyData: DashboardData = { books: [], courses: [], habits: [], meals: [], movies: [], series: [] };
 const mealCategories = [
   { code: "BR", name: "Breakfast" }, { code: "LU", name: "Lunch" },
   { code: "SN", name: "Snack" }, { code: "DI", name: "Dinner" },
 ];
 
-async function loadCollection<K extends Section>(section: K, signal: AbortSignal): Promise<DashboardData[K]> {
-  const response = await fetch(`/api/v1/${section}/`, { signal, credentials: "include" });
-  if (!response.ok) throw new Error(`Could not load ${section}.`);
-  return response.json();
-}
 
 function localDateKey(date: Date) {
   const year = date.getFullYear();
@@ -87,35 +82,9 @@ function getTodayDate() {
 }
 
 export function Home() {
-  const [data, setData] = useState<DashboardData>(emptyData);
-  const [failedSections, setFailedSections] = useState<Section[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadDashboard() {
-      const sections: Section[] = ["books", "courses", "habits", "meals", "movies", "series"];
-      const results = await Promise.allSettled(
-        sections.map((section) => loadCollection(section, controller.signal)),
-      );
-      if (controller.signal.aborted) return;
-
-      const nextData: DashboardData = { ...emptyData };
-      const failures: Section[] = [];
-      results.forEach((result, index) => {
-        const section = sections[index];
-        if (result.status === "fulfilled") Object.assign(nextData, { [section]: result.value });
-        else failures.push(section);
-      });
-      setData(nextData);
-      setFailedSections(failures);
-      setLoading(false);
-    }
-
-    void loadDashboard();
-    return () => controller.abort();
-  }, []);
+  const { data, failedSections, loading } = useCollections<DashboardData>(
+    ["books", "courses", "habits", "meals", "movies", "series"],
+  );
 
   const readingBook = data.books.filter((book) => book.status === "RE" || book.status === "RW")
     .sort((first, second) => {
@@ -167,7 +136,7 @@ export function Home() {
   ];
 
   function sectionMessage(sections: Section[], empty: string) {
-    if (loading) return "Loading...";
+    if (loading) return <LoadingPlaceholder compact />;
     if (sections.some((section) => failedSections.includes(section))) return "Could not load this information.";
     return empty;
   }

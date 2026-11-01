@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { useCollection } from "../../hooks/useCollections";
+import { apiFetch } from "../../services/collections";
+import { LoadingPlaceholder } from "../LoadingPlaceholder";
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Plus, Search } from "lucide-react";
 import { MediaForm } from "../../forms";
 import type { MediaSubmission } from "../../forms/MediaForm";
@@ -52,10 +56,10 @@ type TmdbProgressDetails = {
   seasons: { number: number; episode_count: number }[];
 };
 
-async function fetchProgressDetails(item: MediaItem, signal?: AbortSignal) {
+async function fetchProgressDetails(item: MediaItem) {
   if (!isWatching(item) || !item.tmdbId) return null;
 
-  const response = await fetch(`/api/v1/tmdb/${item.kind}/${item.tmdbId}/`, { signal });
+  const response = await apiFetch(`/api/v1/tmdb/${item.kind}/${item.tmdbId}/`);
   if (!response.ok) return null;
 
   const details: TmdbProgressDetails = await response.json();
@@ -109,7 +113,7 @@ function apiItemToMediaItem(item: MediaApiResponse, kind: MediaKind): MediaItem 
       : null),
     synopsis: item.tmdb_synopsis ?? "",
     status: item.status,
-    updatedAt: Date.now() + item.id,
+    updatedAt: item.id,
     currentMinute: item.current_minute ?? undefined,
     currentSeason: item.current_season ?? undefined,
     currentEpisode: item.current_episode ?? undefined,
@@ -275,65 +279,37 @@ function MediaProgressEditor({
   );
 }
 
-export function Movies({ onCollectionChange }: { onCollectionChange?: () => void }) {
+export function Movies() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaDetailsItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<MediaFilter>("all");
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const moviesQuery = useCollection<MediaApiResponse>("movies");
+  const seriesQuery = useCollection<MediaApiResponse>("series");
+  const loading = moviesQuery.loading || seriesQuery.loading;
+  const loadError = moviesQuery.error || seriesQuery.error;
+  const [presentation, setPresentation] = useState<Record<string, Partial<Pick<MediaItem,
+    "updatedAt" | "rating" | "episodesInSeason"
+  >>>>({});
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [genreFilter, setGenreFilter] = useState("");
   const [progressErrors, setProgressErrors] = useState<Record<string, string>>({});
-  const lastUpdatedAt = useRef(Date.now());
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadSavedMedia() {
-      try {
-        const [moviesResponse, seriesResponse] = await Promise.all([
-          fetch("/api/v1/movies/", { signal: controller.signal, credentials: "include" }),
-          fetch("/api/v1/series/", { signal: controller.signal, credentials: "include" }),
-        ]);
-        if (!moviesResponse.ok || !seriesResponse.ok) {
-          throw new Error("Could not load your movies and series.");
-        }
-
-        const [movies, series]: [MediaApiResponse[], MediaApiResponse[]] = await Promise.all([
-          moviesResponse.json(),
-          seriesResponse.json(),
-        ]);
-        if (controller.signal.aborted) return;
-
-        const savedItems = [
-          ...movies.map((movie) => apiItemToMediaItem(movie, "movie")),
-          ...series.map((show) => apiItemToMediaItem(show, "series")),
-        ];
-        setMediaItems(savedItems);
-        setLoading(false);
-
-        await Promise.allSettled(savedItems.filter((item) => isWatching(item) && item.tmdbId).map(async (item) => {
-          const details = await fetchProgressDetails(item, controller.signal);
-          if (!details || controller.signal.aborted) return;
-
-          setMediaItems((currentItems) => currentItems.map((currentItem) =>
-            currentItem.key === item.key ? withProgressDetails(currentItem, details) : currentItem,
-          ));
-        }));
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setLoadError(error instanceof Error ? error.message : "Could not load your movies and series.");
-        }
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }
-
-    void loadSavedMedia();
-    return () => controller.abort();
-  }, []);
+  const savedItems = useMemo(() => [
+    ...moviesQuery.data.map((item) => apiItemToMediaItem(item, "movie")),
+    ...seriesQuery.data.map((item) => apiItemToMediaItem(item, "series")),
+  ], [moviesQuery.data, seriesQuery.data]);
+  const watching = savedItems.filter((item) => isWatching(item) && item.tmdbId);
+  const detailsQueries = useQueries({ queries: watching.map((item) => ({
+    queryKey: ["tmdb-progress", item.kind, item.tmdbId],
+    queryFn: () => fetchProgressDetails(item),
+    staleTime: 60 * 60_000,
+  })) });
+  const detailsByKey = new Map(watching.map((item, index) => [item.key, detailsQueries[index].data]));
+  const mediaItems = savedItems.map((item) => {
+    const enriched = { ...item, ...presentation[item.key] };
+    const details = detailsByKey.get(item.key);
+    return details ? withProgressDetails(enriched, details) : enriched;
+  });
 
   const filteredItems = mediaItems.filter((item) => {
     if (search && !item.title.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())) return false;
@@ -361,12 +337,6 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
     setSelectedMedia(getDetailsItem(item));
   }
 
-  const handleSynopsisSaved = useCallback((kind: MediaKind, id: number, synopsis: string) => {
-    setMediaItems((items) => items.map((item) =>
-      item.kind === kind && item.persistedId === id ? { ...item, synopsis } : item,
-    ));
-  }, []);
-
   function handleMediaCardKeyDown(
     event: KeyboardEvent<HTMLElement>,
     item: MediaItem,
@@ -387,7 +357,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
       ?.split("=")[1];
 
     try {
-      const response = await fetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
+      const response = await apiFetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -402,21 +372,9 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
       }
 
       setProgressErrors((errors) => ({ ...errors, [itemKey]: "" }));
-      setMediaItems((currentItems) => currentItems.map((currentItem) =>
-        currentItem.key === itemKey
-          ? { ...currentItem, status, updatedAt: ++lastUpdatedAt.current }
-          : currentItem,
-      ));
-
-      const updatedItem = { ...item, status };
-      if (isWatching(updatedItem)) {
-        const details = await fetchProgressDetails(updatedItem).catch(() => null);
-        if (details) {
-          setMediaItems((currentItems) => currentItems.map((currentItem) =>
-            currentItem.key === itemKey ? withProgressDetails(currentItem, details) : currentItem,
-          ));
-        }
-      }
+      setPresentation((current) => ({
+        ...current, [itemKey]: { ...current[itemKey], updatedAt: Date.now() },
+      }));
     } catch (error) {
       setProgressErrors((errors) => ({
         ...errors,
@@ -437,7 +395,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
       ?.split("=")[1];
 
     try {
-      const response = await fetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
+      const response = await apiFetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -451,20 +409,9 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
         throw new Error(error ? mediaApiError(error) : `Request failed (${response.status}).`);
       }
 
-      const saved: MediaApiResponse = await response.json();
-      setMediaItems((currentItems) => currentItems.map((currentItem) =>
-        currentItem.key === item.key
-          ? {
-              ...currentItem,
-              currentMinute: saved.current_minute ?? undefined,
-              currentSeason: saved.current_season ?? undefined,
-              currentEpisode: saved.current_episode ?? undefined,
-              episodesInSeason: currentItem.seasonEpisodeCounts?.[saved.current_season ?? 1]
-                ?? currentItem.episodesInSeason,
-              updatedAt: ++lastUpdatedAt.current,
-            }
-          : currentItem,
-      ));
+      setPresentation((current) => ({
+        ...current, [item.key]: { ...current[item.key], updatedAt: Date.now() },
+      }));
       setProgressErrors((errors) => ({ ...errors, [item.key]: "" }));
     } catch (error) {
       setProgressErrors((errors) => ({
@@ -498,7 +445,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
       .split("; ")
       .find((cookie) => cookie.startsWith("csrftoken="))
       ?.split("=")[1];
-    const response = await fetch(`/api/v1/${data.kind === "movie" ? "movies" : "series"}/`, {
+    const response = await apiFetch(`/api/v1/${data.kind === "movie" ? "movies" : "series"}/`, {
       method: "POST",
       body,
       credentials: "include",
@@ -510,16 +457,14 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
     }
 
     const saved = apiItemToMediaItem(result as MediaApiResponse, data.kind);
-    saved.rating = data.rating ?? undefined;
-    saved.episodesInSeason = data.seasons.find((season) => season.number === data.current_season)?.episode_count;
-    setMediaItems((currentItems) => [saved, ...currentItems]);
-    onCollectionChange?.();
-    void fetchProgressDetails(saved).then((details) => {
-      if (!details) return;
-      setMediaItems((currentItems) => currentItems.map((item) =>
-        item.key === saved.key ? withProgressDetails(item, details) : item,
-      ));
-    }).catch(() => undefined);
+    setPresentation((current) => ({
+      ...current,
+      [saved.key]: {
+        rating: data.rating ?? undefined,
+        updatedAt: Date.now(),
+        episodesInSeason: data.seasons.find((season) => season.number === data.current_season)?.episode_count,
+      },
+    }));
     setActiveFilter("all");
     setSearch("");
     setYearFilter("");
@@ -605,7 +550,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
           </div>
         </Card>
 
-        {loading && <p role="status">Loading movies and series...</p>}
+        {loading && <LoadingPlaceholder />}
         {loadError && <p role="alert">{loadError} Reload the page to retry.</p>}
 
         {!loading && !loadError && recentInProgressItems.length > 0 && (
@@ -749,7 +694,7 @@ export function Movies({ onCollectionChange }: { onCollectionChange?: () => void
       <MediaDetailsModal
         item={selectedMedia}
         onClose={() => setSelectedMedia(null)}
-        onSynopsisSaved={handleSynopsisSaved}
+
       />
     </>
   );
