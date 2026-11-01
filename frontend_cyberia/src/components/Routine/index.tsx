@@ -214,7 +214,7 @@ export function Routine() {
                       const pending = pendingDays.includes(`${habit.id}-${day}`);
                       const stateClass = done ? styles.dayDone : missed ? styles.dayMissed : scheduled ? styles.dayScheduled : styles.dayEmpty;
                       return <div className={`${styles.daySlot} ${day === todayKey ? styles.todayColumn : ""}`} key={day}>
-                        <button className={`${styles.dayCell} ${stateClass}`} type="button" aria-label={`${habit.name}, ${formatDate(date, { weekday: "long", month: "short", day: "numeric" })}${done ? ", completed" : scheduled ? ", scheduled" : ", not scheduled"}`} aria-pressed={done} disabled={!scheduled || day > todayKey || pending} onClick={() => void toggleCompletion(habit, date)}>
+                        <button className={`${styles.dayCell} ${stateClass}`} type="button" aria-label={`${habit.name}, ${formatDate(date, { weekday: "long", month: "short", day: "numeric" })}${done ? ", completed" : missed ? ", missed" : scheduled ? ", scheduled" : ", not scheduled"}`} aria-pressed={done} disabled={!scheduled || day > todayKey || pending} onClick={() => void toggleCompletion(habit, date)}>
                           {done ? <Check aria-hidden="true" /> : !scheduled ? <span aria-hidden="true">–</span> : null}
                         </button>
                       </div>;
@@ -231,10 +231,10 @@ export function Routine() {
             {loading && <LoadingPlaceholder />}
             {!loading && !error && habits.length === 0 && <p className={styles.panelMessage}>No habits yet. Create your first habit.</p>}
             <div className={styles.legend} aria-label="Legend">
-              <span><i className={styles.legendDone} />Done</span>
-              <span><i className={styles.legendScheduled} />Scheduled</span>
-              <span><i className={styles.legendMissed} />Missed</span>
-              <span><i className={styles.legendEmpty} />Not scheduled</span>
+              <span><span className={`${styles.legendSwatch} ${styles.dayDone}`} aria-hidden="true"><Check /></span>Done</span>
+              <span><span className={`${styles.legendSwatch} ${styles.dayScheduled}`} aria-hidden="true" />Scheduled</span>
+              <span><span className={`${styles.legendSwatch} ${styles.dayMissed}`} aria-hidden="true" />Missed</span>
+              <span><span className={`${styles.legendSwatch} ${styles.dayEmpty}`} aria-hidden="true">&ndash;</span>Not scheduled</span>
             </div>
           </Card>
 
