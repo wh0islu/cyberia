@@ -32,7 +32,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
-# TMDB search
+
 def _get_tmdb_genres(media_type):
     cache_key = f'tmdb_genres_{media_type}_en'
     cached_genres = cache.get(cache_key)
@@ -85,7 +85,7 @@ def tmdb_media_search(request):
         )
 
     endpoint = 'tv' if media_type == 'series' else 'movie'
-    query_string = urlencode({'query': query, 'language': 'pt-BR', 'include_adult': 'false'})
+    query_string = urlencode({'query': query, 'language': 'en-US', 'include_adult': 'false'})
     tmdb_url = f'https://api.themoviedb.org/3/search/{endpoint}?{query_string}'
     tmdb_request = Request(
         tmdb_url,
@@ -276,7 +276,7 @@ def tmdb_media_details(request, media_type, tmdb_id):
     return Response(details)
 
 
-# Books
+
 @ensure_csrf_cookie
 @api_view(http_method_names=['GET', 'POST'])
 def books_api_collection(request):
@@ -315,7 +315,7 @@ def book_api(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Movies
+
 def _media_request_data(request):
     data = {key: request.data.get(key) for key in request.data}
     sources = data.get('sources')
@@ -365,7 +365,7 @@ def movie_api(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Series
+
 @ensure_csrf_cookie
 @api_view(http_method_names=['GET', 'POST'])
 def series_api_collection(request):
@@ -404,7 +404,7 @@ def series_api(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Meals
+
 def _meal_request_data(request):
     data = {key: request.data.get(key) for key in request.data}
     if 'time' in data and not data['time']:
@@ -462,7 +462,7 @@ def meal_api(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Courses
+
 def _course_request_data(request):
     data = {key: request.data.get(key) for key in request.data}
     if data.get('goal_date') == '':
@@ -514,7 +514,7 @@ def course_api(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Routine — habits
+
 @api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def habits_api_collection(request):
@@ -557,7 +557,7 @@ def habit_api(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Routine — daily habit completions
+
 @api_view(http_method_names=['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def habit_completions_api_collection(request):

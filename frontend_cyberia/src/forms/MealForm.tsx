@@ -79,7 +79,7 @@ export function MealForm({ initial, photoUrl, submitLabel = "Log meal", onSubmit
     setDateError(false);
     setSubmitting(true);
     try {
-      // Include any text still in the input that has not been added yet.
+
       const items = draft.trim() ? [...data.items, draft.trim()] : data.items;
       await onSubmit({ ...data, items });
     } finally {

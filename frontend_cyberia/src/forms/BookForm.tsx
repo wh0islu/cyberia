@@ -50,7 +50,7 @@ type StringField = {
   [Key in keyof BookFormData]: BookFormData[Key] extends string ? Key : never;
 }[keyof BookFormData];
 
-/* BookSource.FORMAT_OPTIONS */
+
 const BOOK_FORMATS: SourceFormat[] = [
   {
     value: "PH",
@@ -87,7 +87,7 @@ const BOOK_FORMATS: SourceFormat[] = [
   },
 ];
 
-/* Book.BOOK_OPTIONS */
+
 const STATUS = [
   { value: "NR", label: "Want to read" },
   { value: "RE", label: "Reading" },

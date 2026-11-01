@@ -33,9 +33,9 @@
   flex-shrink: 0;
 }
 
-/* ===== variantes ===== */
 
-/* primary: "Add item", "Save" */
+
+
 .btn--primary {
   background: var(--btn-strong-bg);
   color: var(--btn-strong-text);
@@ -44,7 +44,7 @@
   opacity: 0.88;
 }
 
-/* secondary: "+ Block", "+ Add", ‹ › arrows */
+
 .btn--secondary {
   background: var(--bg-surface-alt);
   color: var(--text-default);
@@ -53,7 +53,7 @@
   background: var(--border-subtle);
 }
 
-/* ghost: subtle actions */
+
 .btn--ghost {
   background: transparent;
   color: var(--text-muted);
@@ -63,7 +63,7 @@
   color: var(--text-default);
 }
 
-/* accent: use sparingly for the screen's primary action */
+
 .btn--accent {
   background: var(--btn-accent-bg);
   color: var(--text-over-primary);
@@ -72,7 +72,7 @@
   background: var(--btn-accent-hover);
 }
 
-/* perigo: excluir */
+
 .btn--danger {
   background: var(--error);
   color: var(--text-over-error);
@@ -81,7 +81,7 @@
   opacity: 0.88;
 }
 
-/* ===== tamanhos ===== */
+
 .btn--sm {
   min-height: 36px;
   padding: 0 14px;
@@ -93,7 +93,7 @@
   font-size: 16px;
 }
 
-/* icon only (e.g., ‹ ›) */
+
 .btn--icon {
   width: 44px;
   padding: 0;
@@ -105,12 +105,12 @@
   width: 52px;
 }
 
-/* largura total */
+
 .btn--block {
   width: 100%;
 }
 
-/* ===== desabilitado ===== */
+
 .btn:disabled,
 .btn[aria-disabled="true"] {
   background: var(--disabled);

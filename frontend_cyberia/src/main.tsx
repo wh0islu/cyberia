@@ -6,7 +6,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from "./App";
 
-// Start once, outside React effects, so StrictMode does not restart preloading.
+
 void preloadCollections();
 
 createRoot(document.getElementById('root')!).render(

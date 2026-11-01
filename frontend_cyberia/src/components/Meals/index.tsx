@@ -135,8 +135,8 @@ export function Meals() {
     setNotes(nextNotes);
     try {
       localStorage.setItem("cyberia-meal-notes", JSON.stringify(nextNotes));
-    } catch {
-      // Notes remain available for the current session when storage is unavailable.
+    } catch (error) {
+      void error;
     }
   }
 

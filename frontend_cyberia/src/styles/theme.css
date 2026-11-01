@@ -1,5 +1,5 @@
 :root {
-  /* ===== neutral gray scale ===== */
+
   --white: #ffffff;
   --gray-50: #f5f5f5;
   --gray-100: #ececec;
@@ -12,20 +12,20 @@
   --gray-800: #141414;
   --gray-900: #080808;
 
-  /* ===== marca ===== */
+
   --primary-light: #4de7b7;
   --primary: #0da170;
   --primary-dark: #065f46;
   --btn-accent-bg: var(--primary-light);
   --btn-accent-hover: #3fd4a6;
 
-  /* ===== status ===== */
+
   --success: #22c55e;
   --warning: #eab308;
   --error: #991b1b;
   --info: #0ea5e9;
 
-  /* ===== texto sobre cores ===== */
+
   --text-over-primary: #080808;
   --text-over-primary-dark: #ececec;
   --text-over-primary-light: #080808;
@@ -34,12 +34,12 @@
   --text-over-error: #ececec;
   --text-over-info: #080808;
 
-  /* ===== dark theme (default) ===== */
-  --bg-app: var(--gray-900); /* page background */
-  --bg-surface: var(--gray-800); /* cards / panels / sidebar */
+
+  --bg-app: var(--gray-900);
+  --bg-surface: var(--gray-800);
   --bg-surface-alt: var(
     --gray-700
-  ); /* card sections, pills, and inputs */
+  );
   --bg-hover: var(--gray-700);
   --border-subtle: var(--gray-600);
   --border-strong: var(--gray-500);
@@ -55,11 +55,11 @@
 
   --progress-fill: var(--primary-light);
   --progress-track: var(--gray-700);
-  --hatch: var(--gray-500); /* cover / poster placeholder */
+  --hatch: var(--gray-500);
 
   --nav-active-bg: var(--gray-900);
   --nav-active-text: var(--gray-100);
-  --btn-strong-bg: var(--gray-100); /* primary button ("Log") */
+  --btn-strong-bg: var(--gray-100);
   --btn-strong-text: var(--gray-900);
 
   --disabled: var(--gray-400);

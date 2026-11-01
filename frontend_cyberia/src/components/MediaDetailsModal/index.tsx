@@ -98,8 +98,8 @@ export function MediaDetailsModal({ item, onClose, onSynopsisSaved }: MediaDetai
             if (saved.ok && !controller.signal.aborted) {
               onSynopsisSaved?.(selectedItem.kind, selectedItem.persistedId, payload.overview);
             }
-          } catch {
-            // The fetched synopsis remains visible if saving the legacy record fails.
+          } catch (error) {
+            void error;
           }
         }
       } catch (loadError) {

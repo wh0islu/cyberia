@@ -11,8 +11,8 @@ type Entity = { id: number; [key: string]: unknown };
 export function collectionOptions<T>(name: Collection) {
   return queryOptions({
     queryKey: collectionKey(name),
-    // Small shared requests deliberately finish after an observer unmounts.
-    // This lets StrictMode and navigation reuse the same in-flight promise.
+
+
     queryFn: async (): Promise<T[]> => {
       const response = await fetch(`/api/v1/${name}/`, { credentials: "include" });
       if (!response.ok) throw new ApiError(`Could not load ${name} (${response.status}).`, response.status);
@@ -29,7 +29,7 @@ export function preloadCollections() {
 
 function updateEntity(name: Collection, entity: Entity, deleted: boolean) {
   queryClient.setQueryData<Entity[]>(collectionKey(name), (items) => {
-    // Never invent an entire collection from a single mutation response.
+
     if (!items) return undefined;
     if (deleted) return items.filter((item) => item.id !== entity.id);
     return items.some((item) => item.id === entity.id)
@@ -38,7 +38,7 @@ function updateEntity(name: Collection, entity: Entity, deleted: boolean) {
   });
 }
 
-/** Existing mutation helpers keep their error handling and CSRF headers. */
+
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const response = await fetch(path, options);
   const method = (options.method ?? "GET").toUpperCase();
@@ -51,7 +51,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   const payload: unknown = deleted
     ? { id: Number(match[2]?.replace("/", "")) }
     : await response.clone().json().catch(() => null);
-  // Discard any pre-mutation GET result that is still in flight.
+
   await queryClient.cancelQueries({ queryKey: collectionKey(name) });
   if (payload && typeof payload === "object" && "id" in payload && typeof payload.id === "number") {
     updateEntity(name, payload as Entity, deleted);
@@ -61,7 +61,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   if (!queryClient.getQueryData(collectionKey(name))) {
     void queryClient.invalidateQueries({ queryKey: collectionKey(name) });
   }
-  // Habit responses embed completions; refresh that related representation.
+
   if (name === "habit-completions") {
     await queryClient.cancelQueries({ queryKey: collectionKey("habits") });
     void queryClient.invalidateQueries({ queryKey: collectionKey("habits") });

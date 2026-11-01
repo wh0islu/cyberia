@@ -63,7 +63,7 @@
 .sidebar__toggle:active {
   background: var(--bg-surface-alt);
 }
-/* logo */
+
 .sidebar__logo {
   display: flex;
   align-items: center;
@@ -102,7 +102,7 @@
   padding: 0;
 }
 
-/* navigation */
+
 .sidebar__nav {
   display: flex;
   flex-direction: column;
@@ -165,7 +165,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Desktop collapse animation: keep labels mounted while fading them. */
+
 @media (min-width: 769px) {
   .sidebar {
     overflow-x: hidden;
@@ -261,7 +261,7 @@
     transition: none !important;
   }
 }
-/* mobile: becomes a top bar with horizontal scrolling */
+
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;

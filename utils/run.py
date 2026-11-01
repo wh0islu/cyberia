@@ -91,16 +91,16 @@ def create_app(python, app_name):
         else:
             new_lines.append(line)
 
-    content = "\n".join(new_lines) + "\n"  # garante quebra no final
+    content = "\n".join(new_lines) + "\n"
 
     apps_py.write_text(content, encoding="utf-8")
 
-#import re
-#content = re.sub(
-#    r'(\s*)name\s*=\s*["\'][^"\']*["\']',
-#    rf'\1name = "apps.{app_name}"\n\1default_auto_field = "django.db.models.BigAutoField"',
-#    content
-#)
+
+
+
+
+
+
 
 
 def register_app(project_name, app_name):

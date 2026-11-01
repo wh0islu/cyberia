@@ -19,7 +19,7 @@ from django.db import transaction
 from django.utils import timezone
 
 
-# Books
+
 class BookSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookSource
@@ -131,7 +131,7 @@ class BooksSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'last_read_at']
 
 
-# Movies
+
 class MovieSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = MovieSource
@@ -153,7 +153,7 @@ class MovieSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer)
         read_only_fields = ['id']
 
 
-# Series
+
 class SeriesSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SeriesSource
@@ -177,7 +177,7 @@ class SeriesSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer
         read_only_fields = ['id']
 
 
-# Meals
+
 class MealItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealItem
@@ -218,7 +218,7 @@ class MealEntrySerializer(serializers.ModelSerializer):
         return meal
 
 
-# Courses
+
 class CourseSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseSource
@@ -275,7 +275,7 @@ class CourseSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer
         read_only_fields = ['id']
 
 
-# Routine
+
 class HabitCompletionSerializer(serializers.ModelSerializer):
     habit = serializers.PrimaryKeyRelatedField(queryset=Habit.objects.all())
 

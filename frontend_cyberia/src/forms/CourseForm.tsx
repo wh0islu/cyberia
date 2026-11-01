@@ -52,14 +52,13 @@ type StringField = {
   [Key in keyof CourseFormData]: CourseFormData[Key] extends string ? Key : never;
 }[keyof CourseFormData];
 
-/* CourseSource.FORMAT_OPTIONS */
+
 export const COURSE_FORMATS: SourceFormat[] = [
   { value: "WEB", label: "Online", location: null, url: { label: "Course link", required: true } },
   { value: "VID", label: "Video", location: { label: "Folder (if downloaded)", placeholder: "E.g., external drive/Courses" }, url: { label: "Video or playlist link" } },
   { value: "LOC", label: "Local files", location: { label: "Folder", placeholder: "E.g., external drive/Courses/Design" }, url: null },
 ];
 
-/* Replace these values with the choices from your Course model. */
 const STATUS = [
   { value: "NS", label: "Queued" },
   { value: "IP", label: "In progress" },
@@ -203,7 +202,7 @@ export function CourseForm({ initial, coverUrl, onSubmit, onCancel }: CourseForm
               onChange={(e) => setNewModule(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault(); // Prevent form submission.
+                  e.preventDefault();
                   addModule();
                 }
               }}

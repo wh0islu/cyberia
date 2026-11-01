@@ -34,7 +34,7 @@ export function FormModal({
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
 
-    // Release the top layer when the page is hidden by Activity.
+
     return () => {
       if (dialog.open) dialog.close();
     };

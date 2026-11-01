@@ -35,8 +35,8 @@ export function Menu() {
 
     try {
       localStorage.setItem("theme", theme);
-    } catch {
-      // The selected theme still works for this session without storage.
+    } catch (error) {
+      void error;
     }
   }, [theme]);
 

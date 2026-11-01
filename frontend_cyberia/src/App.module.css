@@ -38,7 +38,7 @@
   min-width: 0;
 }
 
-/* Snapshot only the content: the sidebar stays steady during navigation. */
+
 :global(:root) {
   view-transition-name: none;
 }

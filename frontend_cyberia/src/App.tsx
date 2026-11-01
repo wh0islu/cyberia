@@ -28,7 +28,7 @@ export function App() {
       flushSync(() => setCurrentPath(path));
     });
     transitionRef.current = transition;
-    // Rapid navigation may deliberately skip a snapshot before it is ready.
+
     void transition.ready.catch(() => undefined);
   }, []);
 

@@ -46,7 +46,7 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
   const daysId = useId();
   const [data, setData] = useState<HabitFormData>({
     name: "",
-    days: [true, true, true, true, true, false, false], // Monday through Sunday.
+    days: [true, true, true, true, true, false, false],
     time: "",
     goal: "",
     linked_section: "",
@@ -67,7 +67,7 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
     try {
       await onSubmit({
         ...data,
-        // 0 = Monday … 6 = Sunday (same convention as Python's date.weekday()).
+
         weekdays: data.days
           .map((ativo, indice) => (ativo ? indice : null))
           .filter((indice): indice is number => indice !== null),
