@@ -61,9 +61,11 @@ This Compose setup is intended for local use and publishes ports on loopback onl
 
 ## API requests with Bruno
 
-Open the `bruno/` directory in Bruno and select the `Local` environment. Run
-`Setup/Get CSRF token` before requests that write data. Create requests save the
-returned IDs automatically for the matching detail, update, and delete requests.
+Copy `bruno/environments/Local.example.bru` to
+`bruno/environments/Local.bru`, open the `bruno/` directory in Bruno, and select
+the `Local` environment. Run `Setup/Get CSRF token` before requests that write
+data. Create requests save the returned IDs automatically for the matching
+detail, update, and delete requests.
 
 ## Local setup
 
