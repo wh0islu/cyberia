@@ -388,7 +388,7 @@ export function MediaForm({
                 className="in"
                 required
                 autoFocus
-                placeholder={isSeries ? "E.g., Cangaço Novo" : "E.g., Central do Brasil"}
+                placeholder={isSeries ? "E.g., Breaking Bad" : "E.g., Inception"}
                 value={data.title}
                 onChange={handleTitleChange}
               />

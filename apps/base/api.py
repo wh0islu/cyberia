@@ -147,11 +147,11 @@ def tmdb_series_details(request, tmdb_id):
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-    cached_details = cache.get(f'tmdb_series_details_{tmdb_id}')
+    cached_details = cache.get(f'tmdb_series_details_{tmdb_id}_en')
     if cached_details is not None:
         return Response(cached_details)
 
-    tmdb_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?language=pt-BR'
+    tmdb_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?language=en-US'
     tmdb_request = Request(
         tmdb_url,
         headers={
@@ -190,7 +190,7 @@ def tmdb_series_details(request, tmdb_id):
         ),
         'seasons': seasons,
     }
-    cache.set(f'tmdb_series_details_{tmdb_id}', details, timeout=60 * 60 * 24)
+    cache.set(f'tmdb_series_details_{tmdb_id}_en', details, timeout=60 * 60 * 24)
     return Response(details)
 
 
@@ -208,13 +208,13 @@ def tmdb_media_details(request, media_type, tmdb_id):
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-    cache_key = f'tmdb_media_details_{media_type}_{tmdb_id}'
+    cache_key = f'tmdb_media_details_{media_type}_{tmdb_id}_en'
     cached_details = cache.get(cache_key)
     if cached_details is not None:
         return Response(cached_details)
 
     endpoint = 'tv' if media_type == 'series' else 'movie'
-    tmdb_url = f'https://api.themoviedb.org/3/{endpoint}/{tmdb_id}?language=pt-BR'
+    tmdb_url = f'https://api.themoviedb.org/3/{endpoint}/{tmdb_id}?language=en-US'
     tmdb_request = Request(
         tmdb_url,
         headers={

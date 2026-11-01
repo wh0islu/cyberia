@@ -5,7 +5,7 @@ from django.utils import timezone
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    name = models.CharField(max_length=60, help_text='Mr Penguim')
+    name = models.CharField(max_length=60, help_text='Mr Penguin')
     bio = models.TextField(null=True)
     nationality = models.CharField(max_length=10, help_text='Siberian')
     goals = models.CharField(max_length=100, help_text='Help people.', blank=True)
