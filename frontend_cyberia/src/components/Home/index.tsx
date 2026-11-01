@@ -86,7 +86,7 @@ export function Home() {
     ["books", "courses", "habits", "meals", "movies", "series"],
   );
 
-  const readingBook = data.books.filter((book) => book.status === "RE" || book.status === "RW")
+  const readingBook = data.books.filter((book) => book.status === "RE")
     .sort((first, second) => {
       const firstRead = Date.parse(first.last_read_at ?? first.started_on ?? "") || 0;
       const secondRead = Date.parse(second.last_read_at ?? second.started_on ?? "") || 0;

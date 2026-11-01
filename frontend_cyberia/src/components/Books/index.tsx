@@ -34,10 +34,6 @@ const statuses: Record<string, string> = {
   RE: "Reading", NR: "Want to read", FD: "Read",
 };
 
-function bookStatus(book: Book) {
-  return book.status === "RW" ? "RE" : book.status;
-}
-
 function authorPreview(authors: string) {
   const names = authors.split(",").map((name) => name.trim()).filter(Boolean);
   return names.length > 2 ? `${names.slice(0, 2).join(", ")}…` : authors;
@@ -70,7 +66,7 @@ function BookCover({ book, className }: { book: Book; className: string }) {
   ) : <div className={className} role="img" aria-label="No cover">No cover</div>;
 }
 
-function ReadingBookCard({ book }: { book: Book }) {
+function ReadingBookCard({ book, onEdit }: { book: Book; onEdit: (book: Book) => void }) {
   const [page, setPage] = useState(String(book.current_page));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -108,6 +104,15 @@ function ReadingBookCard({ book }: { book: Book }) {
           <label htmlFor={`book-page-${book.id}`}>Paused at p.</label>
           <input id={`book-page-${book.id}`} type="number" required min="0" max={total ?? undefined} value={page} onChange={(event) => setPage(event.target.value)} />
           <DefaultButton type="submit" size="sm" disabled={saving}>{saving ? "Saving..." : "Save"}</DefaultButton>
+          <button
+            type="button"
+            className={styles.editStatusButton}
+            aria-label={`Edit ${book.title}`}
+            title="Edit book"
+            onClick={() => onEdit(book)}
+          >
+            <SquarePen size={15} aria-hidden="true" />
+          </button>
         </form>
         {error && <p role="alert">{error}</p>}
       </div>
@@ -147,18 +152,18 @@ export function Books() {
     setEditingBook(null);
   }
 
-  const visible = books.filter((book) => (!filter || bookStatus(book) === filter) &&
+  const visible = books.filter((book) => (!filter || book.status === filter) &&
     `${book.title} ${book.author}`.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => sort === "title" ? a.title.localeCompare(b.title) : b.id - a.id);
   const reading = visible
-    .filter((book) => bookStatus(book) === "RE")
+    .filter((book) => book.status === "RE")
     .sort((first, second) => {
       const firstReadAt = Date.parse(first.last_read_at ?? first.started_on ?? "") || 0;
       const secondReadAt = Date.parse(second.last_read_at ?? second.started_on ?? "") || 0;
       return secondReadAt - firstReadAt || second.id - first.id;
     });
   const displayedReading = filter === "RE" ? reading : reading.slice(0, 2);
-  const shelf = filter ? visible.filter((book) => bookStatus(book) !== "RE") : visible;
+  const shelf = filter ? visible.filter((book) => book.status !== "RE") : visible;
 
   function openBookForm(book: Book | null = null) {
     setEditingBook(book);
@@ -176,7 +181,7 @@ export function Books() {
       author: book.author,
       pages: String(book.number_of_pages ?? ""),
       genre: book.genre ?? "",
-      status: bookStatus(book),
+      status: book.status,
       current_page: String(book.current_page ?? 0),
       started_at: book.started_on ?? "",
       notes: book.notes ?? "",
@@ -201,7 +206,7 @@ export function Books() {
         <nav className={styles.filters} aria-label="Book filters">
           <div className={styles.filterPills}>
             {[["", "All"], ...Object.entries(statuses)].map(([value, label]) => (
-              <a key={value} href="#books" className={filter === value ? styles.activeFilter : undefined} aria-current={filter === value ? "true" : undefined} onClick={(event) => { event.preventDefault(); setFilter(value); }}>{label} ({books.filter((book) => !value || bookStatus(book) === value).length})</a>
+              <a key={value} href="#books" className={filter === value ? styles.activeFilter : undefined} aria-current={filter === value ? "true" : undefined} onClick={(event) => { event.preventDefault(); setFilter(value); }}>{label} ({books.filter((book) => !value || book.status === value).length})</a>
             ))}
           </div>
           <label className={styles.sortControl}>Sort<Select compact value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort books"><option value="latest">Latest added</option><option value="title">Title</option></Select></label>
@@ -211,7 +216,7 @@ export function Books() {
         {!loading && !error && visible.length === 0 && <p className={styles.emptyState}>{books.length ? "No matching books." : "Your library is empty. Add your first book."}</p>}
         {reading.length > 0 && (filter === "" || filter === "RE") && (
           <Card title="Currently reading" className={styles.sectionPanel} id="reading">
-            <div className={styles.readingGrid}>{displayedReading.map((book) => <ReadingBookCard key={book.id} book={book} />)}</div>
+            <div className={styles.readingGrid}>{displayedReading.map((book) => <ReadingBookCard key={`${book.id}-${book.current_page}`} book={book} onEdit={openBookForm} />)}</div>
           </Card>
         )}
         {shelf.length > 0 && filter !== "RE" && (

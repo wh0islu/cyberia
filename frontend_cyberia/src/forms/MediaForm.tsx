@@ -18,7 +18,7 @@ import { DatePicker } from "../components/DatePicker";
 
 type MediaKind = "movie" | "series";
 
-type MediaFormData = {
+export type MediaFormData = {
   kind: MediaKind;
   poster: File | null;
   tmdb_id: number | null;
@@ -83,7 +83,7 @@ type StringField = {
   [Key in keyof MediaFormData]: MediaFormData[Key] extends string ? Key : never;
 }[keyof MediaFormData];
 
-/* MovieSource / SeriesSource.FORMAT_OPTIONS (same for both models). */
+
 export const MEDIA_FORMATS: SourceFormat[] = [
   { value: "STR", label: "Streaming", location: { label: "Service", placeholder: "E.g., Netflix, Hulu" }, url: { label: "Link" } },
   { value: "FILE", label: "File", location: { label: "Folder or device", placeholder: "E.g., external drive/Movies" }, url: null },
@@ -96,11 +96,12 @@ const KINDS = [
   { value: "series", label: "Series" },
 ];
 
-/* Replace these values with the choices from your models. */
 const STATUS = [
   { value: "WANT", label: "Want to watch" },
   { value: "WATCHING", label: "Watching" },
   { value: "WATCHED", label: "Watched" },
+  { value: "PA", label: "Paused" },
+  { value: "RW", label: "Rewatching" },
 ];
 
 const GENRES = ["Drama", "Comedy", "Action", "Documentary", "Animation", "Horror", "Science fiction"];
@@ -126,10 +127,10 @@ const empty: MediaFormData = {
   sources: [{ format: "STR", location: "", url: "" }],
 };
 
-/**
- * Form for movies and series.
- * onSubmit receives { kind: "movie" | "series", ...data }; use kind to select the endpoint.
- */
+
+
+
+
 export function MediaForm({
   initial,
   onSubmit,
@@ -429,7 +430,7 @@ export function MediaForm({
               <Field label="Genre">
                 <Select className="in" value={data.genre} onChange={setFromInput("genre")}>
                   <option value="">Select</option>
-                  {[...new Set([...GENRES, ...tmdbGenreOptions])].map((genre) => (
+                  {[...new Set([...GENRES, ...tmdbGenreOptions, ...(data.genre ? [data.genre] : [])])].map((genre) => (
                     <option key={genre} value={genre}>{genre}</option>
                   ))}
                 </Select>

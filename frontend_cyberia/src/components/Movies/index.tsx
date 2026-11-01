@@ -3,9 +3,9 @@ import { useCollection } from "../../hooks/useCollections";
 import { apiFetch } from "../../services/collections";
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, SquarePen } from "lucide-react";
 import { MediaForm } from "../../forms";
-import type { MediaSubmission } from "../../forms/MediaForm";
+import type { MediaFormData, MediaSubmission } from "../../forms/MediaForm";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
 import { FormModal } from "../FormModal";
@@ -97,6 +97,7 @@ type MediaApiResponse = {
   current_episode?: number | null;
   number_of_seasons?: number | null;
   number_of_episodes?: number | null;
+  sources?: { format: string; location: string | null; url: string | null }[];
 };
 
 function apiItemToMediaItem(item: MediaApiResponse, kind: MediaKind): MediaItem {
@@ -186,12 +187,12 @@ function MediaProgressEditor({
   item,
   error,
   onSave,
-  onStatusChange,
+  onEdit,
 }: {
   item: MediaItem;
   error: string;
   onSave: (item: MediaItem, progress: MediaProgress) => Promise<void>;
-  onStatusChange: (itemKey: string, status: MediaStatus) => Promise<void>;
+  onEdit: (item: MediaItem) => void;
 }) {
   const [minute, setMinute] = useState(String(item.currentMinute ?? ""));
   const [season, setSeason] = useState(String(item.currentSeason ?? ""));
@@ -261,19 +262,15 @@ function MediaProgressEditor({
       <DefaultButton type="submit" size="sm" disabled={saving}>
         {saving ? "Saving..." : "Save"}
       </DefaultButton>
-      <div className={styles.cardStatus}>
-        <Select
-          compact
-          className={styles.statusSelect}
-          value={item.status}
-          aria-label={`Status for ${item.title}`}
-          onChange={(event) => void onStatusChange(item.key, event.currentTarget.value as MediaStatus)}
-        >
-          {statusOptions[item.kind].map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </Select>
-      </div>
+      <button
+        type="button"
+        className={styles.editStatusButton}
+        aria-label={`Edit ${item.title}`}
+        title="Edit"
+        onClick={() => onEdit(item)}
+      >
+        <SquarePen size={15} aria-hidden="true" />
+      </button>
       {error && <small role="alert">{error}</small>}
     </form>
   );
@@ -281,6 +278,9 @@ function MediaProgressEditor({
 
 export function Movies() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMedia, setEditingMedia] = useState<{
+    item: MediaItem; initial: Partial<MediaFormData>;
+  } | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<MediaDetailsItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<MediaFilter>("all");
   const moviesQuery = useCollection<MediaApiResponse>("movies");
@@ -347,40 +347,36 @@ export function Movies() {
     }
   }
 
-  async function updateStatus(itemKey: string, status: MediaStatus) {
-    const item = mediaItems.find((entry) => entry.key === itemKey);
-    if (!item?.persistedId) return;
-
-    const csrf = document.cookie
-      .split("; ")
-      .find((cookie) => cookie.startsWith("csrftoken="))
-      ?.split("=")[1];
-
-    try {
-      const response = await apiFetch(`/api/v1/${item.kind === "movie" ? "movies" : "series"}/${item.persistedId}/`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {}),
-        },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) {
-        const error = await response.json().catch(() => null);
-        throw new Error(error ? mediaApiError(error) : `Request failed (${response.status}).`);
-      }
-
-      setProgressErrors((errors) => ({ ...errors, [itemKey]: "" }));
-      setPresentation((current) => ({
-        ...current, [itemKey]: { ...current[itemKey], updatedAt: Date.now() },
-      }));
-    } catch (error) {
-      setProgressErrors((errors) => ({
-        ...errors,
-        [itemKey]: error instanceof Error ? error.message : "Could not update status.",
-      }));
+  function openMediaForm(item?: MediaItem) {
+    if (item) {
+      const original = (item.kind === "movie" ? moviesQuery.data : seriesQuery.data)
+        .find((entry) => entry.id === item.persistedId);
+      if (!original) return;
+      setEditingMedia({ item, initial: {
+        kind: item.kind,
+        title: item.title,
+        year: item.year == null ? "" : String(item.year),
+        genre: item.genre ?? "",
+        status: isWatched(item) ? "WATCHED" : isWatching(item) ? "WATCHING"
+          : item.status === "NW" ? "WANT" : item.status,
+        tmdb_id: original.tmdb_id,
+        tmdb_poster_path: original.tmdb_poster_path,
+        tmdb_synopsis: original.tmdb_synopsis ?? "",
+        poster_url: item.cover,
+        current_minute: String(item.currentMinute ?? ""),
+        current_season: String(item.currentSeason ?? ""),
+        episode: String(item.currentEpisode ?? ""),
+        season_episodes: Array.from({ length: item.numberOfSeasons ?? 1 }, (_, index) =>
+          String(item.seasonEpisodeCounts?.[index + 1] ?? "")),
+        rating: item.rating ?? 0,
+        sources: (original.sources ?? []).map((source) => ({
+          format: source.format, location: source.location ?? "", url: source.url ?? "",
+        })),
+      } });
+    } else {
+      setEditingMedia(null);
     }
+    setIsModalOpen(true);
   }
 
   async function saveProgress(item: MediaItem, progress: MediaProgress) {
@@ -435,8 +431,16 @@ export function Movies() {
     if (data.kind === "movie") {
       if (data.current_minute !== null) body.append("current_minute", String(data.current_minute));
     } else {
-      if (data.number_of_seasons !== null) body.append("number_of_seasons", String(data.number_of_seasons));
-      if (data.number_of_episodes !== null) body.append("number_of_episodes", String(data.number_of_episodes));
+
+      const initialCounts = editingMedia?.initial.season_episodes ?? [];
+      const initialSeasons = initialCounts.flatMap((count, index) =>
+        count === "" ? [] : [{ number: index + 1, episode_count: Number(count) }]);
+      const countsChanged = !editingMedia || data.number_of_seasons !== initialCounts.length
+        || JSON.stringify(data.seasons) !== JSON.stringify(initialSeasons);
+      if (countsChanged) {
+        if (data.number_of_seasons !== null) body.append("number_of_seasons", String(data.number_of_seasons));
+        if (data.number_of_episodes !== null) body.append("number_of_episodes", String(data.number_of_episodes));
+      }
       if (data.current_season !== null) body.append("current_season", String(data.current_season));
       if (data.current_episode !== null) body.append("current_episode", String(data.current_episode));
     }
@@ -445,8 +449,12 @@ export function Movies() {
       .split("; ")
       .find((cookie) => cookie.startsWith("csrftoken="))
       ?.split("=")[1];
-    const response = await apiFetch(`/api/v1/${data.kind === "movie" ? "movies" : "series"}/`, {
-      method: "POST",
+    const collection = data.kind === "movie" ? "movies" : "series";
+    const endpoint = editingMedia
+      ? `/api/v1/${collection}/${editingMedia.item.persistedId}/`
+      : `/api/v1/${collection}/`;
+    const response = await apiFetch(endpoint, {
+      method: editingMedia ? "PATCH" : "POST",
       body,
       credentials: "include",
       headers: csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {},
@@ -465,6 +473,7 @@ export function Movies() {
         episodesInSeason: data.seasons.find((season) => season.number === data.current_season)?.episode_count,
       },
     }));
+    setProgressErrors((errors) => ({ ...errors, [saved.key]: "" }));
     setActiveFilter("all");
     setSearch("");
     setYearFilter("");
@@ -506,7 +515,7 @@ export function Movies() {
             <DefaultButton
               size="sm"
               icon={<Plus aria-hidden="true" />}
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => openMediaForm()}
             >
               Add movie or series
             </DefaultButton>
@@ -603,10 +612,11 @@ export function Movies() {
                         : item.currentEpisode == null ? "Set the current episode" : "Loading or unavailable episode count"}</p>
                     )}
                     <MediaProgressEditor
+                      key={`${item.key}-${item.currentMinute}-${item.currentSeason}-${item.currentEpisode}`}
                       item={item}
                       error={progressErrors[item.key] ?? ""}
                       onSave={saveProgress}
-                      onStatusChange={updateStatus}
+                      onEdit={openMediaForm}
                     />
                   </div>
                 </Card>
@@ -619,8 +629,7 @@ export function Movies() {
           <Card title={activeFilter === "wantToWatch" ? "Want to watch" : activeFilter === "watched" ? "Watched" : "Library"} className={`${styles.sectionPanel} ${styles.watchedSection}`}>
             <HorizontalCarousel label="Movies and series library carousel">
               {libraryItems.map((item) => (
-                <Card
-                  as="article"
+                <article
                   className={styles.watchedItem}
                   key={item.key}
                   role="button"
@@ -637,38 +646,39 @@ export function Movies() {
                   )}
                   <h3>{item.title}</h3>
                   <p>{item.kind === "series" ? "Series" : "Movie"}{item.year ? ` · ${item.year}` : ""}</p>
-                  {isWatched(item) && item.rating != null ? (
-                    <strong>{"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}</strong>
-                  ) : (
-                    <small className={styles.statusLabel}>{getStatusLabel(item)}</small>
+                  {isWatched(item) && item.rating != null && (
+                    <strong>{"\u2605".repeat(item.rating)}{"\u2606".repeat(5 - item.rating)}</strong>
                   )}
                   {isWatching(item) && (
                     <MediaProgressEditor
+                      key={`${item.key}-${item.currentMinute}-${item.currentSeason}-${item.currentEpisode}`}
                       item={item}
                       error={progressErrors[item.key] ?? ""}
                       onSave={saveProgress}
-                      onStatusChange={updateStatus}
+                      onEdit={openMediaForm}
                     />
                   )}
-                  {!isWatched(item) && !isWatching(item) && (
-                    <div className={styles.cardStatus} onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
-                      <Select
-                        compact
-                        className={styles.statusSelect}
-                        value={item.status}
-                        aria-label={`Status for ${item.title}`}
-                        onChange={(event) => void updateStatus(item.key, event.currentTarget.value as MediaStatus)}
+                  <div className={styles.shelfStatusRow}>
+                    <span className={styles.mediaBadge}>
+                      <span aria-hidden="true" />{getStatusLabel(item)}
+                    </span>
+                    {!isWatching(item) && (
+                      <button
+                        type="button"
+                        className={styles.editStatusButton}
+                        aria-label={`Edit ${item.title}`}
+                        title="Edit"
+                        onClick={(event) => { event.stopPropagation(); openMediaForm(item); }}
+                        onKeyDown={(event) => event.stopPropagation()}
                       >
-                        {statusOptions[item.kind].map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </Select>
-                    </div>
-                  )}
+                        <SquarePen size={15} aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
                   {!isWatching(item) && progressErrors[item.key] && (
                     <small role="alert">{progressErrors[item.key]}</small>
                   )}
-                </Card>
+                </article>
               ))}
             </HorizontalCarousel>
           </Card>
@@ -681,12 +691,14 @@ export function Movies() {
 
       <FormModal
         open={isModalOpen}
-        title="Log a movie or series"
+        title={editingMedia ? `Edit ${editingMedia.item.title}` : "Log a movie or series"}
         description="Track what you watched, are watching, or want to watch."
         onClose={() => setIsModalOpen(false)}
       >
         <MediaForm
-          initial={undefined}
+          key={editingMedia?.item.key ?? "new"}
+          initial={editingMedia?.initial}
+          lockKind={!!editingMedia}
           onSubmit={handleSalvarMidia}
           onCancel={() => setIsModalOpen(false)}
         />
