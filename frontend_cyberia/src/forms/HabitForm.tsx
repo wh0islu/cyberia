@@ -47,7 +47,7 @@ export function HabitForm({ initial, onSubmit, onCancel, onDelete }: HabitFormPr
   const daysId = useId();
   const [data, setData] = useState<HabitFormData>({
     name: "",
-    days: [true, true, true, true, true, false, false],
+    days: Array(7).fill(false),
     time: "",
     goal: "",
     linked_section: "",
