@@ -7,8 +7,9 @@ import {
   CalendarCheck2,
   Salad,
   BookOpenCheck,
-  UserRound,
   Activity,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
 const icons = {
@@ -19,7 +20,6 @@ const icons = {
   meals: Salad,
   courses: BookOpenCheck,
   insights: Activity,
-  avatar: UserRound,
 };
 
 type SectionCountKey = "books" | "movies" | "routine" | "courses";
@@ -54,14 +54,12 @@ const navigationGroups: NavigationGroup[] = [
 type SidebarProps = {
   currentPath?: string;
   counts?: Partial<Record<SectionCountKey, number>>;
-  user?: { name: string; subtitle: string };
   onNavigate?: (href: string) => void;
 };
 
 export function Sidebar({
   currentPath = "/",
   counts = {},
-  user = { name: "My profile", subtitle: "Personal account" },
   onNavigate,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -102,9 +100,10 @@ export function Sidebar({
           className={styles["sidebar__toggle"]}
           aria-label={isCollapsed ? "Expand menu" : "Collapse menu"}
           aria-expanded={!isCollapsed}
+          title={isCollapsed ? "Expand menu" : "Collapse menu"}
           onClick={() => setIsCollapsed((currentValue) => !currentValue)}
         >
-          {isCollapsed ? "→" : "←"}
+          {isCollapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
         </button>
       </div>
 
@@ -125,6 +124,8 @@ export function Sidebar({
                   key={item.id}
                   href={item.href}
                   className={styles["sidebar__link"]}
+                  aria-label={item.name}
+                  title={isCollapsed ? item.name : undefined}
                   aria-current={isActive ? "page" : undefined}
                   onClick={(event) => handleNavigate(event, item.href)}
                 >
@@ -144,21 +145,6 @@ export function Sidebar({
         ))}
       </nav>
 
-      <div className={styles["sidebar__rodape"]}>
-        <a
-          href="/profile"
-          className={styles["sidebar__perfil"]}
-          onClick={(event) => handleNavigate(event, "/profile")}
-        >
-          <span className={styles["sidebar__avatar"]} aria-hidden="true">
-            <UserRound />
-          </span>
-          <span className={styles["sidebar__perfil-texto"]}>
-            <strong>{user.name}</strong>
-            <span>{user.subtitle}</span>
-          </span>
-        </a>
-      </div>
     </aside>
   );
 }
