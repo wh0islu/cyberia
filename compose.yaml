@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend_cyberia
+    env_file:
+      - ./backend_cyberia/.env
+    environment:
+      DJANGO_SETTINGS_MODULE: cyberia.settings.docker
+    volumes:
+      - database:/app/data
+      - uploads:/app/media
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/books/', timeout=5).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    init: true
+
+  frontend:
+    build:
+      context: ./frontend_cyberia
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    init: true
+
+volumes:
+  database:
+  uploads:
