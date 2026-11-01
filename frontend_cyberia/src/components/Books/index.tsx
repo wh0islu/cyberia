@@ -1,5 +1,5 @@
 import { useCollection } from "../../hooks/useCollections";
-import { apiFetch } from "../../services/collections";
+import { apiFetch, deleteCollectionItem } from "../../services/collections";
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useState, type FormEvent } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
@@ -258,6 +258,10 @@ export function Books() {
           coverUrl={editingBook?.cover}
           onSubmit={handleSaveBook}
           onCancel={closeBookForm}
+          onDelete={editingBook ? async () => {
+            await deleteCollectionItem("books", editingBook.id);
+            closeBookForm();
+          } : undefined}
         />
       </FormModal>
     </>

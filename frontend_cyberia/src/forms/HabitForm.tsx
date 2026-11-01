@@ -23,6 +23,7 @@ type HabitFormProps = {
   initial?: Partial<HabitFormData>;
   onSubmit: (data: HabitSubmission) => void | Promise<void>;
   onCancel: () => void;
+  onDelete?: () => Promise<void>;
 };
 
 const DAYS = [
@@ -42,7 +43,7 @@ const LINKS = [
   { value: "meals", label: "Meals" },
 ];
 
-export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
+export function HabitForm({ initial, onSubmit, onCancel, onDelete }: HabitFormProps) {
   const daysId = useId();
   const [data, setData] = useState<HabitFormData>({
     name: "",
@@ -135,7 +136,7 @@ export function HabitForm({ initial, onSubmit, onCancel }: HabitFormProps) {
         />
       </ScrollArea>
 
-      <FormFooter submitLabel={initial ? "Save" : "Create habit"} onCancel={onCancel} submitting={submitting} />
+      <FormFooter onDelete={onDelete} submitLabel={initial ? "Save" : "Create habit"} onCancel={onCancel} submitting={submitting} />
     </form>
   );
 }

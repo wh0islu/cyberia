@@ -1,5 +1,5 @@
 import { useCollection } from "../../hooks/useCollections";
-import { apiFetch } from "../../services/collections";
+import { apiFetch, deleteCollectionItem } from "../../services/collections";
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useMemo, useState } from "react";
 import { MonitorPlay, Plus, Search, SquarePen } from "lucide-react";
@@ -381,6 +381,11 @@ export function Courses() {
           coverUrl={editingCourse?.cover}
           onSubmit={handleSaveCourse}
           onCancel={closeCourseForm}
+          onDelete={editingCourse ? async () => {
+            await deleteCollectionItem("courses", editingCourse.id);
+            setSelectedCourseId(null);
+            closeCourseForm();
+          } : undefined}
         />
       </FormModal>
     </>

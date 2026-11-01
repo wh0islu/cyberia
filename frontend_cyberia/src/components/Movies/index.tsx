@@ -1,6 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import { useCollection } from "../../hooks/useCollections";
-import { apiFetch } from "../../services/collections";
+import { apiFetch, deleteCollectionItem } from "../../services/collections";
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
@@ -701,6 +701,12 @@ export function Movies() {
           lockKind={!!editingMedia}
           onSubmit={handleSalvarMidia}
           onCancel={() => setIsModalOpen(false)}
+          onDelete={editingMedia?.item.persistedId ? async () => {
+            await deleteCollectionItem(editingMedia.item.kind === "movie" ? "movies" : "series", editingMedia.item.persistedId!);
+            setSelectedMedia(null);
+            setIsModalOpen(false);
+            setEditingMedia(null);
+          } : undefined}
         />
       </FormModal>
       <MediaDetailsModal

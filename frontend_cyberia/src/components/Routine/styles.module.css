@@ -504,3 +504,40 @@
     grid-template-columns: 1fr;
   }
 }
+
+.habitNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.habitNameRow .habitName {
+  min-width: 0;
+  padding-right: 0;
+}
+
+.editHabitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.editHabitButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-default);
+}
+
+.editHabitButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

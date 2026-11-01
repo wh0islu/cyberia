@@ -27,6 +27,7 @@ type MealFormProps = {
   submitLabel?: string;
   onSubmit: (data: MealFormData) => void | Promise<void>;
   onCancel: () => void;
+  onDelete?: () => Promise<void>;
 };
 
 const MEALS = [
@@ -47,7 +48,7 @@ const today = () => {
 };
 const nowTime = () => new Date().toTimeString().slice(0, 5);
 
-export function MealForm({ initial, photoUrl, submitLabel = "Log meal", onSubmit, onCancel }: MealFormProps) {
+export function MealForm({ initial, photoUrl, submitLabel = "Log meal", onSubmit, onCancel, onDelete }: MealFormProps) {
   const [data, setData] = useState<MealFormData>({
     meal: "LU",
     date: today(),
@@ -146,7 +147,7 @@ export function MealForm({ initial, photoUrl, submitLabel = "Log meal", onSubmit
         <ChipGroup label="Tags" options={TAGS} value={data.tags} onChange={set("tags")} />
       </ScrollArea>
 
-      <FormFooter submitLabel={submitLabel} onCancel={onCancel} submitting={submitting} />
+      <FormFooter onDelete={onDelete} submitLabel={submitLabel} onCancel={onCancel} submitting={submitting} />
     </form>
   );
 }

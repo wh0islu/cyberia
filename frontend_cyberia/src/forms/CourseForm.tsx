@@ -46,6 +46,7 @@ type CourseFormProps = {
   coverUrl?: string | null;
   onSubmit: (data: CourseSubmission) => void | Promise<void>;
   onCancel: () => void;
+  onDelete?: () => Promise<void>;
 };
 
 type StringField = {
@@ -81,7 +82,7 @@ const empty = {
   modules: [],
 };
 
-export function CourseForm({ initial, coverUrl, onSubmit, onCancel }: CourseFormProps) {
+export function CourseForm({ initial, coverUrl, onSubmit, onCancel, onDelete }: CourseFormProps) {
   const [data, setData] = useState<CourseFormData>({ ...empty, ...initial });
   const [newModule, setNewModule] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -212,7 +213,7 @@ export function CourseForm({ initial, coverUrl, onSubmit, onCancel }: CourseForm
         </div>
       </ScrollArea>
 
-      <FormFooter submitLabel={initial ? "Save" : "Add course"} onCancel={onCancel} submitting={submitting} />
+      <FormFooter onDelete={onDelete} submitLabel={initial ? "Save" : "Add course"} onCancel={onCancel} submitting={submitting} />
     </form>
   );
 }

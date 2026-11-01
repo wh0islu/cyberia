@@ -1,8 +1,8 @@
 import { useCollection } from "../../hooks/useCollections";
-import { apiFetch } from "../../services/collections";
+import { apiFetch, deleteCollectionItem } from "../../services/collections";
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Plus, SquarePen } from "lucide-react";
 import { HabitForm } from "../../forms";
 import { Card } from "../Card";
 import { DefaultButton } from "../DefaultButton";
@@ -75,6 +75,7 @@ export function Routine() {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -125,21 +126,22 @@ export function Routine() {
     }
   }
 
-  async function handleCreateHabit(data: NewHabit) {
+  async function handleSaveHabit(data: NewHabit) {
     setFormError("");
     try {
-      await requestRoutine("habits/", {
-        method: "POST",
+      await requestRoutine(editingHabit ? `habits/${editingHabit.id}/` : "habits/", {
+        method: editingHabit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       setIsModalOpen(false);
     } catch (cause) {
-      setFormError(cause instanceof Error ? cause.message : "Could not create habit.");
+      setFormError(cause instanceof Error ? cause.message : "Could not save habit.");
     }
   }
 
-  function openHabitForm() {
+  function openHabitForm(habit: Habit | null = null) {
+    setEditingHabit(habit);
     setFormError("");
     setIsModalOpen(true);
   }
@@ -159,7 +161,7 @@ export function Routine() {
               <DefaultButton className={styles.iconButton} variant="ghost" size="sm" icon={<ChevronRight aria-hidden="true" />} aria-label="Next week" onClick={() => setWeekOffset((offset) => offset + 1)} />
             </div>
             {weekOffset !== 0 && <DefaultButton variant="secondary" size="sm" onClick={() => setWeekOffset(0)}>Current week</DefaultButton>}
-            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} onClick={openHabitForm}>New habit</DefaultButton>
+            <DefaultButton size="sm" icon={<Plus aria-hidden="true" />} onClick={() => openHabitForm()}>New habit</DefaultButton>
           </div>
         </header>
 
@@ -205,7 +207,12 @@ export function Routine() {
                 {habits.map((habit) => {
                   const habitCompleted = weekDates.filter((date, index) => habit.weekdays.includes(index) && isCompleted(habit, dateKey(date))).length;
                   return <div className={styles.habitRow} key={habit.id}>
-                    <span className={styles.habitName} title={habit.name}>{habit.name}</span>
+                    <div className={styles.habitNameRow}>
+                      <span className={styles.habitName} title={habit.name}>{habit.name}</span>
+                      <button type="button" className={styles.editHabitButton} aria-label={`Edit ${habit.name}`} title="Edit habit" onClick={() => openHabitForm(habit)}>
+                        <SquarePen size={14} aria-hidden="true" />
+                      </button>
+                    </div>
                     {weekDates.map((date, index) => {
                       const day = dateKey(date);
                       const scheduled = habit.weekdays.includes(index);
@@ -254,6 +261,9 @@ export function Routine() {
                       <strong>{habit.name}</strong>
                       <span className={done ? styles.statusDone : ""}>{done ? "Done" : "Pending"}</span>
                     </div>
+                    <button type="button" className={styles.editHabitButton} aria-label={`Edit ${habit.name}`} title="Edit habit" onClick={() => openHabitForm(habit)}>
+                      <SquarePen size={14} aria-hidden="true" />
+                    </button>
                     <button className={`${styles.todayCheck} ${done ? styles.todayCheckDone : ""}`} type="button" aria-label={`Mark ${habit.name} ${done ? "as pending" : "as done"}`} aria-pressed={done} disabled={pendingDays.includes(`${habit.id}-${todayKey}`)} onClick={() => void toggleCompletion(habit, today)}>
                       {done && <Check aria-hidden="true" />}
                     </button>
@@ -266,9 +276,26 @@ export function Routine() {
         </div>
       </main>
 
-      <FormModal open={isModalOpen} title="New habit" description="It will appear in the weekly tracker and today's schedule." onClose={() => setIsModalOpen(false)}>
+      <FormModal open={isModalOpen} title={editingHabit ? "Edit habit" : "New habit"} description={editingHabit ? "Update this habit and its schedule." : "It will appear in the weekly tracker and today's schedule."} onClose={() => setIsModalOpen(false)}>
         {formError && <p className={styles.error} role="alert">{formError}</p>}
-        <HabitForm onSubmit={handleCreateHabit} onCancel={() => setIsModalOpen(false)} />
+        <HabitForm
+          key={editingHabit?.id ?? "new-habit"}
+          initial={editingHabit ? {
+            name: editingHabit.name,
+            days: weekdays.map((_, index) => editingHabit.weekdays.includes(index)),
+            time: editingHabit.time?.slice(0, 5) ?? "",
+            goal: editingHabit.goal,
+            linked_section: editingHabit.linked_section ?? "",
+            reminder: editingHabit.reminder,
+          } : undefined}
+          onSubmit={handleSaveHabit}
+          onCancel={() => setIsModalOpen(false)}
+          onDelete={editingHabit ? async () => {
+            await deleteCollectionItem("habits", editingHabit.id);
+            setIsModalOpen(false);
+            setEditingHabit(null);
+          } : undefined}
+        />
       </FormModal>
     </>
   );

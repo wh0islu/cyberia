@@ -44,6 +44,7 @@ type BookFormProps = {
   coverUrl?: string | null;
   onSubmit: (data: BookSubmission) => void | Promise<void>;
   onCancel: () => void;
+  onDelete?: () => Promise<void>;
 };
 
 type StringField = {
@@ -118,7 +119,7 @@ const empty = {
   sources: [{ format: "PH", location: "", url: "" }],
 };
 
-export function BookForm({ initial, coverUrl, onSubmit, onCancel }: BookFormProps) {
+export function BookForm({ initial, coverUrl, onSubmit, onCancel, onDelete }: BookFormProps) {
   const [data, setData] = useState<BookFormData>({ ...empty, ...initial });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -283,6 +284,7 @@ export function BookForm({ initial, coverUrl, onSubmit, onCancel }: BookFormProp
       </ScrollArea>
 
       <FormFooter
+        onDelete={onDelete}
         submitLabel={initial ? "Save" : "Add book"}
         onCancel={onCancel}
         submitting={submitting}

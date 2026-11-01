@@ -384,3 +384,17 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   outline: 2px solid var(--text-default);
   outline-offset: 2px;
 }
+
+.form__delete {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.form__deleteError {
+  max-width: 360px;
+  color: var(--error);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}

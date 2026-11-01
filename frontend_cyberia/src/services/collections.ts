@@ -71,3 +71,19 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   }
   return response;
 }
+
+export async function deleteCollectionItem(name: Collection, id: number): Promise<void> {
+  const csrf = document.cookie.split("; ")
+    .find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1];
+  const response = await apiFetch(`/api/v1/${name}/${id}/`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: csrf ? { "X-CSRFToken": decodeURIComponent(csrf) } : {},
+  });
+  if (!response.ok) {
+    const payload: unknown = await response.json().catch(() => null);
+    const detail = payload && typeof payload === "object" && "detail" in payload
+      && typeof payload.detail === "string" ? payload.detail : `Could not delete this item (${response.status}).`;
+    throw new ApiError(detail, response.status);
+  }
+}

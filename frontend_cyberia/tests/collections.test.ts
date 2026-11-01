@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryObserver } from "@tanstack/react-query";
-import { apiFetch, collectionKey, collectionOptions, preloadCollections } from "../src/services/collections";
+import { apiFetch, deleteCollectionItem, collectionKey, collectionOptions, preloadCollections } from "../src/services/collections";
 import { ApiError, queryClient } from "../src/services/queryClient";
 
 beforeEach(() => {
@@ -136,5 +136,44 @@ describe("mutation synchronization", () => {
     finish(Response.json([{ id: 1, title: "Old" }]));
     await staleRead;
     expect(queryClient.getQueryData(collectionKey("books"))).toEqual([{ id: 1, title: "New" }]);
+  });
+});
+
+describe("deleting collection items", () => {
+  it.each(["books", "movies", "series", "courses", "meals", "habits"] as const)(
+    "deletes %s with CSRF and removes only that item from cache",
+    async (name) => {
+      vi.stubGlobal("document", { cookie: "other=value; csrftoken=csrf%2Dtoken" });
+      const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
+      vi.stubGlobal("fetch", fetchMock);
+      queryClient.setQueryData(collectionKey(name), [{ id: 1 }, { id: 2 }]);
+      queryClient.setQueryData(collectionKey("habit-completions"), [{ id: 9, habit: 1 }]);
+      await deleteCollectionItem(name, 1);
+      expect(fetchMock).toHaveBeenCalledWith(`/api/v1/${name}/1/`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "X-CSRFToken": "csrf-token" },
+      });
+      expect(queryClient.getQueryData(collectionKey(name))).toEqual([{ id: 2 }]);
+      if (name === "habits") {
+        expect(queryClient.getQueryState(collectionKey("habit-completions"))?.isInvalidated).toBe(true);
+      }
+    },
+  );
+
+  it("keeps the item and reports the server error when deletion fails", async () => {
+    vi.stubGlobal("document", { cookie: "" });
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ detail: "Permission denied." }, { status: 403 })));
+    queryClient.setQueryData(collectionKey("books"), [{ id: 1 }]);
+    await expect(deleteCollectionItem("books", 1)).rejects.toThrow("Permission denied.");
+    expect(queryClient.getQueryData(collectionKey("books"))).toEqual([{ id: 1 }]);
+  });
+
+  it("reports a non-JSON server error without removing the item", async () => {
+    vi.stubGlobal("document", { cookie: "" });
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("Unavailable", { status: 503 })));
+    queryClient.setQueryData(collectionKey("movies"), [{ id: 1 }]);
+    await expect(deleteCollectionItem("movies", 1)).rejects.toThrow("Could not delete this item (503).");
+    expect(queryClient.getQueryData(collectionKey("movies"))).toEqual([{ id: 1 }]);
   });
 });

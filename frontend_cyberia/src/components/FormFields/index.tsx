@@ -87,6 +87,7 @@ type FormFooterProps = {
   cancelLabel?: string;
   onCancel: () => void;
   submitting: boolean;
+  onDelete?: () => Promise<void>;
 };
 
 export function Field({
@@ -446,17 +447,53 @@ export function FormFooter({
   cancelLabel = "Cancel",
   onCancel,
   submitting,
+  onDelete,
 }: FormFooterProps) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const deletePending = useRef(false);
+
+  async function confirmDelete() {
+    if (!onDelete || submitting || deletePending.current) return;
+    deletePending.current = true;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await onDelete();
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Could not delete this item.");
+    } finally {
+      deletePending.current = false;
+      setDeleting(false);
+    }
+  }
+
   return (
     <footer className="form__foot">
-      <span className="lbl">
-        <span className="req">*</span> required
-      </span>
+      <div className="form__delete">
+        {onDelete ? confirmingDelete ? (
+          <>
+            <p className="lbl">Delete this item? This cannot be undone.</p>
+            <div className="form__actions">
+              <DefaultButton variant="danger" size="sm" disabled={deleting || submitting} onClick={() => void confirmDelete()}>
+                {deleting ? "Deleting..." : "Confirm delete"}
+              </DefaultButton>
+              <DefaultButton variant="ghost" size="sm" disabled={deleting} onClick={() => { setConfirmingDelete(false); setDeleteError(""); }}>
+                Keep item
+              </DefaultButton>
+            </div>
+          </>
+        ) : (
+          <DefaultButton variant="danger" size="sm" disabled={submitting} onClick={() => setConfirmingDelete(true)}>Delete</DefaultButton>
+        ) : <span className="lbl"><span className="req">*</span> required</span>}
+        {deleteError && <p className="form__deleteError" role="alert">{deleteError}</p>}
+      </div>
       <div className="form__actions">
-        <DefaultButton variant="ghost" size="sm" onClick={onCancel}>
+        <DefaultButton variant="ghost" size="sm" disabled={deleting} onClick={onCancel}>
           {cancelLabel}
         </DefaultButton>
-        <DefaultButton type="submit" size="sm" disabled={submitting}>
+        <DefaultButton type="submit" size="sm" disabled={submitting || confirmingDelete || deleting}>
           {submitting ? "Saving…" : submitLabel}
         </DefaultButton>
       </div>

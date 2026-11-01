@@ -1,5 +1,5 @@
 import { useCollection } from "../../hooks/useCollections";
-import { apiFetch } from "../../services/collections";
+import { apiFetch, deleteCollectionItem } from "../../services/collections";
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useMemo, useState } from "react";
 import { Camera, ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -357,6 +357,10 @@ export function Meals() {
           submitLabel={editingMeal ? "Save" : "Log meal"}
           onSubmit={handleSaveMeal}
           onCancel={closeMealForm}
+          onDelete={editingMeal ? async () => {
+            await deleteCollectionItem("meals", editingMeal.id);
+            closeMealForm();
+          } : undefined}
         />
       </FormModal>
     </>

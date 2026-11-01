@@ -76,6 +76,7 @@ type MediaFormProps = {
   initial?: Partial<MediaFormData>;
   onSubmit: (data: MediaSubmission) => void | Promise<void>;
   onCancel: () => void;
+  onDelete?: () => Promise<void>;
   lockKind?: boolean;
 };
 
@@ -135,6 +136,7 @@ export function MediaForm({
   initial,
   onSubmit,
   onCancel,
+  onDelete,
   lockKind = false,
 }: MediaFormProps) {
   const [data, setData] = useState<MediaFormData>({ ...empty, ...initial });
@@ -549,7 +551,7 @@ export function MediaForm({
       </ScrollArea>
 
       {submitError && <p className="field-error" role="alert">{submitError}</p>}
-      <FormFooter submitLabel="Save" onCancel={onCancel} submitting={submitting} />
+      <FormFooter onDelete={onDelete} submitLabel="Save" onCancel={onCancel} submitting={submitting} />
     </form>
   );
 }
