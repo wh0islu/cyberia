@@ -1,5 +1,6 @@
 import { useCollections } from "./hooks/useCollections";
-import { Activity, useEffect, useState, type ReactNode } from "react";
+import { Activity, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { Home } from "./components/Home";
 import { Books } from "./components/Books";
 import { Courses } from "./components/Courses";
@@ -14,6 +15,24 @@ import styles from "./App.module.css";
 
 export function App() {
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+  const transitionRef = useRef<ViewTransition | null>(null);
+  const showPath = useCallback((path: string) => {
+    transitionRef.current?.skipTransition();
+
+    if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCurrentPath(path);
+      return;
+    }
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => setCurrentPath(path));
+    });
+    transitionRef.current = transition;
+    // Rapid navigation may deliberately skip a snapshot before it is ready.
+    void transition.ready.catch(() => undefined);
+  }, []);
+
+  useEffect(() => () => transitionRef.current?.skipTransition(), []);
   const { data, failedSections } = useCollections<{
     books: unknown[]; movies: unknown[]; series: unknown[]; habits: unknown[]; courses: unknown[];
   }>(["books", "movies", "series", "habits", "courses"]);
@@ -26,11 +45,11 @@ export function App() {
   };
 
   useEffect(() => {
-    const updateCurrentPath = () => setCurrentPath(window.location.pathname);
+    const updateCurrentPath = () => showPath(window.location.pathname);
     window.addEventListener("popstate", updateCurrentPath);
 
     return () => window.removeEventListener("popstate", updateCurrentPath);
-  }, []);
+  }, [showPath]);
 
   useEffect(() => {
     function handleDocumentClick(event: MouseEvent) {
@@ -59,7 +78,7 @@ export function App() {
     if (href === window.location.pathname) return;
 
     window.history.pushState({}, "", href);
-    setCurrentPath(href);
+    showPath(href);
   }
 
   const pages: Record<string, ReactNode> = {
