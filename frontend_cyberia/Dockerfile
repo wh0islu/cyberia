@@ -1,5 +1,9 @@
 FROM node:22-alpine AS build
 
+ENV NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_UPDATE_NOTIFIER=false
+
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
