@@ -51,13 +51,16 @@ docker compose up --build
 Open `http://localhost:5173`. The database migrations run automatically.
 All application collections use one local dataset and do not require login.
 CSRF protection remains enabled for browser writes. The Docker environment does
-not expose the Django administration panel or the backend port directly.
+not expose the Django administration panel or the backend port directly. Django
+runs behind Nginx with Gunicorn and `DEBUG=False`.
 Daily meal notes are stored in the same persistent Docker database; notes from
 older versions are imported from the browser on first use. Docker uses its own
 database and uploads volumes; existing native-installation data stays separate.
 See the [complete Docker guide](docs/docker.md) for the
 architecture, persistence, backups, updates, and troubleshooting.
-This Compose setup is intended for local use and publishes ports on loopback only.
+The Compose port is bound to loopback. For a public deployment, place an HTTPS
+reverse proxy in front of `127.0.0.1:5173` and configure the real domain and
+secure-cookie options described in the [complete Docker guide](docs/docker.md).
 
 ## API requests with Bruno
 

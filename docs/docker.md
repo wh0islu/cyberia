@@ -1,8 +1,9 @@
-# Running Cyberia with Docker
+# Running and publishing Cyberia with Docker
 
-This configuration runs Cyberia locally with Docker Compose. You need Docker
-and Git; Python, Node.js, and Poetry do not need to be installed on the host.
-The existing native installation remains available as a separate option.
+This configuration runs Cyberia with Docker Compose using Nginx and Gunicorn.
+You need Docker and Git; Python, Node.js, and Poetry do not need to be installed
+on the host. The existing native installation remains available as a separate
+development option.
 
 ## 1. Prepare the environment
 
@@ -36,7 +37,8 @@ docker run --rm python:3.14-slim python -c "import secrets; print(secrets.token_
 Paste the result into `SECRET_KEY` in `backend_cyberia/.env`. Generate this key
 once and keep it between restarts. `TMDB_ACCESS_TOKEN` is optional; enter your
 own TMDB API Read Access Token to enable media search and automatic details.
-The startup script rejects an empty SECRET_KEY or the example placeholder.
+The startup script rejects an empty, weak, framework-generated, or example
+SECRET_KEY.
 The environment file is injected at runtime and excluded from image builds.
 
 ## 2. Start the application
@@ -63,8 +65,9 @@ Browser writes require a CSRF cookie and token. Daily meal notes are stored in
 the database, so the database backup includes them. Notes left by older versions
 in browser storage are imported automatically on first use.
 
-The backend is available only inside the Compose network. Nginx proxies API,
-media, and static requests and returns `404` for `/admin/`.
+The backend is available only inside the Compose network. Nginx proxies API
+requests, serves uploaded media from the shared read-only volume, and returns
+`404` for `/admin/`.
 
 To start in the background, use `docker compose up --build -d`.
 
@@ -75,7 +78,7 @@ To start in the background, use `docker compose up --build -d`.
 | `compose.yaml` | Connects services, ports, health checks, environment variables, and volumes. |
 | `backend_cyberia/Dockerfile` | Installs locked Python runtime dependencies and runs the backend as a non-root user. |
 | `backend_cyberia/container_entrypoint.py` | Validates the key, applies migrations, and launches the container command. |
-| `backend_cyberia/cyberia/settings/docker.py` | Selects persistent database/media paths and local host/CSRF settings. |
+| `backend_cyberia/cyberia/settings/docker.py` | Selects persistent paths and environment-driven deployment security settings. |
 | `frontend_cyberia/Dockerfile` | Builds with Node, then copies the generated SPA into an Nginx image. |
 | `frontend_cyberia/nginx.conf` | Serves the SPA and proxies backend requests. |
 | `.dockerignore` in each application | Excludes secrets, local data, dependencies, caches, and build artifacts from its build context. |
@@ -90,11 +93,43 @@ Unknown frontend paths fall back to `index.html`, so refreshing `/books` works.
 The frontend image contains the compiled app; source edits require a rebuild.
 Native `npm run dev` remains the option for hot reloading during development.
 
-The backend uses Django's development server with DEBUG enabled. Combined with
-loopback-only published ports, this setup targets local personal use. A public
-server deployment requires its own serving and security configuration.
+The backend uses Gunicorn with `DEBUG=False`. Nginx is the only published
+service and the backend runs as an unprivileged user. The loopback-only binding
+is deliberate: expose Cyberia through an HTTPS reverse proxy instead of opening
+the container port directly.
 
-## 4. Keep data between restarts
+## 4. Publish behind HTTPS
+
+Point an HTTPS reverse proxy at `http://127.0.0.1:5173` and make sure it sends
+the original `Host` and `X-Forwarded-Proto` headers. Then set these values in
+`backend_cyberia/.env`, replacing `example.com` with the actual domain:
+
+```dotenv
+ALLOWED_HOSTS=example.com
+CSRF_TRUSTED_ORIGINS=https://example.com
+CSRF_COOKIE_SECURE=True
+SESSION_COOKIE_SECURE=True
+SECURE_SSL_REDIRECT=True
+SECURE_HSTS_SECONDS=31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS=True
+SECURE_HSTS_PRELOAD=False
+```
+
+Enable HSTS only after HTTPS is working correctly. Enable preload only after
+confirming that the domain and all its subdomains permanently support HTTPS.
+After changing `.env`, recreate the services rather than merely restarting them:
+
+```sh
+docker compose up --build -d --force-recreate
+```
+
+Run Django's deployment checks inside the running backend:
+
+```sh
+docker compose exec backend python manage.py check --deploy
+```
+
+## 5. Keep data between restarts
 
 Compose creates two named volumes:
 
@@ -112,7 +147,7 @@ and is not committed to Git. Changing SECRET_KEY can invalidate existing session
 Adding `--volumes` to that command deletes the named volumes and their data.
 Use the ordinary `down` command for normal shutdowns.
 
-## 5. Common commands
+## 6. Common commands
 
 Run from the repository root:
 
@@ -139,7 +174,7 @@ docker compose exec backend python manage.py check
 docker compose exec backend python manage.py test apps.base --noinput
 ```
 
-## 6. Back up Docker data
+## 7. Back up Docker data
 
 Create a local `backups/` directory and stop the backend before copying SQLite:
 
@@ -160,7 +195,7 @@ backends. Copy the native SQLite file and uploads into the stopped backend
 container's mounted volume, then restore ownership to UID/GID 10001 before
 starting it. Do not delete the original files until the imported data is verified.
 
-## 7. Troubleshooting and verification
+## 8. Troubleshooting and verification
 
 - Missing `docker` command: install Docker and reopen your terminal.
 - Docker daemon unavailable: start Docker Desktop or the Docker service.
