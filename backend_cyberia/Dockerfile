@@ -2,6 +2,7 @@ FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PIP_ROOT_USER_ACTION=ignore \
     DJANGO_SETTINGS_MODULE=cyberia.settings.docker
 
 WORKDIR /app
@@ -20,4 +21,4 @@ USER cyberia
 EXPOSE 8000
 
 ENTRYPOINT ["python", "container_entrypoint.py"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+CMD ["gunicorn", "cyberia.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "30", "--access-logfile", "-", "--error-logfile", "-"]

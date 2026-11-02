@@ -101,6 +101,26 @@ offline = ["drf-spectacular-sidecar"]
 sidecar = ["drf-spectacular-sidecar"]
 
 [[package]]
+name = "gunicorn"
+version = "26.2.0"
+description = "WSGI HTTP Server for UNIX"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "gunicorn-26.2.0-py3-none-any.whl", hash = "sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3"},
+    {file = "gunicorn-26.2.0.tar.gz", hash = "sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447"},
+]
+
+[package.extras]
+fast = ["gunicorn_h1c (>=0.6.9)"]
+gevent = ["gevent (>=24.10.1)", "packaging"]
+http2 = ["h2 (>=4.4.1)"]
+setproctitle = ["setproctitle"]
+testing = ["coverage", "gevent (>=24.10.1)", "h2 (>=4.4.1)", "httpx[http2] (>=0.23.0)", "inotify (>=0.2.10) ; sys_platform == \"linux\"", "packaging", "pytest (>=9.0.3)", "pytest-asyncio", "pytest-cov", "uvloop (>=0.19.0)"]
+tornado = ["tornado (>=6.5.7)"]
+
+[[package]]
 name = "inflection"
 version = "0.5.1"
 description = "A port of Ruby on Rails inflector to Python"
@@ -695,4 +715,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14,<4.0"
-content-hash = "020f214478e0f68c2e1fe71f0e77f2a1624ceacecac27d1958ade57c7e5de196"
+content-hash = "2254a3ef3bffd0ed29a43be1dccbe306f52c0ba5fea58b6a517dfc3b24e2b975"

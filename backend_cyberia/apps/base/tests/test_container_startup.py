@@ -8,11 +8,13 @@ from django.test import SimpleTestCase
 
 
 class ContainerStartupTests(SimpleTestCase):
+    secret_key = 'test-container-secret-with-at-least-50-characters-1234567890!'
+
     @staticmethod
     def test_migrates_before_starting_the_command():
-        command = ['python', 'manage.py', 'runserver', '0.0.0.0:8000', '--noreload']
+        command = ['gunicorn', 'cyberia.wsgi:application', '--bind', '0.0.0.0:8000']
         with (
-            patch.dict(os.environ, {'SECRET_KEY': 'test-container-secret'}),
+            patch.dict(os.environ, {'SECRET_KEY': ContainerStartupTests.secret_key}),
             patch.object(sys, 'argv', ['container_entrypoint.py', *command]),
             patch('container_entrypoint.subprocess.run') as migrate,
             patch('container_entrypoint.os.execvp') as execute,
@@ -26,8 +28,8 @@ class ContainerStartupTests(SimpleTestCase):
                 call.execute(command[0], command),
             ]
 
-    def test_missing_or_example_secret_prevents_startup(self):
-        for secret in ['', 'replace-with-your-own-random-secret-key']:
+    def test_unsafe_secret_prevents_startup(self):
+        for secret in ['', 'short-secret', 'a' * 60, 'replace-with-your-own-random-secret-key']:
             with (
                 self.subTest(secret=secret),
                 patch.dict(os.environ, {'SECRET_KEY': secret}),
@@ -48,7 +50,7 @@ class ContainerStartupTests(SimpleTestCase):
     def test_failed_migration_prevents_server_startup():
         failure = subprocess.CalledProcessError(1, ['manage.py', 'migrate'])
         with (
-            patch.dict(os.environ, {'SECRET_KEY': 'test-container-secret'}),
+            patch.dict(os.environ, {'SECRET_KEY': ContainerStartupTests.secret_key}),
             patch.object(sys, 'argv', ['container_entrypoint.py', 'python', 'manage.py', 'runserver']),
             patch('container_entrypoint.subprocess.run', side_effect=failure),
             patch('container_entrypoint.os.execvp') as execute,
