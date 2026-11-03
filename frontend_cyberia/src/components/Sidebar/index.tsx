@@ -1,4 +1,6 @@
 import { useState, type MouseEvent } from "react";
+import { DefaultButton } from "../DefaultButton";
+import { useTheme } from "../../hooks/useTheme";
 import styles from "./styles.module.css";
 import {
   House,
@@ -10,6 +12,8 @@ import {
   Activity,
   PanelLeftClose,
   PanelLeftOpen,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 const icons = {
@@ -63,6 +67,8 @@ export function Sidebar({
   onNavigate,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const { theme, toggleTheme } = useTheme();
+  const nextTheme = theme === "dark" ? "light" : "dark";
 
   function handleNavigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
     if (!onNavigate || href.startsWith("#")) return;
@@ -145,6 +151,21 @@ export function Sidebar({
         ))}
       </nav>
 
+      <div className={styles["sidebar__footer"]}>
+        <DefaultButton
+          className={styles["sidebar__theme"]}
+          variant="ghost"
+          size="sm"
+          icon={theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+          aria-label={`Switch to ${nextTheme} theme`}
+          title={isCollapsed ? `Switch to ${nextTheme} theme` : undefined}
+          onClick={toggleTheme}
+        >
+          <span className={styles["sidebar__theme-label"]}>
+            {theme === "dark" ? "Light theme" : "Dark theme"}
+          </span>
+        </DefaultButton>
+      </div>
     </aside>
   );
 }
