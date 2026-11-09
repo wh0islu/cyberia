@@ -1,0 +1,476 @@
+.moviesPage {
+  width: 100%;
+  padding: 28px 24px 48px;
+  color: var(--text-default);
+}
+
+.pageIntro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 6px 16px;
+}
+
+.pageIntro h1 {
+  margin: 6px 0 4px;
+  font-size: 28px;
+}
+
+.pageIntro p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.pageActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 220px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+}
+
+.searchBox input::placeholder {
+  color: var(--text-muted);
+}
+
+.moviesPage .filters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 58px;
+  margin-top: 20px;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: var(--bg-surface);
+}
+
+.filterPills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+}
+
+.filterPills button {
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filterPills button.activeFilter {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
+}
+
+.filterPills button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.filterControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.filterControls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.filterControls select {
+  min-width: 76px;
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filterControls select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.moviesPage .sectionPanel {
+  margin-top: 14px;
+  padding: 18px;
+}
+
+.seriesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.moviesPage .seriesCard {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 188px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--bg-surface-alt);
+  cursor: pointer;
+}
+
+.moviesPage .seriesCard:focus-visible,
+.moviesPage .watchedItem:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.seriesPoster {
+  width: 112px;
+  height: 164px;
+  border: 0;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.posterPlaceholder {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--bg-surface-alt),
+    var(--bg-surface-alt) 7px,
+    var(--border-subtle) 7px,
+    var(--border-subtle) 8px
+  );
+}
+
+.seriesDetails h3,
+.watchedItem h3 {
+  font-size: 15px;
+}
+
+.seriesDetails {
+  min-width: 0;
+}
+
+.seriesDetails h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.seriesDetails p,
+.watchedItem p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.progressHeader strong {
+  color: var(--text-default);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.progress {
+  margin-top: 12px;
+}
+
+.seriesDetails :global([role="progressbar"]) {
+  height: 4px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--white);
+}
+
+.seriesDetails :global([role="progressbar"] > div) {
+  border-radius: inherit;
+  background: var(--progress-fill);
+}
+
+.seriesDetails small {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.moviesPage .watchedItem {
+  flex: 0 0 calc((100% - 60px) / 6);
+  min-width: 0;
+  padding: 0;
+  gap: 4px;
+  background: transparent;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.watchedItem > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  border: 0;
+  object-fit: cover;
+}
+
+.watchedItem > .posterPlaceholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+}
+
+.watchedItem h3 {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.watchedItem strong {
+  display: block;
+  margin-top: 8px;
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+.watchedItem small {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.moviesPage .watchedSection {
+  margin-top: 20px;
+  min-width: 0;
+}
+
+.shelfStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.mediaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.mediaBadge > span {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.progressEditor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.progressEditor label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.progressEditor input {
+  width: 76px;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.progressEditor input[type="number"]::-webkit-inner-spin-button,
+.progressEditor input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.progressEditor input:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.emptyState {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 1000px) {
+  .pageIntro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pageActions {
+    width: 100%;
+  }
+
+  .searchBox {
+    flex: 1;
+  }
+
+  .moviesPage .watchedItem {
+    flex-basis: calc((100% - 24px) / 3);
+  }
+}
+
+@media (max-width: 760px) {
+  .seriesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .moviesPage .filters {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .filterPills {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .filterControls {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchBox {
+    flex: none;
+    width: 100%;
+  }
+
+  .moviesPage .seriesCard {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 14px;
+    min-height: 0;
+  }
+
+  .seriesPoster {
+    width: 92px;
+    height: 138px;
+  }
+
+  .moviesPage .watchedItem {
+    flex-basis: calc((100% - 12px) / 2);
+  }
+}
+
+@media (max-width: 760px) {
+  .moviesPage {
+    padding: 24px 16px 56px;
+  }
+}
+
+.editStatusButton {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.editStatusButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-default);
+}
+
+.editStatusButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

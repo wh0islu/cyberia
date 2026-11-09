@@ -1,0 +1,21 @@
+meta {
+  name: Delete completion
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/habit-completions/{{completionId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the completion", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

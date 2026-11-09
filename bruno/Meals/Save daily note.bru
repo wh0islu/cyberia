@@ -1,0 +1,28 @@
+meta {
+  name: Save daily note
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/meal-notes/
+  body: json
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "date": "2026-11-01",
+    "text": "Drank enough water."
+  }
+}
+
+tests {
+  test("saves the daily note", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,496 @@
+.page,
+.page * {
+  box-sizing: border-box;
+}
+
+.page {
+  width: 100%;
+  min-width: 0;
+  padding: 28px 24px 48px;
+  color: var(--text-default);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 6px 16px;
+}
+
+.header h1 {
+  margin: 6px 0 4px;
+  font-size: 28px;
+}
+
+.header p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.toolbar {
+  display: flex;
+  min-height: 58px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+}
+
+.tabs {
+  display: flex;
+  min-width: 0;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs button {
+  min-height: 32px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  color: var(--text-default);
+}
+
+.tabs .activeTab {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
+}
+
+.tabs button:focus-visible,
+.courseSelect:focus-visible {
+  outline: 2px solid var(--text-default);
+  outline-offset: 2px;
+}
+
+.searchBox {
+  display: flex;
+  width: 240px;
+  height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+}
+
+.searchBox svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+}
+
+.searchBox input::placeholder {
+  color: var(--text-muted);
+}
+
+.pageMessage,
+.error {
+  margin: 0 6px 16px;
+  font-size: 12px;
+}
+
+.pageMessage {
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--error);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: 16px;
+}
+
+.courseList {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+}
+
+.page .courseCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-surface);
+}
+
+.page .courseCard:hover {
+  border-color: var(--border-strong);
+}
+
+.page .selectedCourse {
+  border-color: var(--primary-light);
+  background: color-mix(in srgb, var(--primary-light) 7%, var(--bg-surface));
+}
+
+.courseSelect {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.courseCover,
+.courseCoverPlaceholder {
+  width: 112px;
+  height: 72px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-surface-alt);
+}
+
+.courseCover {
+  object-fit: cover;
+}
+
+.courseCoverPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.courseInfo {
+  min-width: 0;
+}
+
+.courseInfo h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.courseInfo > p {
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.progressRow .progress {
+  min-width: 60px;
+  flex: 1;
+  height: 5px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.progress > div {
+  border-radius: inherit;
+}
+
+.progressRow span {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.courseSide {
+  display: grid;
+  min-width: 145px;
+  gap: 7px;
+  justify-items: end;
+}
+
+.courseSide > strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.chips span {
+  padding: 3px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.emptyList {
+  min-height: 84px;
+  line-height: 18px;
+  padding: 32px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.page .detailsCard {
+  position: sticky;
+  top: 16px;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+}
+
+.detailCover,
+.detailCoverPlaceholder {
+  width: 100%;
+  height: 145px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+}
+
+.detailCover {
+  object-fit: cover;
+}
+
+.detailCoverPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.detailsCard h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.detailByline {
+  margin: -8px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.detailProgressBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.detailProgressBlock > strong {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.detailProgress {
+  height: 5px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.detailProgress > div {
+  border-radius: inherit;
+}
+
+.detailProgressBlock > span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.detailField {
+  display: grid;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.detailField :global(input) {
+  min-height: 40px;
+  font-size: 12px;
+}
+
+.detailField :global(svg) {
+  top: 12px;
+}
+
+.controlPending {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.detailsCard .error {
+  margin: 0;
+}
+
+.detailActions {
+  display: flex;
+  gap: 8px;
+}
+
+.detailActions > button {
+  flex: 1;
+}
+
+.detailsHint {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.detailsHint svg {
+  width: 30px;
+  height: 30px;
+}
+
+.detailsHint p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1050px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .page .detailsCard {
+    position: static;
+    grid-row: 1;
+  }
+
+  .detailCover,
+  .detailCoverPlaceholder {
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .page .courseCard {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .courseCover,
+  .courseCoverPlaceholder {
+    width: 84px;
+    height: 60px;
+  }
+
+  .courseSide {
+    grid-column: 1 / -1;
+    justify-items: start;
+  }
+
+  .chips {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 14px 32px;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header > button {
+    width: 100%;
+  }
+
+  .progressRow {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .progressRow .progress {
+    width: 100%;
+  }
+
+  .detailActions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,65 @@
+.productivityCard {
+  min-height: 100%;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 2px 0 4px;
+}
+
+.summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.summary span {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.summary strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.weekSummary {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.chart {
+  position: relative;
+  width: min(100%, 520px);
+  height: 190px;
+  margin: 8px auto 0;
+}
+
+.message,
+.note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.message {
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  text-align: center;
+}
+
+.note {
+  margin-top: 2px;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .chart,
+  .message {
+    height: 160px;
+    min-height: 160px;
+  }
+}

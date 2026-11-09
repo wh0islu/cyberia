@@ -1,0 +1,44 @@
+meta {
+  name: Create course
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/courses/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "title": "Python Fundamentals",
+    "instructor": "Cyberia",
+    "platform": "Local",
+    "number_of_lessons": 20,
+    "completed_lessons": 0,
+    "modules": ["Introduction", "Django"],
+    "status": "NS",
+    "language": "EN",
+    "certificate_available": false,
+    "certificate_obtained": false,
+    "sources": []
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("courseId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a course", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Create movie
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/movies/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "title": "The Matrix",
+    "genre": "Science fiction",
+    "year": 1999,
+    "director": "The Wachowskis",
+    "status": "NW",
+    "language": "EN",
+    "sources": []
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("movieId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a movie", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Create completion
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/habit-completions/
+  body: json
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "habit": {{habitId}},
+    "date": "2026-11-01",
+    "completed": true
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("completionId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a completion", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

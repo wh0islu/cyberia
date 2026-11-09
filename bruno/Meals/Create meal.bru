@@ -1,0 +1,42 @@
+meta {
+  name: Create meal
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/meals/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "category": "LU",
+    "date": "2026-11-01",
+    "time": "12:30:00",
+    "tags": ["home", "healthy"],
+    "items": [
+      {
+        "name": "Rice and vegetables"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("mealId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a meal", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

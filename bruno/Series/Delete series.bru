@@ -1,0 +1,21 @@
+meta {
+  name: Delete series
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/series/{{seriesId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the series", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

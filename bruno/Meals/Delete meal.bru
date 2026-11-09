@@ -1,0 +1,21 @@
+meta {
+  name: Delete meal
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/meals/{{mealId}}/
+  body: none
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+tests {
+  test("deletes the meal", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

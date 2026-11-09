@@ -1,0 +1,38 @@
+import django.db.models.deletion
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('base', '0003_course_movie_book_cover_alter_book_number_of_pages_and_more'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Series',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(max_length=255)),
+                ('original_title', models.CharField(blank=True, max_length=255, null=True)),
+                ('start_year', models.PositiveIntegerField(blank=True, null=True)),
+                ('end_year', models.PositiveIntegerField(blank=True, null=True)),
+                ('number_of_seasons', models.PositiveIntegerField(blank=True, null=True)),
+                ('number_of_episodes', models.PositiveIntegerField(blank=True, null=True)),
+                ('status', models.CharField(choices=[('NW', 'NOT WATCHED'), ('WT', 'WATCHING'), ('WD', 'WATCHED'), ('PA', 'PAUSED'), ('RW', 'REWATCHING')], default='NW', max_length=2)),
+                ('imdb_id', models.CharField(blank=True, max_length=20, null=True)),
+                ('tmdb_id', models.PositiveIntegerField(blank=True, null=True)),
+                ('cover', models.ImageField(blank=True, null=True, upload_to='series/covers/')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='SeriesSource',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('format', models.CharField(choices=[('STR', 'STREAMING'), ('FILE', 'LOCAL FILE'), ('DVD', 'DVD'), ('BR', 'BLU-RAY')], max_length=4)),
+                ('location', models.CharField(blank=True, max_length=500, null=True)),
+                ('url', models.URLField(blank=True, null=True)),
+                ('series', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sources', to='base.series')),
+            ],
+        ),
+    ]

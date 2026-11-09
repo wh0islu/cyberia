@@ -1,0 +1,43 @@
+meta {
+  name: Create book
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/books/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "title": "Clean Code",
+    "author": "Robert C. Martin",
+    "genre": "TC",
+    "year": 2008,
+    "number_of_pages": 464,
+    "current_page": 0,
+    "status": "NR",
+    "language": "EN",
+    "sources": []
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("bookId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a book", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody()).to.have.property("id");
+  });
+}

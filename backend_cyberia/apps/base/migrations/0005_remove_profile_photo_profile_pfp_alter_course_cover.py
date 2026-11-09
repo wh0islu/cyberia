@@ -1,0 +1,25 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('base', '0004_series_seriessource'),
+    ]
+
+    operations = [
+        migrations.RemoveField(
+            model_name='profile',
+            name='photo',
+        ),
+        migrations.AddField(
+            model_name='profile',
+            name='pfp',
+            field=models.ImageField(blank=True, null=True, upload_to='profile/pfp/'),
+        ),
+        migrations.AlterField(
+            model_name='course',
+            name='cover',
+            field=models.ImageField(blank=True, null=True, upload_to='courses/covers/'),
+        ),
+    ]

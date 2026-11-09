@@ -1,0 +1,543 @@
+.page,
+.page * {
+  box-sizing: border-box;
+}
+
+.page {
+  width: 100%;
+  min-width: 0;
+  padding: 28px 24px 48px;
+  color: var(--text-default);
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 6px 20px;
+}
+
+.pageHeader h1 {
+  margin: 6px 0 4px;
+  font-size: 28px;
+}
+
+.pageHeader p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.headerActions,
+.weekControls {
+  display: flex;
+  align-items: center;
+}
+
+.headerActions {
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.weekControls {
+  gap: 2px;
+  padding: 2px 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+
+.weekControls span {
+  min-width: 126px;
+  color: var(--text-default);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: center;
+}
+
+.page .iconButton {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+.error {
+  margin: 0 6px 16px;
+  color: var(--error);
+  font-size: 12px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.page .summaryCard {
+  gap: 5px;
+  min-height: 118px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+}
+
+.summaryLabel {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.summaryValue {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.summaryCard p {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.summaryProgress {
+  margin-top: 7px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.summaryProgress > div {
+  border-radius: inherit;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: 12px;
+}
+
+.page .weekPanel,
+.page .todayPanel {
+  gap: 0;
+  padding: 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+}
+
+.panelHeader,
+.todayHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelHeader {
+  margin-bottom: 14px;
+}
+
+.panelHeader h2,
+.todayHeader h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panelHeader span,
+.todayHeader p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  margin: 0 -18px;
+  padding: 0 18px 4px;
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: 140px repeat(7, minmax(44px, 1fr)) 140px;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 2px;
+  min-width: 650px;
+}
+
+.dayHeading {
+  display: flex;
+  min-height: 68px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 0;
+  border-radius: 12px;
+}
+
+.dayHeading > span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.dayHeading time {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.dayHeading small {
+  min-height: 13px;
+  color: var(--primary-light);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dayHeading .todayDate {
+  background: var(--primary-light);
+  color: var(--text-over-primary-light);
+}
+
+.todayColumn {
+  background: color-mix(in srgb, var(--primary-light) 8%, transparent);
+}
+
+.totalHeading {
+  align-self: end;
+  padding-bottom: 12px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+.habitRow {
+  display: contents;
+}
+
+.habitName {
+  overflow: hidden;
+  padding-right: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daySlot {
+  padding: 2px 0;
+  border-radius: 12px;
+}
+
+.dayCell,
+.legendSwatch {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+}
+
+.dayCell {
+  display: flex;
+  width: 100%;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.dayCell svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.4;
+}
+
+.dayCell:focus-visible,
+.todayCheck:focus-visible {
+  outline: 2px solid var(--text-default);
+  outline-offset: 2px;
+}
+
+.dayCell:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.dayDone {
+  border-color: var(--primary-light);
+  background: var(--primary-light);
+  color: var(--text-over-primary-light);
+}
+
+.dayScheduled {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface-alt);
+}
+
+.dayMissed {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: transparent;
+}
+
+.dayEmpty {
+  border-color: var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.dayCell:disabled {
+  cursor: default;
+}
+
+.habitTotal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+}
+
+.habitTotal span {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.habitTotal [role="progressbar"] {
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.habitTotal [role="progressbar"] > div {
+  border-radius: inherit;
+}
+
+.panelMessage {
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendSwatch {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.legendSwatch svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.4;
+}
+
+.todayHeader {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.todayHeader p {
+  text-transform: capitalize;
+}
+
+.todayList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.todayItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-surface-alt);
+}
+
+.todayInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.todayInfo strong {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.todayInfo span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.todayInfo .statusDone {
+  color: var(--primary-light);
+  font-weight: 600;
+}
+
+.todayCheck {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-over-primary-light);
+  cursor: pointer;
+}
+
+.todayCheck svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+
+.todayCheckDone {
+  border-color: var(--primary-light);
+  background: var(--primary-light);
+}
+
+.todayCheck:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+@media (max-width: 1100px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .todayList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .pageHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .page .summaryCard {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 14px 32px;
+  }
+
+  .pageHeader {
+    margin-inline: 2px;
+  }
+
+  .headerActions,
+  .weekControls {
+    width: 100%;
+  }
+
+  .weekControls span {
+    flex: 1;
+  }
+
+  .headerActions > button {
+    flex: 1;
+  }
+
+  .todayList {
+    grid-template-columns: 1fr;
+  }
+}
+
+.habitNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.habitNameRow .habitName {
+  min-width: 0;
+  padding-right: 0;
+}
+
+.editHabitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.editHabitButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-default);
+}
+
+.editHabitButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

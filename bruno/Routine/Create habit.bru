@@ -1,0 +1,39 @@
+meta {
+  name: Create habit
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/habits/
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "name": "Read for 30 minutes",
+    "weekdays": [0, 2, 4],
+    "time": "20:00:00",
+    "goal": "Read consistently",
+    "linked_section": "books",
+    "reminder": false
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("habitId", res.getBody().id);
+  }
+}
+
+tests {
+  test("creates a habit", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

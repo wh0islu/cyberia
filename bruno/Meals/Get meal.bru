@@ -1,0 +1,17 @@
+meta {
+  name: Get meal
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/meals/{{mealId}}/
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns the meal", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

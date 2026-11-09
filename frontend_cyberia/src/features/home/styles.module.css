@@ -1,0 +1,402 @@
+.home {
+  width: 100%;
+  padding: 28px 24px 48px;
+  color: var(--text-default);
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.addAction {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--btn-strong-bg);
+  color: var(--btn-strong-text);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.addAction:hover {
+  opacity: 0.88;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: minmax(350px, auto) minmax(280px, auto);
+  gap: 14px;
+}
+
+.dashboard > * {
+  min-width: 0;
+  height: 100%;
+}
+
+.readingCard,
+.coursesCard,
+.routineCard,
+.mealsCard,
+.watchingCard,
+.summaryCard {
+  box-sizing: border-box;
+}
+
+.coursesCard,
+.routineCard {
+  padding: 24px;
+  gap: 18px;
+}
+
+.coursesCard h2,
+.routineCard h2 {
+  font-size: 18px;
+}
+
+.bookCoverFrame {
+  position: relative;
+  display: flex;
+  height: 264px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+}
+
+.bookBackdrop {
+  position: absolute;
+  inset: -20px;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  opacity: 0.28;
+  object-fit: cover;
+  filter: blur(18px);
+  transform: scale(1.08);
+}
+
+.bookCover {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: auto;
+  max-width: calc(100% - 32px);
+  height: 250px;
+  object-fit: contain;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 30%);
+}
+
+.coverPlaceholder {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.emptyMessage {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.bookDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bookDetails strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bookDetails span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.progressBar {
+  height: 6px;
+  border: 0;
+  border-radius: 999px;
+}
+
+.progressBar > div {
+  border-radius: inherit;
+}
+
+.bookProgress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bookProgress span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.bookProgress strong {
+  font-size: 22px;
+}
+
+.courseList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.courseItem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 17px;
+  background: var(--bg-surface-alt);
+}
+
+.courseHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.courseHeading strong {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.courseHeading span {
+  flex-shrink: 0;
+}
+
+.courseItem small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.habitList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.habitItem {
+  display: grid;
+  grid-template-columns: 20px 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+  font-size: 14px;
+}
+
+.habitItem time {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.checkbox,
+.checkboxDone {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+
+.checkboxDone {
+  position: relative;
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.checkboxDone::after {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--text-over-primary);
+  border-width: 0 1.5px 1.5px 0;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.habitDone {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.mealList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mealItem {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+  font-size: 11px;
+}
+
+.mealItem div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mealItem strong {
+  font-weight: 500;
+}
+
+.mealItem small,
+.mealItem time {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mealItem time {
+  flex-shrink: 0;
+}
+
+.watchingList {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 14px;
+}
+
+.watchingItem {
+  min-width: 0;
+  margin: 0;
+}
+
+.watchingItem img,
+.posterPlaceholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 0.72;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.posterPlaceholder {
+  background-color: var(--bg-surface-alt);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 5px,
+    var(--placeholder-line) 5.5px,
+    transparent 6px
+  );
+}
+
+.watchingItem figcaption {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 7px;
+}
+
+.watchingItem figcaption strong {
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watchingItem figcaption small {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.summaryGrid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.summaryItem {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 13px;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
+}
+
+.summaryItem span {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.summaryItem strong {
+  font-size: 27px;
+}
+
+@media (max-width: 900px) {
+  .home {
+    padding: 24px 18px 28px;
+  }
+
+  .dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
+
+  .dashboard > * {
+    min-height: 290px;
+  }
+}
+
+@media (max-width: 680px) {
+  .home {
+    padding: 16px 12px 20px;
+  }
+
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .dashboard > * {
+    min-height: 280px;
+  }
+}

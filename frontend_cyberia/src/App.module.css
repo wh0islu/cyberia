@@ -1,0 +1,83 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  gap: 16px;
+  padding: 0 16px 0 0;
+  box-sizing: border-box;
+  background: var(--bg-app);
+}
+
+.app__conteudo {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .app__conteudo {
+    max-width: none;
+    margin-inline: 0;
+  }
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+
+:global(:root) {
+  view-transition-name: none;
+}
+
+.app__conteudo {
+  view-transition-name: cyberia-page;
+}
+
+:global(::view-transition-group(cyberia-page)) {
+  animation: none;
+}
+
+:global(::view-transition-old(cyberia-page)) {
+  animation: crossfade-out 200ms ease-in-out both;
+  mix-blend-mode: plus-lighter;
+}
+
+:global(::view-transition-new(cyberia-page)) {
+  animation: crossfade-in 200ms ease-in-out both;
+  mix-blend-mode: plus-lighter;
+}
+
+@keyframes crossfade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes crossfade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app__conteudo {
+    view-transition-name: none;
+  }
+
+  :global(::view-transition-old(cyberia-page)),
+  :global(::view-transition-new(cyberia-page)) {
+    animation: none;
+  }
+}

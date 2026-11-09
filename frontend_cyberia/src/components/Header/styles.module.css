@@ -1,0 +1,9 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  background-color: var(--bg-surface);
+  color: var(--text-default);
+  border-bottom: 1px solid var(--border-subtle);
+}

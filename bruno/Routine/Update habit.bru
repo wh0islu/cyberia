@@ -1,0 +1,27 @@
+meta {
+  name: Update habit
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/habits/{{habitId}}/
+  body: json
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "goal": "Read 20 pages"
+  }
+}
+
+tests {
+  test("updates the habit", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

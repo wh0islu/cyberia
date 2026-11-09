@@ -1,0 +1,17 @@
+meta {
+  name: Get completion
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/habit-completions/{{completionId}}/
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns the completion", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

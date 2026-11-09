@@ -1,0 +1,93 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.trigger svg { flex-shrink: 0; color: var(--text-muted); }
+.trigger:hover { border-color: var(--border-subtle); }
+.trigger:disabled { color: var(--text-disabled); cursor: not-allowed; }
+
+.trigger:focus-visible,
+.panel button:focus-visible,
+.panel input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.panel {
+  position: fixed;
+  z-index: 50;
+  box-sizing: border-box;
+  width: min(260px, calc(100vw - 24px));
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-surface);
+  color: var(--text-default);
+  box-shadow: 0 14px 40px rgb(0 0 0 / 20%);
+  font-size: 13px;
+}
+
+.panel > strong { font-size: 13px; font-weight: 600; }
+
+.timeFields {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.timeFields label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.timeFields input {
+  box-sizing: border-box;
+  width: 74px;
+  height: 42px;
+  padding: 0 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.timeFields > span { padding-bottom: 10px; font-size: 20px; }
+.error { display: block; margin-bottom: 8px; color: var(--error); }
+
+.actions { display: flex; justify-content: flex-end; gap: 6px; }
+.actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.actions button:hover { background: var(--bg-hover); }
+.actions .apply { background: var(--nav-active-bg); color: var(--nav-active-text); }
+.actions .apply:hover { opacity: 0.85; background: var(--nav-active-bg); }

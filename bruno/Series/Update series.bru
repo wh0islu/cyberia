@@ -1,0 +1,29 @@
+meta {
+  name: Update series
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/series/{{seriesId}}/
+  body: json
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "status": "WT",
+    "current_season": 1,
+    "current_episode": 1
+  }
+}
+
+tests {
+  test("updates the series", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Update course
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/courses/{{courseId}}/
+  body: json
+  auth: none
+}
+
+headers {
+  X-CSRFToken: {{csrfToken}}
+}
+
+body:json {
+  {
+    "status": "IP",
+    "completed_lessons": 2
+  }
+}
+
+tests {
+  test("updates the course", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

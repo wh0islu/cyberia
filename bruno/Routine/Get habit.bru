@@ -1,0 +1,17 @@
+meta {
+  name: Get habit
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/habits/{{habitId}}/
+  body: none
+  auth: none
+}
+
+tests {
+  test("returns the habit", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}
