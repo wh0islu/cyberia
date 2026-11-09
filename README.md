@@ -1,129 +1,184 @@
 # Cyberia
 
-A personal library and routine tracker built with Django REST Framework and React.
-Track books, movies, series, courses, meals, and weekly habits.
+**Stack:** Python 3.14, Django 6, Django REST Framework, React 19, TypeScript, Vite, Nginx, Gunicorn, SQLite, Docker Compose
 
-## Project structure
+---
 
-```text
-backend_cyberia/
-  apps/base/
-    api/              Domain API endpoints
-    models/           Domain models
-    serializers/      Domain serializers
-    tests/            Backend regression tests
-    migrations/       Database migrations
-  cyberia/settings/   Django configuration
-  utils/              Backend utilities
-  manage.py
-  pyproject.toml
-  poetry.lock
-  requirements.txt
-  .env.examples
-  README.md
-frontend_cyberia/
-  src/features/       Screens, forms, and local styles by domain
-  src/components/     Shared interface components
-  src/hooks/          Shared collection hooks
-  src/services/       API access and query cache
-  package.json
-  package-lock.json
-  README.md
-bruno/                  Bruno API collection and local environment
+### Architecture
+
+```mermaid
+flowchart LR
+    Browser[Browser] -->|HTTP or HTTPS| Nginx[Nginx]
+    Nginx -->|React, CSS and JavaScript| SPA[React SPA]
+    Nginx -->|/api| Gunicorn[Gunicorn]
+    Nginx -->|/media| Uploads[(Uploads volume)]
+    Gunicorn --> Django[Django REST API]
+    Django --> Database[(SQLite volume)]
+    Django --> Uploads
+    Django -. optional .-> TMDB[TMDB API]
 ```
 
-## Start with Docker
+Nginx is the only published service. It serves the compiled React application
+and uploaded files, and proxies API requests to Gunicorn. Gunicorn runs the
+Django application, while SQLite and user uploads are stored in persistent
+Docker volumes.
 
-Install Docker Desktop (Windows/macOS) or Docker Engine with the Compose plugin
-(Linux), and start Docker. Run these commands from the repository root:
+---
 
-```powershell
-if (!(Test-Path backend_cyberia/.env)) { Copy-Item backend_cyberia/.env.examples backend_cyberia/.env }
+## Run the Project
+
+Clone the repository:
+
+```bash
+git clone https://github.com/wh0islu/cyberia.git
+cd cyberia
+```
+
+Create the backend environment file:
+
+```bash
+cp backend_cyberia/.env.examples backend_cyberia/.env
+```
+
+Generate a secure Django secret key:
+
+```bash
 docker run --rm python:3.14-slim python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-Set `SECRET_KEY` in `backend_cyberia/.env` to the generated value, then run:
+Replace the `SECRET_KEY` placeholder in `backend_cyberia/.env` with the
+generated value. The optional `TMDB_ACCESS_TOKEN` enables movie and series
+search and automatic metadata.
 
-```powershell
-docker compose up --build
+Build and start the application:
+
+```bash
+docker compose up --build -d
 ```
 
-Open `http://localhost:5173`. The database migrations run automatically.
-All application collections use one local dataset and do not require login.
-CSRF protection remains enabled for browser writes. The Docker environment does
-not expose the Django administration panel or the backend port directly. Django
-runs behind Nginx with Gunicorn and `DEBUG=False`.
-Daily meal notes are stored in the same persistent Docker database; notes from
-older versions are imported from the browser on first use. Docker uses its own
-database and uploads volumes; existing native-installation data stays separate.
-See the [complete Docker guide](docs/docker.md) for the
-architecture, persistence, backups, updates, and troubleshooting.
-The Compose port is bound to loopback. For a public deployment, place an HTTPS
-reverse proxy in front of `127.0.0.1:5173` and configure the real domain and
-secure-cookie options described in the [complete Docker guide](docs/docker.md).
+Open [http://localhost:5173](http://localhost:5173). Database migrations run
+automatically before Gunicorn starts.
 
-## API requests with Bruno
+Check the services and follow their logs:
 
-Copy `bruno/environments/Local.example.bru` to
-`bruno/environments/Local.bru`, open the `bruno/` directory in Bruno, and select
-the `Local` environment. Run `Setup/Get CSRF token` before requests that write
-data. Create requests save the returned IDs automatically for the matching
-detail, update, and delete requests.
-
-## Local setup
-
-Requirements: Python 3.14+ and Node.js 20.19+ (or 22.12+).
-Poetry is optional; the backend also supports pip and `requirements.txt`.
-
-Start the backend from its own directory:
-
-```powershell
-cd backend_cyberia
-poetry env use 3.14
-poetry install --with dev --no-root
-if (!(Test-Path .env)) { Copy-Item .env.examples .env }
-poetry run python -c "import secrets; print(secrets.token_urlsafe(64))"
+```bash
+docker compose ps
+docker compose logs -f
 ```
 
-Set `SECRET_KEY` in `backend_cyberia/.env` to the generated value, then run:
+Stop the application without deleting its data:
 
-```powershell
-poetry run python manage.py migrate
-poetry run python manage.py runserver
+```bash
+docker compose down
 ```
 
-For pip installation, environment variables, and session setup, see the
-[backend guide](backend_cyberia/README.md#local-setup).
+> `docker compose down --volumes` permanently deletes the Docker database and
+> uploaded files.
 
-In a second terminal opened at the repository root:
+---
 
-```powershell
-cd frontend_cyberia
-npm ci
-npm run dev
-```
+## Project Description
 
-Open `http://localhost:5173`. Vite proxies API calls to `http://localhost:8000`.
-See the [frontend guide](frontend_cyberia/README.md) for its structure and commands.
+### Objective
+
+Cyberia is a personal web application for organizing media, learning, meals and
+weekly routines in one place. It provides progress tracking, summaries and
+daily views without depending on separate applications for each activity.
+
+
+---
+
+### Main Features
+
+- **Home:** consolidated view of current reading, courses, routine, meals and
+  library statistics.
+- **Books:** reading status, page progress, covers, metadata and personal notes.
+- **Movies & Series:** watch status, movie runtime progress, series episode
+  progress and optional TMDB metadata.
+- **Courses:** lesson and module progress, goal dates and certificate tracking.
+- **Routine:** weekly habits, scheduled days and daily completion history.
+- **Meals:** daily meal entries, items, tags, notes and optional photos.
+- **Insights:** charts and activity summaries derived from the stored data.
+
+---
+
+### Backend
+
+The backend is a Django REST API organized by domain. Each domain keeps its
+models, serializers, endpoints and tests separated while sharing
+common request parsing and CSRF protection.
+
+- Gunicorn runs Django with three workers.
+- The container entrypoint validates `SECRET_KEY` and applies pending migrations.
+- SQLite is stored in the `cyberia_database` Docker volume.
+- Uploaded images are stored in the `cyberia_uploads` Docker volume.
+- API writes require a valid CSRF cookie and token.
+- The backend port and Django administration panel are not publicly exposed by
+  the Docker configuration.
+
+---
+
+### Frontend
+
+The frontend is a React single-page application written in TypeScript. TanStack
+Query manages API state and caching, while Chart.js renders insights and
+progress visualizations.
+
+The production image uses a multi-stage build:
+
+1. Node.js installs the locked dependencies and builds the Vite application.
+2. Nginx serves the generated static assets.
+3. Requests to `/api/` are forwarded to Gunicorn.
+4. Requests to `/media/` are served from the read-only uploads volume.
+
+---
+
+### Data Persistence
+
+Docker Compose creates two named volumes:
+
+| Volume | Content |
+| --- | --- |
+| `cyberia_database` | SQLite database and application records |
+| `cyberia_uploads` | Book covers, posters, course images and meal photos |
+
+The `.env`, database and uploaded files are not committed to Git. Back up both
+volumes before deleting or migrating the deployment.
+
+---
 
 ## Validation
 
-Run from `backend_cyberia/`:
+Run the backend suite inside Docker:
 
-```powershell
-poetry run task format
-poetry run ruff check apps
-poetry run python manage.py check
-poetry run python manage.py test apps.base
+```bash
+docker compose exec backend python manage.py test apps.base --noinput
 ```
 
-Run from `frontend_cyberia/`:
+Validate Nginx:
 
-```powershell
+```bash
+docker compose exec frontend nginx -t
+```
+
+Run the frontend checks locally:
+
+Node.js `^20.19.0`, `^22.13.0` or `>=24` is required.
+
+```bash
+cd frontend_cyberia
+npm ci
 npm run build
 npm test
+npm run audit
+npm run audit:production
 ```
 
-The local environment file, SQLite database, and uploaded images live in
-`backend_cyberia/` and stay outside version control. Commit `.env.examples`,
-not `.env`. Frontend `dist/` and backend collected static files are ignored.
+---
+
+## Documentation
+
+- [Docker, persi4 stence, backup and publication guide](docs/docker.md)
+- [Backend development guide](backend_cyberia/README.md)
+- [Frontend development guide](frontend_cyberia/README.md)
+- [Bruno API collection](bruno/)
