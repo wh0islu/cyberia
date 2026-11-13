@@ -191,7 +191,7 @@ export function Home() {
                 <ProgressBar
                   value={course.completed_lessons}
                   max={course.number_of_lessons ?? 0}
-                  className={styles.progressBar}
+                  className={styles.courseProgress}
                 />
                 <small>Lesson {course.completed_lessons} of {course.number_of_lessons ?? "—"}</small>
               </div>
