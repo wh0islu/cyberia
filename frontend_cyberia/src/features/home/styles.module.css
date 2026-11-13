@@ -65,6 +65,17 @@
   font-size: 18px;
 }
 
+.courseProgress {
+  height: 5px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--white);
+}
+
+.courseProgress > div {
+  border-radius: inherit;
+}
+
 .bookCoverFrame {
   position: relative;
   display: flex;
