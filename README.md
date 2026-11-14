@@ -4,6 +4,18 @@ A web app to track books, movies & series, courses, routine and meals in one pla
 
 **Stack:** Django 6 + DRF (Python 3.14) · React 19 + TypeScript + Vite · Nginx · Gunicorn · SQLite · Docker Compose
 
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser -->|HTTP/HTTPS| Nginx
+    Nginx -->|SPA| React
+    Nginx -->|/api/| Gunicorn --> Django[Django REST Framework]
+    Django --> SQLite[(SQLite)]
+    Django --> Uploads[(Uploads)]
+    Django -.->|optional| TMDB[TMDB API]
+```
+
 ## Quick start
 
 ```bash
@@ -19,18 +31,6 @@ Generate a `SECRET_KEY` with:
 
 ```bash
 docker run --rm python:3.14-slim python -c "import secrets; print(secrets.token_urlsafe(64))"
-```
-
-## Architecture
-
-```mermaid
-flowchart LR
-    Browser -->|HTTP/HTTPS| Nginx
-    Nginx -->|SPA| React
-    Nginx -->|/api/| Gunicorn --> Django[Django REST Framework]
-    Django --> SQLite[(SQLite)]
-    Django --> Uploads[(Uploads)]
-    Django -.->|optional| TMDB[TMDB API]
 ```
 
 ## Documentation
