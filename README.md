@@ -2,7 +2,23 @@
 
 A web app to track books, movies & series, courses, routine and meals in one place.
 
+<samp>homepage</samp>
+![](/assets/images/home.png)
+
+<samp>dashboard</samp>
+![](/assets/images/dash.png)
+
+<samp>books</samp>
+![](/assets/images/dash.png)
+
+<samp>movies & series</samp>
+![](/assets/images/movies.png)
+
+----
+
 **Stack:** Django 6 + DRF (Python 3.14) · React 19 + TypeScript + Vite · Nginx · Gunicorn · SQLite · Docker Compose
+
+----
 
 ## Architecture
 
