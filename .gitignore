@@ -9,6 +9,8 @@ __pycache__/
 # Assets
 wordlist.txt
 *.png
+# README screenshots are versioned; every other PNG stays ignored.
+!assets/images/*.png
 /static/
 
 # Distribution / packaging
