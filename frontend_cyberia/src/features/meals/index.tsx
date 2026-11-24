@@ -377,7 +377,7 @@ export function Meals() {
                   <DefaultButton className={styles.iconButton} variant="ghost" size="sm" icon={<ChevronRight aria-hidden="true" />} aria-label="Next month" onClick={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))} />
                 </div>
               </header>
-              <div className={styles.calendarGrid} role="grid" aria-label="Meal calendar">
+              <div className={styles.calendarGrid} role="group" aria-label="Meal calendar">
                 {weekdays.map((weekday, index) => <span className={styles.weekday} key={`${weekday}-${index}`}>{weekday}</span>)}
                 {calendarCells.map((date, index) => date ? (
                   <button

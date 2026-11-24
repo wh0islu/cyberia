@@ -20,12 +20,12 @@
 
 .header h1 {
   margin: 6px 0 4px;
-  font-size: 28px;
+  font-size: 2.8rem;
 }
 
 .header p {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 .headerActions,
@@ -52,7 +52,7 @@
 .dayNavigation > span {
   min-width: 142px;
   padding: 0 6px;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   text-align: center;
@@ -69,7 +69,7 @@
 .error,
 .pageMessage {
   margin: 0 6px 16px;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .error {
@@ -99,11 +99,11 @@
 
 .summary span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .summary strong {
-  font-size: 20px;
+  font-size: 2rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
@@ -138,13 +138,13 @@
 
 .mealHeader h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
 .mealHeader time {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -194,7 +194,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 .foodList li::before {
@@ -217,7 +217,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .mealFooter {
@@ -234,7 +234,7 @@
 
 .emptyMeal p {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .emptyMeal > button {
@@ -264,7 +264,7 @@
 
 .calendarHeader h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 600;
   text-transform: capitalize;
 }
@@ -273,7 +273,7 @@
   display: block;
   margin-top: 2px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .monthNavigation {
@@ -292,7 +292,7 @@
   min-height: 24px;
   place-items: center;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
   letter-spacing: 0.04em;
 }
 
@@ -306,7 +306,7 @@
   background: transparent;
   color: var(--text-muted);
   font: inherit;
-  font-size: 11px;
+  font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
@@ -344,7 +344,7 @@
   flex-wrap: wrap;
   margin-top: 14px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .calendarLegend span {
@@ -381,7 +381,7 @@
 
 .notesCard h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -396,7 +396,7 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   line-height: 1.5;
 }
 

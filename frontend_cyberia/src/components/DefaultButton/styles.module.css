@@ -9,7 +9,7 @@
   border: 1px solid transparent;
   border-radius: 10px;
   font: inherit;
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -85,12 +85,12 @@
 .btn--sm {
   min-height: 36px;
   padding: 0 14px;
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 .btn--lg {
   min-height: 52px;
   padding: 0 26px;
-  font-size: 16px;
+  font-size: 1.6rem;
 }
 
 

@@ -171,7 +171,7 @@ export function Routine() {
           <Card className={styles.summaryCard}>
             <span className={styles.summaryLabel}>Week completion</span>
             <strong className={styles.summaryValue}>{percentage}%</strong>
-            <ProgressBar className={styles.summaryProgress} value={completedCount} max={scheduledCount || 1} />
+            <ProgressBar className={styles.summaryProgress} value={completedCount} max={scheduledCount || 1} label="Week completion" />
           </Card>
           <Card className={styles.summaryCard}>
             <span className={styles.summaryLabel}>Completed days</span>
@@ -228,7 +228,7 @@ export function Routine() {
                     })}
                     <div className={styles.habitTotal}>
                       <span>{habitCompleted}/{habit.weekdays.length}</span>
-                      <ProgressBar value={habitCompleted} max={habit.weekdays.length || 1} />
+                      <ProgressBar value={habitCompleted} max={habit.weekdays.length || 1} label={`${habit.name} weekly progress`} />
                     </div>
                   </div>;
                 })}

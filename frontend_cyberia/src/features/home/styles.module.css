@@ -11,7 +11,7 @@
   gap: 16px;
   margin-bottom: 18px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.4rem;
 }
 
 .addAction {
@@ -24,7 +24,7 @@
   border-radius: 10px;
   background: var(--btn-strong-bg);
   color: var(--btn-strong-text);
-  font-size: 12px;
+  font-size: 1.2rem;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -62,7 +62,7 @@
 
 .coursesCard h2,
 .routineCard h2 {
-  font-size: 18px;
+  font-size: 1.8rem;
 }
 
 .courseProgress {
@@ -112,13 +112,13 @@
 
 .coverPlaceholder {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .emptyMessage {
   margin: 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .bookDetails {
@@ -128,13 +128,13 @@
 }
 
 .bookDetails strong {
-  font-size: 14px;
+  font-size: 1.4rem;
   font-weight: 600;
 }
 
 .bookDetails span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .progressBar {
@@ -156,11 +156,11 @@
 
 .bookProgress span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .bookProgress strong {
-  font-size: 22px;
+  font-size: 2.2rem;
 }
 
 .courseList {
@@ -183,7 +183,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 
 .courseHeading strong {
@@ -199,7 +199,7 @@
 
 .courseItem small {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .habitList {
@@ -212,20 +212,27 @@
 }
 
 .habitItem {
-  display: grid;
-  grid-template-columns: 20px 48px minmax(0, 1fr);
+  display: flex;
   align-items: center;
   gap: 10px;
   min-height: 48px;
   padding: 0 12px;
   border-radius: 14px;
   background: var(--bg-surface-alt);
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 
 .habitItem time {
   color: var(--text-muted);
-  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-right: -4px;
+}
+
+.habitItem > span:last-child {
+  flex: 1;
+  min-width: 0;
 }
 
 .checkbox,
@@ -234,6 +241,7 @@
   height: 18px;
   border: 1px solid var(--border-strong);
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .checkboxDone {
@@ -274,7 +282,7 @@
   padding: 8px 12px;
   border-radius: 14px;
   background: var(--bg-surface-alt);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .mealItem div {
@@ -285,6 +293,7 @@
 }
 
 .mealItem strong {
+  font-size: 1.3rem;
   font-weight: 500;
 }
 
@@ -292,7 +301,7 @@
 .mealItem time {
   overflow: hidden;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -344,7 +353,7 @@
 
 .watchingItem figcaption strong {
   overflow: hidden;
-  font-size: 10px;
+  font-size: 1.3rem;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -352,7 +361,7 @@
 
 .watchingItem figcaption small {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .summaryGrid {
@@ -375,11 +384,11 @@
 
 .summaryItem span {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .summaryItem strong {
-  font-size: 27px;
+  font-size: 2.7rem;
 }
 
 @media (max-width: 900px) {

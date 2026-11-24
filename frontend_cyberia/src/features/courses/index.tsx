@@ -299,7 +299,7 @@ export function Courses() {
                         {course.instructor && course.platform ? ` · ${course.platform}` : ""}
                       </p>
                       <div className={styles.progressRow}>
-                        <ProgressBar value={course.completed_lessons} max={total || 1} className={styles.progress} />
+                        <ProgressBar value={course.completed_lessons} max={total || 1} label={`${course.title} course progress`} className={styles.progress} />
                         <span>{course.completed_lessons} of {total || "—"} lessons</span>
                       </div>
                     </div>
@@ -328,7 +328,7 @@ export function Courses() {
                 </p>
                 <div className={styles.detailProgressBlock}>
                   <strong>{progress}%</strong>
-                  <ProgressBar value={selectedCourse.completed_lessons} max={selectedCourse.number_of_lessons || 1} className={styles.detailProgress} />
+                  <ProgressBar value={selectedCourse.completed_lessons} max={selectedCourse.number_of_lessons || 1} label={`${selectedCourse.title} course progress`} className={styles.detailProgress} />
                   <span>
                     {selectedCourse.completed_lessons} of {selectedCourse.number_of_lessons ?? "—"} lessons completed
                     {selectedCourse.number_of_lessons != null && ` · ${Math.max(0, selectedCourse.number_of_lessons - selectedCourse.completed_lessons)} remaining`}

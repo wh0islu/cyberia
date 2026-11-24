@@ -17,23 +17,23 @@
 
 .pageHeader > div > p {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
   margin: 0;
 }
 
 .period {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .pageHeader h1 {
   margin: 6px 0 4px;
-  font-size: 28px;
+  font-size: 2.8rem;
   font-weight: 700;
 }
 
 .period {
-  color: var(--primary);
+  color: var(--text-accent);
 }
 
 .insightsGrid {
@@ -69,7 +69,7 @@
   gap: 12px;
   min-height: 40px;
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .activityItem:last-child {
@@ -78,14 +78,14 @@
 
 .activityItem time {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .category {
   padding: 5px 9px;
   border-radius: 999px;
   background: var(--bg-surface-alt);
-  font-size: 10px;
+  font-size: 1.2rem;
   text-align: center;
 }
 
@@ -99,7 +99,7 @@
 .emptyMessage,
 .dataNote {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .emptyMessage {
@@ -125,13 +125,13 @@
 
 .monthHeader h2 {
   margin: 0;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 600;
 }
 
 .monthHeader span {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .monthStats > div {
@@ -145,11 +145,11 @@
 
 .monthStats span {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .monthStats strong {
-  font-size: 22px;
+  font-size: 2.2rem;
   line-height: 1;
 }
 
@@ -160,7 +160,7 @@
 .demoNote {
   margin: -4px 0 0;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .trendChart {
@@ -172,7 +172,7 @@
 .chartFootnote {
   margin: -4px 0 0;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 @media (max-width: 1050px) {
@@ -192,7 +192,7 @@
   }
 
   .pageHeader h1 {
-    font-size: 24px;
+    font-size: 2.4rem;
   }
 
   .activityItem {
