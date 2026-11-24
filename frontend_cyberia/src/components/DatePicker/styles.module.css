@@ -14,7 +14,7 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 14px;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -70,7 +70,7 @@
 }
 
 .calendarHeader strong {
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 600;
 }
 
@@ -111,7 +111,7 @@
   min-height: 24px;
   place-items: center;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .day {
@@ -120,7 +120,7 @@
   justify-self: center;
   border-radius: 8px;
   background: transparent;
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .outsideMonth {
@@ -156,7 +156,7 @@
   padding: 0 10px;
   border-radius: 999px;
   background: var(--bg-surface-alt);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .todayButton {

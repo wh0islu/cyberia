@@ -11,7 +11,7 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 14px;
+  font-size: 1.4rem;
   cursor: pointer;
 }
 
@@ -37,10 +37,10 @@
   background: var(--bg-surface);
   color: var(--text-default);
   box-shadow: 0 14px 40px rgb(0 0 0 / 20%);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
-.panel > strong { font-size: 13px; font-weight: 600; }
+.panel > strong { font-size: 1.3rem; font-weight: 600; }
 
 .timeFields {
   display: flex;
@@ -55,7 +55,7 @@
   flex-direction: column;
   gap: 5px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .timeFields input {
@@ -68,12 +68,12 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 19px;
+  font-size: 1.9rem;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
-.timeFields > span { padding-bottom: 10px; font-size: 20px; }
+.timeFields > span { padding-bottom: 10px; font-size: 2rem; }
 .error { display: block; margin-bottom: 8px; color: var(--error); }
 
 .actions { display: flex; justify-content: flex-end; gap: 6px; }
@@ -85,7 +85,7 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   cursor: pointer;
 }
 .actions button:hover { background: var(--bg-hover); }

@@ -1,5 +1,6 @@
 import { LoadingPlaceholder } from "../LoadingPlaceholder";
 import { useMemo } from "react";
+import { remToPx } from "../../utils/remToPx";
 import { useCollection } from "../../hooks/useCollections";
 import {
   BarElement,
@@ -100,12 +101,12 @@ export function ProductivityChart({ showDetails = true }: ProductivityChartProps
       x: {
         grid: { color: "rgba(128, 128, 128, 0.16)" },
         border: { display: false },
-        ticks: { color: "#777", font: { size: 10 } },
+        ticks: { color: "#777", font: { size: remToPx(1.2) } },
       },
       y: {
         beginAtZero: true,
         suggestedMax: Math.max(...dailyCounts, 1),
-        ticks: { stepSize: 1, precision: 0, color: "#777", font: { size: 10 } },
+        ticks: { stepSize: 1, precision: 0, color: "#777", font: { size: remToPx(1.2) } },
         grid: { color: "rgba(128, 128, 128, 0.16)" },
         border: { display: false },
       },
@@ -132,12 +133,14 @@ export function ProductivityChart({ showDetails = true }: ProductivityChartProps
       {isLoading || hasError ? (
         <p className={styles.message}>{isLoading ? <LoadingPlaceholder /> : "Could not load habit activity."}</p>
       ) : (
-        <div
-          className={styles.chart}
-          role="img"
-          aria-label={`Habit completions this week: ${weeklyCount} across seven days`}
-        >
-          <Bar data={chartData} options={chartOptions} />
+        <div className={styles.chart}>
+          {/* react-chartjs-2 renders the canvas with role="img"; the label must be on the canvas itself. */}
+          <Bar
+            data={chartData}
+            options={chartOptions}
+            aria-label={`Habit completions this week, ${weeklyCount} in total: ${
+              weekLabels.map((label, index) => `${label} ${dailyCounts[index]}`).join(", ")}`}
+          />
         </div>
       )}
       <p className={styles.note}>

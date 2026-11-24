@@ -20,13 +20,13 @@
 
 .pageHeader h1 {
   margin: 6px 0 4px;
-  font-size: 28px;
+  font-size: 2.8rem;
 }
 
 .pageHeader p {
   margin: 0;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 .headerActions,
@@ -52,7 +52,7 @@
 .weekControls span {
   min-width: 126px;
   color: var(--text-default);
-  font-size: 13px;
+  font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   text-align: center;
@@ -68,7 +68,7 @@
 .error {
   margin: 0 6px 16px;
   color: var(--error);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .summary {
@@ -88,11 +88,11 @@
 
 .summaryLabel {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .summaryValue {
-  font-size: 24px;
+  font-size: 2.4rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   line-height: 1.2;
@@ -101,7 +101,7 @@
 .summaryCard p {
   margin: 5px 0 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .summaryProgress {
@@ -144,7 +144,7 @@
 .panelHeader h2,
 .todayHeader h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -152,7 +152,7 @@
 .todayHeader p {
   margin: 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .tableScroll {
@@ -163,7 +163,7 @@
 
 .weekGrid {
   display: grid;
-  grid-template-columns: 140px repeat(7, minmax(44px, 1fr)) 140px;
+  grid-template-columns: fit-content(360px) repeat(7, 48px) minmax(120px, 1fr);
   align-items: center;
   column-gap: 6px;
   row-gap: 2px;
@@ -183,7 +183,7 @@
 
 .dayHeading > span {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
   font-weight: 500;
   letter-spacing: 0.06em;
 }
@@ -195,15 +195,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
 
 .dayHeading small {
   min-height: 13px;
-  color: var(--primary-light);
-  font-size: 10px;
+  color: var(--text-accent);
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
@@ -220,7 +220,7 @@
   align-self: end;
   padding-bottom: 12px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
   text-align: right;
 }
 
@@ -231,7 +231,7 @@
 .habitName {
   overflow: hidden;
   padding-right: 8px;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -252,7 +252,7 @@
 .dayCell {
   display: flex;
   width: 100%;
-  height: 42px;
+  height: 36px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -311,7 +311,7 @@
 }
 
 .habitTotal span {
-  font-size: 12px;
+  font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
@@ -329,7 +329,7 @@
 .panelMessage {
   margin: 14px 0 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
   line-height: 1.45;
 }
 
@@ -339,7 +339,7 @@
   flex-wrap: wrap;
   margin-top: 16px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .legend span {
@@ -356,7 +356,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 1.2rem;
   line-height: 1;
 }
 
@@ -402,17 +402,17 @@
 
 .todayInfo strong {
   overflow-wrap: anywhere;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
 }
 
 .todayInfo span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .todayInfo .statusDone {
-  color: var(--primary-light);
+  color: var(--text-accent);
   font-weight: 600;
 }
 
@@ -510,6 +510,8 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
+  max-width: 360px;
+  padding-right: 12px;
 }
 
 .habitNameRow .habitName {

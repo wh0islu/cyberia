@@ -133,6 +133,7 @@ export function DatePicker({
         readOnly
         required={required}
         disabled={disabled}
+        role="combobox"
         aria-required={required}
         aria-haspopup="dialog"
         aria-expanded={isOpen}

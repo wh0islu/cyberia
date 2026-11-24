@@ -2,7 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useCollection } from "../../hooks/useCollections";
 import { apiFetch, deleteCollectionItem } from "../../services/collections";
 import { LoadingPlaceholder } from "../../components/LoadingPlaceholder";
-import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
 import { MediaForm } from "./MediaForm";
 import type { MediaFormData, MediaSubmission } from "./MediaForm";
@@ -303,8 +303,12 @@ export function Movies() {
     queryKey: ["tmdb-progress", item.kind, item.tmdbId],
     queryFn: () => fetchProgressDetails(item),
     staleTime: 60 * 60_000,
+    // Keep the TMDB details cached while the page is hidden, so coming back
+    // to it renders the progress immediately instead of refetching.
+    gcTime: 60 * 60_000,
   })) });
   const detailsByKey = new Map(watching.map((item, index) => [item.key, detailsQueries[index].data]));
+  const detailsLoadingKeys = new Set(watching.filter((_, index) => detailsQueries[index].isPending).map((item) => item.key));
   const mediaItems = savedItems.map((item) => {
     const enriched = { ...item, ...presentation[item.key] };
     const details = detailsByKey.get(item.key);
@@ -335,16 +339,6 @@ export function Movies() {
 
   function openMedia(item: MediaItem) {
     setSelectedMedia(getDetailsItem(item));
-  }
-
-  function handleMediaCardKeyDown(
-    event: KeyboardEvent<HTMLElement>,
-    item: MediaItem,
-  ) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openMedia(item);
-    }
   }
 
   function openMediaForm(item?: MediaItem) {
@@ -570,12 +564,7 @@ export function Movies() {
                   as="article"
                   className={styles.seriesCard}
                   key={item.key}
-                  role="button"
-                  tabIndex={0}
-                  aria-haspopup="dialog"
-                  aria-label={`View ${item.title} details`}
                   onClick={() => openMedia(item)}
-                  onKeyDown={(event) => handleMediaCardKeyDown(event, item)}
                 >
                   {item.cover ? (
                     <img className={styles.seriesPoster} src={item.cover} alt={`${item.title} poster`} />
@@ -583,7 +572,23 @@ export function Movies() {
                     <div className={`${styles.seriesPoster} ${styles.posterPlaceholder}`} aria-label="No poster available" />
                   )}
                   <div className={styles.seriesDetails}>
-                    <h3>{item.title}</h3>
+                    <h3>
+                      <button
+                        type="button"
+                        className={styles.titleButton}
+                        aria-haspopup="dialog"
+                        onClick={(event) => { event.stopPropagation(); openMedia(item); }}
+                      >
+                        {item.title}
+                      </button>
+                    </h3>
+                    <p>{[
+                      item.genre,
+                      item.year,
+                      item.kind === "series" && item.numberOfSeasons
+                        ? `${item.numberOfSeasons} ${item.numberOfSeasons === 1 ? "season" : "seasons"}`
+                        : null,
+                    ].filter(Boolean).join(" · ") || (item.kind === "movie" ? "Movie" : "Series")}</p>
                     {item.kind === "movie" && item.currentMinute != null && item.runtimeMinutes != null && item.runtimeMinutes > 0 ? (
                       <>
                         <div className={styles.progressHeader}>
@@ -593,6 +598,7 @@ export function Movies() {
                         <ProgressBar
                           value={item.currentMinute}
                           max={item.runtimeMinutes}
+                          label={`${item.title} watching progress`}
                           className={styles.progress}
                         />
                         <small>{Math.max(0, item.runtimeMinutes - item.currentMinute)} min left</small>
@@ -603,8 +609,21 @@ export function Movies() {
                           <span>S{item.currentSeason} · ep. {item.currentEpisode} of {item.episodesInSeason}</span>
                           <strong>{Math.round((item.currentEpisode / item.episodesInSeason) * 100)}%</strong>
                         </div>
-                        <ProgressBar value={item.currentEpisode} max={item.episodesInSeason} className={styles.progress} />
+                        <ProgressBar value={item.currentEpisode} max={item.episodesInSeason} label={`${item.title} season progress`} className={styles.progress} />
                         <small>{Math.max(0, item.episodesInSeason - item.currentEpisode)} episodes left this season</small>
+                      </>
+                    ) : detailsLoadingKeys.has(item.key) && (item.kind === "movie" ? item.currentMinute != null : item.currentEpisode != null) ? (
+                      // Same structure as the loaded state, so the card keeps its height
+                      // while runtime/episode counts are fetched from TMDB.
+                      <>
+                        <div className={styles.progressHeader}>
+                          <span>{item.kind === "movie"
+                            ? `Minute ${item.currentMinute} of — min`
+                            : `S${item.currentSeason} · ep. ${item.currentEpisode} of —`}</span>
+                          <strong>—%</strong>
+                        </div>
+                        <ProgressBar value={0} max={1} label={`${item.title} progress, loading`} className={styles.progress} />
+                        <small>&nbsp;</small>
                       </>
                     ) : (
                       <p>{item.kind === "movie"
@@ -632,19 +651,23 @@ export function Movies() {
                 <article
                   className={styles.watchedItem}
                   key={item.key}
-                  role="button"
-                  tabIndex={0}
-                  aria-haspopup="dialog"
-                  aria-label={`View ${item.title} details`}
                   onClick={() => openMedia(item)}
-                  onKeyDown={(event) => handleMediaCardKeyDown(event, item)}
                 >
                   {item.cover ? (
                     <img src={item.cover} alt={`${item.title} poster`} loading="lazy" draggable={false} />
                   ) : (
                     <div className={styles.posterPlaceholder} aria-label="No poster available" />
                   )}
-                  <h3>{item.title}</h3>
+                  <h3>
+                      <button
+                        type="button"
+                        className={styles.titleButton}
+                        aria-haspopup="dialog"
+                        onClick={(event) => { event.stopPropagation(); openMedia(item); }}
+                      >
+                        {item.title}
+                      </button>
+                    </h3>
                   <p>{item.kind === "series" ? "Series" : "Movie"}{item.year ? ` · ${item.year}` : ""}</p>
                   {isWatched(item) && item.rating != null && (
                     <strong>{"\u2605".repeat(item.rating)}{"\u2606".repeat(5 - item.rating)}</strong>

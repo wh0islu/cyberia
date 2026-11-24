@@ -41,8 +41,8 @@
 }
 .field--full { flex: none; }
 
-.lbl { font-size: 13px; font-weight: 500; color: var(--text-muted); }
-.series-details-summary { margin-left: 8px; color: var(--text-muted); font-size: 12px; font-weight: 400; }
+.lbl { font-size: 1.3rem; font-weight: 500; color: var(--text-muted); }
+.series-details-summary { margin-left: 8px; color: var(--text-muted); font-size: 1.2rem; font-weight: 400; }
 .series-details-heading { display: flex; align-items: baseline; gap: 8px; }
 .series-edit-btn {
   margin-left: auto;
@@ -51,7 +51,7 @@
   background: transparent;
   color: var(--link-color);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   cursor: pointer;
 }
 .series-season-list {
@@ -69,12 +69,12 @@
   border-radius: 12px;
   background: var(--bg-surface-alt);
   color: var(--text-default);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 .series-season-list li span:last-child { color: var(--text-muted); }
 .lbl__opt { font-weight: 400; }
 .req { color: var(--link-color); }
-.field-error { color: var(--error); font-size: 12px; }
+.field-error { color: var(--error); font-size: 1.2rem; }
 
 .field__head {
   display: flex;
@@ -94,7 +94,7 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 .in::placeholder { color: var(--gray-400); }
 .in:focus { border-color: var(--text-default); }
@@ -116,7 +116,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   margin: 0;
   padding: 8px 12px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 .tmdb-search__result {
   display: flex;
@@ -148,9 +148,9 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
 }
 .tmdb-search__result strong,
 .tmdb-search__result small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tmdb-search__result strong { font-size: 13px; font-weight: 500; }
-.tmdb-search__result small { color: var(--text-muted); font-size: 11px; }
-.tmdb-search__credit { border-top: 1px solid var(--border-subtle); font-size: 10px; }
+.tmdb-search__result strong { font-size: 1.3rem; font-weight: 500; }
+.tmdb-search__result small { color: var(--text-muted); font-size: 1.2rem; }
+.tmdb-search__credit { border-top: 1px solid var(--border-subtle); font-size: 1.2rem; }
 
 
 .segmented {
@@ -170,7 +170,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   background: none;
   color: var(--text-muted);
   font: inherit;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -197,14 +197,14 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   border-radius: 14px;
   background: var(--bg-surface-alt);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
   text-align: center;
   cursor: pointer;
 }
 .drop:hover { border-color: var(--text-muted); }
 .drop--cover { width: 112px; height: 164px; }
 .drop--thumb { width: 150px; height: 96px; }
-.drop--wide { width: 100%; height: 120px; flex-direction: row; font-size: 13px; }
+.drop--wide { width: 100%; height: 120px; flex-direction: row; font-size: 1.3rem; }
 .drop svg { width: 22px; height: 22px; }
 .drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .drop--filled { border-style: solid; border-color: transparent; }
@@ -214,7 +214,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
 .star {
   all: unset;
   padding: 4px 2px;
-  font-size: 26px;
+  font-size: 2.6rem;
   line-height: 1;
   color: var(--gray-500);
   cursor: pointer;
@@ -231,7 +231,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   gap: 12px;
   min-height: 44px;
 }
-.switch-row__text { display: flex; flex-direction: column; font-size: 14px; }
+.switch-row__text { display: flex; flex-direction: column; font-size: 1.4rem; }
 .switch {
   all: unset;
   box-sizing: border-box;
@@ -267,7 +267,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   border-radius: 999px;
   background: var(--bg-surface-alt);
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
   cursor: pointer;
 }
@@ -281,7 +281,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   padding: 0 4px 0 14px;
   border-radius: 999px;
   background: var(--bg-surface-alt);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 
@@ -298,7 +298,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   border-radius: 12px;
   background: var(--bg-surface-alt);
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
   cursor: pointer;
 }
@@ -308,7 +308,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   all: unset;
   padding: 4px 0;
   color: var(--link-color);
-  font-size: 13px;
+  font-size: 1.3rem;
   cursor: pointer;
 }
 
@@ -332,7 +332,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   padding: 0 4px 0 14px;
   border-radius: 12px;
   background: var(--bg-surface-alt);
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 .list-item__n { width: 20px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .list-item__name { flex: 1; }
@@ -364,7 +364,7 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
   border-radius: 12px;
   background: var(--bg-surface-alt);
   color: var(--text-default);
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 500;
   cursor: pointer;
 }
@@ -395,6 +395,6 @@ textarea.in { min-height: 84px; padding: 12px 14px; resize: vertical; line-heigh
 .form__deleteError {
   max-width: 360px;
   color: var(--error);
-  font-size: 12px;
+  font-size: 1.2rem;
   overflow-wrap: anywhere;
 }
