@@ -98,7 +98,7 @@ function ReadingBookCard({ book, onEdit }: { book: Book; onEdit: (book: Book) =>
         <div className={styles.readingProgressHeader}>
           <span>p. {book.current_page} / {total ?? "?"}</span><strong>{percentage}%</strong>
         </div>
-        <ProgressBar value={book.current_page} max={total || Math.max(book.current_page, 1)} className={styles.bookProgress} />
+        <ProgressBar value={book.current_page} max={total || Math.max(book.current_page, 1)} label={`${book.title} reading progress`} className={styles.bookProgress} />
         {total !== null && <small>{Math.max(0, total - book.current_page)} pages left</small>}
         <form className={styles.pageForm} onSubmit={save}>
           <label htmlFor={`book-page-${book.id}`}>Paused at p.</label>
@@ -225,7 +225,7 @@ export function Books() {
               {shelf.map((book) => (
                 <article className={styles.shelfBook} key={book.id}>
                   <BookCover book={book} className={styles.shelfCover} /><h3>{book.title}</h3><p title={book.author}>{authorPreview(book.author)}</p>
-                  {book.status === "FD" && <ProgressBar value={100} max={100} className={styles.shelfProgress} />}
+                  {book.status === "FD" && <ProgressBar value={100} max={100} label={`${book.title} finished`} className={styles.shelfProgress} />}
                   <div className={styles.shelfStatusRow}>
                     <span className={`${styles.bookBadge} ${styles[`bookBadge--${(statuses[book.status] ?? "").toLowerCase().replaceAll(" ", "-")}`]}`}>
                       <span aria-hidden="true" />{statuses[book.status] ?? book.status}

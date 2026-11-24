@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Clock3 } from "lucide-react";
 import styles from "./styles.module.css";
@@ -25,19 +25,27 @@ export function TimePicker({ value, onChange, disabled = false }: TimePickerProp
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
+  const updatePosition = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const width = Math.min(260, window.innerWidth - 24);
+    const top = rect.bottom + 8 + 184 <= window.innerHeight
+      ? rect.bottom + 8
+      : Math.max(12, rect.top - 184 - 8);
+    const left = Math.min(Math.max(12, rect.left), window.innerWidth - width - 12);
+    setPosition({ top, left });
+  }, []);
+
+  // Runs after the DOM update but before the browser paints, so the panel
+  // is never painted at its stale/initial position.
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    updatePosition();
+    hourRef.current?.focus({ preventScroll: true });
+  }, [isOpen, updatePosition]);
+
   useEffect(() => {
     if (!isOpen) return;
-
-    function updatePosition() {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const width = Math.min(260, window.innerWidth - 24);
-      const top = rect.bottom + 8 + 184 <= window.innerHeight
-        ? rect.bottom + 8
-        : Math.max(12, rect.top - 184 - 8);
-      const left = Math.min(Math.max(12, rect.left), window.innerWidth - width - 12);
-      setPosition({ top, left });
-    }
 
     function handlePointerDown(event: PointerEvent) {
       if (event.target instanceof Node &&
@@ -56,8 +64,6 @@ export function TimePicker({ value, onChange, disabled = false }: TimePickerProp
       }
     }
 
-    updatePosition();
-    hourRef.current?.focus();
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("resize", updatePosition);
@@ -68,7 +74,7 @@ export function TimePicker({ value, onChange, disabled = false }: TimePickerProp
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
 
   function openPicker() {
     if (disabled) return;

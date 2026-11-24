@@ -96,7 +96,7 @@ export function Home() {
   const bookPercentage = readingBook && totalPages
     ? Math.min(100, Math.round(readingBook.current_page / totalPages * 100)) : 0;
   const coursesInProgress = data.courses.filter((course) => course.status === "IP")
-    .sort((first, second) => second.id - first.id).slice(0, 3);
+    .sort((first, second) => second.id - first.id).slice(0, 4);
   const today = new Date();
   const todayKey = localDateKey(today);
   const weekday = (today.getDay() + 6) % 7;
@@ -167,7 +167,7 @@ export function Home() {
                 <strong>{readingBook.title}</strong>
                 <span>{readingBook.author}</span>
               </div>
-              <ProgressBar value={readingBook.current_page} max={totalPages} className={styles.progressBar} />
+              <ProgressBar value={readingBook.current_page} max={totalPages} label={`${readingBook.title} reading progress`} className={styles.progressBar} />
               <div className={styles.bookProgress}>
                 <span>p. {readingBook.current_page} / {totalPages || "—"}</span>
                 <strong>{bookPercentage}%</strong>
@@ -191,6 +191,7 @@ export function Home() {
                 <ProgressBar
                   value={course.completed_lessons}
                   max={course.number_of_lessons ?? 0}
+                  label={`${course.title} course progress`}
                   className={styles.courseProgress}
                 />
                 <small>Lesson {course.completed_lessons} of {course.number_of_lessons ?? "—"}</small>
@@ -213,7 +214,7 @@ export function Home() {
                   className={done ? styles.checkboxDone : styles.checkbox}
                   aria-hidden="true"
                 />
-                <time>{habit.time?.slice(0, 5) ?? "—"}</time>
+                {habit.time && <time>{habit.time.slice(0, 5)}</time>}
                 <span className={done ? styles.habitDone : ""}>
                   {habit.name}
                 </span>

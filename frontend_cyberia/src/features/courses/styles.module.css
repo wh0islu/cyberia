@@ -20,12 +20,12 @@
 
 .header h1 {
   margin: 6px 0 4px;
-  font-size: 28px;
+  font-size: 2.8rem;
 }
 
 .header p {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 .toolbar {
@@ -64,7 +64,7 @@
   background: transparent;
   color: var(--text-muted);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -112,7 +112,7 @@
   background: transparent;
   color: var(--text-default);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .searchBox input::placeholder {
@@ -122,7 +122,7 @@
 .pageMessage,
 .error {
   margin: 0 6px 16px;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .pageMessage {
@@ -163,8 +163,7 @@
 }
 
 .page .selectedCourse {
-  border-color: var(--primary-light);
-  background: color-mix(in srgb, var(--primary-light) 7%, var(--bg-surface));
+  border-color: var(--border-strong);
 }
 
 .courseSelect {
@@ -196,7 +195,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: 1.5rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -209,7 +208,7 @@
 .courseInfo h2 {
   margin: 0;
   overflow-wrap: anywhere;
-  font-size: 14px;
+  font-size: 1.4rem;
   font-weight: 600;
 }
 
@@ -217,7 +216,7 @@
   margin: 4px 0 0;
   overflow: hidden;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -244,7 +243,7 @@
 .progressRow span {
   flex-shrink: 0;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -257,7 +256,7 @@
 }
 
 .courseSide > strong {
-  font-size: 20px;
+  font-size: 2rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
@@ -274,7 +273,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
   white-space: nowrap;
 }
 
@@ -285,7 +284,7 @@
   border: 1px dashed var(--border-subtle);
   border-radius: 16px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
   text-align: center;
 }
 
@@ -316,7 +315,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
-  font-size: 22px;
+  font-size: 2.2rem;
   font-weight: 600;
   letter-spacing: 0.05em;
 }
@@ -324,7 +323,7 @@
 .detailsCard h2 {
   margin: 0;
   overflow-wrap: anywhere;
-  font-size: 16px;
+  font-size: 1.6rem;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -332,7 +331,7 @@
 .detailByline {
   margin: -8px 0 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
   line-height: 1.4;
 }
 
@@ -342,7 +341,7 @@
 }
 
 .detailProgressBlock > strong {
-  font-size: 30px;
+  font-size: 3rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   line-height: 1;
@@ -360,7 +359,7 @@
 
 .detailProgressBlock > span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
   line-height: 1.45;
 }
 
@@ -368,12 +367,12 @@
   display: grid;
   gap: 6px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .detailField :global(input) {
   min-height: 40px;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .detailField :global(svg) {
@@ -416,7 +415,7 @@
 
 .detailsHint p {
   margin: 0;
-  font-size: 12px;
+  font-size: 1.2rem;
   line-height: 1.5;
 }
 

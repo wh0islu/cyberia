@@ -2,10 +2,17 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-user-select: none;
-  user-select: none;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* Text stays selectable for accessibility (copying, translation tools,
+   screen magnifiers). Only controls opt out, so double-clicking a button
+   doesn't highlight its label. */
+button,
+[role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 *::-webkit-scrollbar {

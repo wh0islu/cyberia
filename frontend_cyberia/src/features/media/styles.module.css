@@ -14,12 +14,12 @@
 
 .pageIntro h1 {
   margin: 6px 0 4px;
-  font-size: 28px;
+  font-size: 2.8rem;
 }
 
 .pageIntro p {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 .pageActions {
@@ -48,7 +48,7 @@
   background: transparent;
   color: var(--text-default);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .searchBox input::placeholder {
@@ -84,7 +84,7 @@
   background: transparent;
   color: var(--text-muted);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -111,7 +111,7 @@
   align-items: center;
   gap: 8px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 1.2rem;
 }
 
 .filterControls select {
@@ -123,7 +123,7 @@
   background: var(--bg-surface-alt);
   color: var(--text-default);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   cursor: pointer;
 }
 
@@ -181,7 +181,7 @@
 
 .seriesDetails h3,
 .watchedItem h3 {
-  font-size: 15px;
+  font-size: 1.5rem;
 }
 
 .seriesDetails {
@@ -190,7 +190,7 @@
 
 .seriesDetails h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -198,7 +198,7 @@
 .watchedItem p {
   margin: 4px 0 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .progressHeader {
@@ -208,12 +208,12 @@
   gap: 12px;
   margin-top: 20px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .progressHeader strong {
   color: var(--text-default);
-  font-size: 24px;
+  font-size: 2.4rem;
   line-height: 1;
 }
 
@@ -222,7 +222,7 @@
 }
 
 .seriesDetails :global([role="progressbar"]) {
-  height: 4px;
+  height: 5px;
   overflow: hidden;
   border: 0;
   border-radius: 999px;
@@ -238,7 +238,7 @@
   display: block;
   margin-top: 8px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .moviesPage .watchedItem {
@@ -268,7 +268,7 @@
 
 .watchedItem h3 {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 1.3rem;
   font-weight: 600;
 }
 
@@ -276,14 +276,14 @@
   display: block;
   margin-top: 8px;
   letter-spacing: 1px;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .watchedItem small {
   display: block;
   margin-top: 5px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 1.2rem;
 }
 
 .moviesPage .watchedSection {
@@ -308,7 +308,7 @@
   border-radius: 999px;
   background: var(--bg-surface-alt);
   color: var(--text-default);
-  font-size: 11px;
+  font-size: 1.2rem;
   white-space: nowrap;
 }
 
@@ -326,7 +326,7 @@
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 14px;
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 
 .progressEditor label {
@@ -334,8 +334,8 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  color: var(--text-muted);
-  font-size: 11px;
+  color: var(--text-default);
+  font-size: 1.2rem;
 }
 
 .progressEditor input {
@@ -348,7 +348,7 @@
   background: var(--bg-surface);
   color: var(--text-default);
   font: inherit;
-  font-size: 12px;
+  font-size: 1.2rem;
   appearance: textfield;
   -moz-appearance: textfield;
 }
@@ -371,7 +371,7 @@
   border-radius: 16px;
   background: var(--bg-surface);
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 1.3rem;
   text-align: center;
 }
 
@@ -473,4 +473,26 @@
 .editStatusButton:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Title doubles as the card's "open details" control (keyboard + screen readers),
+   so the card itself doesn't need role="button" around other controls. */
+.titleButton {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.titleButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
 }

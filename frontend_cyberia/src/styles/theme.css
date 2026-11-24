@@ -51,7 +51,9 @@
   --text-muted: var(--gray-300);
 
   --link-color: #10b981;
-  --link-hover: #0b8a60;
+  /* Green used as TEXT. Must keep >= 4.5:1 on surfaces (WCAG 1.4.3). */
+  --text-accent: var(--primary-light);
+  --link-hover: var(--primary-light);
 
   --progress-fill: var(--primary-light);
   --progress-track: var(--gray-700);
@@ -81,6 +83,7 @@
   --text-muted: var(--gray-500);
 
   --link-color: #047857;
+  --text-accent: #047857;
   --link-hover: var(--primary-dark);
   --btn-accent-bg: var(--primary);
   --btn-accent-hover: #0b8a60;
