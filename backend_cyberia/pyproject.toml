@@ -2,6 +2,7 @@
 name = "cyberia"
 version = "0.1.0"
 description = ""
+license = "AGPL-3.0-or-later"
 authors = [
     {name = "kaizen",email = "bcc8a62d41d282a9fe0ec7ae4c8b57bb@proton.me"}
 ]
