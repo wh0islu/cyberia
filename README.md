@@ -57,3 +57,12 @@ docker run --rm python:3.14-slim python -c "import secrets; print(secrets.token_
 | [Backend](backend_cyberia/README.md) | Django API setup and development |
 | [Frontend](frontend_cyberia/README.md) | React app setup and development |
 | [API collection](bruno/) | Bruno requests for the API |
+
+## License
+
+Copyright (C) 2025–2026 wh0islu.
+
+This program is free software: you can redistribute it and/or modify it under the
+terms of the GNU Affero General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later version.
+See [LICENSE](LICENSE) for details.
