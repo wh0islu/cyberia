@@ -100,6 +100,12 @@ the container port directly.
 
 ## 4. Publish behind HTTPS
 
+> [!WARNING]
+> This version has no authentication. Anyone who can reach the URL can read,
+> change and delete all data, and use your TMDB token through the API. Only
+> publish it behind an access-control layer, such as a VPN (e.g. Tailscale or
+> WireGuard) or reverse-proxy authentication (e.g. Authelia or HTTP basic auth).
+
 Point an HTTPS reverse proxy at `http://127.0.0.1:5173` and make sure it sends
 the original `Host` and `X-Forwarded-Proto` headers. Then set these values in
 `backend_cyberia/.env`, replacing `example.com` with the actual domain:
