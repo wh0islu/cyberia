@@ -3,10 +3,18 @@ import { ApiError, queryClient } from "./queryClient";
 
 export const collections = [
   "books", "movies", "series", "courses", "meals", "meal-notes", "habits", "habit-completions",
+  "reading-sessions", "movie-sessions", "series-sessions", "study-sessions",
 ] as const;
 export type Collection = typeof collections[number];
 export const collectionKey = (name: Collection) => ["collection", name] as const;
 type Entity = { id: number; [key: string]: unknown };
+
+const sessionCollections: Partial<Record<Collection, Collection>> = {
+  books: "reading-sessions",
+  movies: "movie-sessions",
+  series: "series-sessions",
+  courses: "study-sessions",
+};
 
 export function collectionOptions<T>(name: Collection) {
   return queryOptions({
@@ -61,6 +69,10 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   if (!queryClient.getQueryData(collectionKey(name))) {
     void queryClient.invalidateQueries({ queryKey: collectionKey(name) });
   }
+
+  // Progress updates create/extend activity sessions on the server.
+  const sessionCollection = sessionCollections[name];
+  if (sessionCollection) void queryClient.invalidateQueries({ queryKey: collectionKey(sessionCollection) });
 
   if (name === "habit-completions") {
     await queryClient.cancelQueries({ queryKey: collectionKey("habits") });
