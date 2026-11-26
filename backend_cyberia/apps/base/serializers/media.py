@@ -1,5 +1,7 @@
+from django.db import transaction
 from rest_framework import serializers
 
+from apps.base.activity import record_movie, record_series
 from apps.base.models import Movie, MovieSource, Series, SeriesSource
 
 from .common import NestedSourcesSerializerMixin
@@ -16,6 +18,13 @@ class MovieSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer)
     sources = MovieSourceSerializer(many=True, required=False)
     source_model = MovieSource
     source_parent_field = 'movie'
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        old_minute = instance.current_minute
+        instance = super().update(instance, validated_data)
+        record_movie(instance, old_minute, instance.current_minute)
+        return instance
 
     class Meta:
         model = Movie
@@ -49,6 +58,13 @@ class SeriesSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer
     sources = SeriesSourceSerializer(many=True, required=False)
     source_model = SeriesSource
     source_parent_field = 'series'
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        old_position = (instance.current_season, instance.current_episode)
+        instance = super().update(instance, validated_data)
+        record_series(instance, old_position, (instance.current_season, instance.current_episode))
+        return instance
 
     class Meta:
         model = Series

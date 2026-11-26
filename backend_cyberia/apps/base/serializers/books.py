@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
+from apps.base.activity import record_reading
 from apps.base.models import Book, BookSource
 
 from .common import NestedSourcesSerializerMixin
@@ -25,13 +26,17 @@ class BookSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer):
             validated_data['last_read_at'] = timezone.now()
         return super().create(validated_data)
 
+    @transaction.atomic
     def update(self, instance, validated_data):
+        old_page = instance.current_page
         status = validated_data.get('status', instance.status)
         page_changed = 'current_page' in validated_data and validated_data['current_page'] != instance.current_page
         started_reading = status == 'RE' and instance.status != 'RE'
         if status == 'RE' and (page_changed or started_reading):
             validated_data['last_read_at'] = timezone.now()
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        record_reading(instance, old_page, instance.current_page)
+        return instance
 
     def validate(self, attrs):
         pages = attrs.get('number_of_pages', getattr(self.instance, 'number_of_pages', None))

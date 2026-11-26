@@ -1,7 +1,9 @@
 import json
 
+from django.db import transaction
 from rest_framework import serializers
 
+from apps.base.activity import record_study
 from apps.base.models import Course, CourseSource
 
 from .common import NestedSourcesSerializerMixin
@@ -36,6 +38,13 @@ class CourseSerializer(NestedSourcesSerializerMixin, serializers.ModelSerializer
     )
     source_model = CourseSource
     source_parent_field = 'course'
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        old_lessons = instance.completed_lessons
+        instance = super().update(instance, validated_data)
+        record_study(instance, old_lessons, instance.completed_lessons)
+        return instance
 
     def validate(self, attrs):
         total_lessons = attrs.get(
