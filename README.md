@@ -3,22 +3,22 @@
 A web app to track books, movies & series, courses, routine and meals in one place.
 
 <samp>homepage</samp>
-![](/assets/images/home.png)
+![](/assets/images/homepage.png)
 
 <samp>dashboard</samp>
 ![](/assets/images/dash.png)
 
 <samp>books</samp>
-![](/assets/images/dash.png)
+![](/assets/images/books.png)
 
 <samp>movies & series</samp>
-![](/assets/images/movies.png)
+![](/assets/images/movies_and_series.png)
 
-----
+---
 
 **Stack:** Django 6 + DRF (Python 3.14) · React 19 + TypeScript + Vite · Nginx · Gunicorn · SQLite · Docker Compose
 
-----
+---
 
 ## Architecture
 
@@ -51,12 +51,12 @@ docker run --rm python:3.14-slim python -c "import secrets; print(secrets.token_
 
 ## Documentation
 
-| Topic | Description |
-| --- | --- |
-| [Docker](docs/docker.md) | Running, volumes and data persistence |
-| [Backend](backend_cyberia/README.md) | Django API setup and development |
-| [Frontend](frontend_cyberia/README.md) | React app setup and development |
-| [API collection](bruno/) | Bruno requests for the API |
+| Topic                                  | Description                           |
+| -------------------------------------- | ------------------------------------- |
+| [Docker](docs/docker.md)               | Running, volumes and data persistence |
+| [Backend](backend_cyberia/README.md)   | Django API setup and development      |
+| [Frontend](frontend_cyberia/README.md) | React app setup and development       |
+| [API collection](bruno/)               | Bruno requests for the API            |
 
 ## License
 

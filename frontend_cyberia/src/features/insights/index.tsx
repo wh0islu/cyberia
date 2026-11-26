@@ -23,6 +23,7 @@ import {
 } from "./data";
 import styles from "./styles.module.css";
 import { remToPx } from "../../utils/remToPx";
+import { useActiveTheme, type ActiveTheme } from "../../hooks/useActiveTheme";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -71,6 +72,16 @@ const monthlyTotalsPlugin: Plugin<"bar"> = {
   },
 };
 
+// Categorical palette, one fixed hue per activity type (colour follows the entity,
+// never its position). Validated with the dataviz palette checker against the card
+// surfaces (#ffffff light / #141414 dark): CVD-safe adjacent pairs in both modes.
+// In light mode aqua/yellow/magenta are < 3:1 on white, so the chart ships a legend
+// and a "View as table" fallback (relief rule).
+const SERIES_COLORS: Record<ActiveTheme, string[]> = {
+  light: ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"],
+  dark: ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181"],
+};
+
 // A function (not a constant) so font sizes are read from the live root font size.
 const getActivityTrendOptions = (): ChartOptions<"bar"> => ({
   responsive: true,
@@ -101,6 +112,8 @@ const getActivityTrendOptions = (): ChartOptions<"bar"> => ({
     y: {
       stacked: true,
       beginAtZero: true,
+      // Headroom so the total drawn above the tallest bar never hits the legend.
+      grace: "15%",
       grid: { color: "rgba(128, 128, 128, 0.18)" },
       border: { display: false },
       ticks: {
@@ -115,6 +128,10 @@ const getActivityTrendOptions = (): ChartOptions<"bar"> => ({
 
 export function Insights() {
   const { data, failedSections, loading } = useInsightsData();
+  const theme = useActiveTheme();
+  const seriesColors = SERIES_COLORS[theme];
+  // 2px gap between stacked segments, painted in the card surface colour.
+  const surface = getComputedStyle(document.documentElement).getPropertyValue("--bg-surface").trim() || "#141414";
   const activities = getRecentActivities(data);
   const months = getMonths();
   const monthlyCounts = (dates: Date[]) =>
@@ -128,18 +145,21 @@ export function Insights() {
     labels: months.map(({ label }) => label),
     datasets: [
       {
-        label: "Books updated",
-        data: monthlyCounts(
-          data.books.flatMap((book) =>
-            book.last_read_at ? [new Date(book.last_read_at)] : [],
-          ),
-        ),
-        backgroundColor: "#0da170",
+        label: "Reading",
+        data: monthlyCounts(data["reading-sessions"].map((session) => localDate(session.date))),
+      },
+      {
+        label: "Watching",
+        data: monthlyCounts([...data["movie-sessions"], ...data["series-sessions"]]
+          .map((session) => localDate(session.date))),
+      },
+      {
+        label: "Studying",
+        data: monthlyCounts(data["study-sessions"].map((session) => localDate(session.date))),
       },
       {
         label: "Meals logged",
         data: monthlyCounts(data.meals.map((meal) => localDate(meal.date))),
-        backgroundColor: "#69c9a5",
       },
       {
         label: "Habits completed",
@@ -148,10 +168,12 @@ export function Insights() {
             .filter((item) => item.completed)
             .map((item) => localDate(item.date)),
         ),
-        backgroundColor: "#b8e4d4",
       },
-    ].map((dataset) => ({
+    ].map((dataset, index) => ({
       ...dataset,
+      backgroundColor: seriesColors[index],
+      borderColor: surface,
+      borderWidth: { top: 2, right: 0, bottom: 0, left: 0 },
       borderSkipped: false as const,
       borderRadius: 2,
       stack: "monthlyActivity",
@@ -162,14 +184,28 @@ export function Insights() {
   };
   const activitySections: Section[] = [
     "books",
+    "movies",
+    "series",
+    "courses",
     "meals",
     "habits",
     "habit-completions",
+    "reading-sessions",
+    "movie-sessions",
+    "series-sessions",
+    "study-sessions",
   ];
   const activityError = activitySections.some((section) =>
     failedSections.includes(section),
   );
-  const chartSections: Section[] = ["books", "meals", "habit-completions"];
+  const chartSections: Section[] = [
+    "reading-sessions",
+    "movie-sessions",
+    "series-sessions",
+    "study-sessions",
+    "meals",
+    "habit-completions",
+  ];
   const chartUnavailable = chartSections.every((section) =>
     failedSections.includes(section),
   );
@@ -302,9 +338,32 @@ export function Insights() {
             />
           </div>
         )}
-        <p className={styles.chartFootnote}>
-          {activityError ? "Some records could not be loaded. " : ""}{" "}
-        </p>
+        {!loading && !chartUnavailable && hasMonthlyActivity && (
+          <details className={styles.dataTable}>
+            <summary>View as table</summary>
+            <div className={styles.tableScroll}>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Activity</th>
+                    {monthlyData.labels?.map((month) => <th scope="col" key={month}>{month}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthlyData.datasets.map((dataset) => (
+                    <tr key={dataset.label}>
+                      <th scope="row">{dataset.label}</th>
+                      {dataset.data.map((count, index) => <td key={index}>{count}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        )}
+        {activityError && (
+          <p className={styles.chartFootnote}>Some records could not be loaded.</p>
+        )}
       </Card>
     </main>
   );

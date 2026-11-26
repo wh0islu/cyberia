@@ -1,3 +1,9 @@
+from .activity import (
+    movie_sessions_api_collection,
+    reading_sessions_api_collection,
+    series_sessions_api_collection,
+    study_sessions_api_collection,
+)
 from .books import book_api, books_api_collection
 from .courses import course_api, courses_api_collection
 from .meals import meal_api, meal_notes_api_collection, meals_api_collection
@@ -6,6 +12,10 @@ from .routine import habit_api, habit_completion_api, habit_completions_api_coll
 from .tmdb import tmdb_media_details, tmdb_media_search, tmdb_series_details
 
 __all__ = [
+    'reading_sessions_api_collection',
+    'movie_sessions_api_collection',
+    'series_sessions_api_collection',
+    'study_sessions_api_collection',
     'tmdb_media_search',
     'tmdb_series_details',
     'tmdb_media_details',

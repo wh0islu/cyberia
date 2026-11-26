@@ -1,3 +1,9 @@
+from .activity import (
+    MovieWatchSessionSerializer,
+    ReadingSessionSerializer,
+    SeriesWatchSessionSerializer,
+    StudySessionSerializer,
+)
 from .books import BookSerializer, BookSourceSerializer, BooksSerializer
 from .common import NestedSourcesSerializerMixin
 from .courses import CourseModulesField, CourseSerializer, CourseSourceSerializer
@@ -6,6 +12,10 @@ from .media import MovieSerializer, MovieSourceSerializer, SeriesSerializer, Ser
 from .routine import HabitCompletionSerializer, HabitSerializer
 
 __all__ = [
+    'ReadingSessionSerializer',
+    'MovieWatchSessionSerializer',
+    'SeriesWatchSessionSerializer',
+    'StudySessionSerializer',
     'NestedSourcesSerializerMixin',
     'BookSourceSerializer',
     'BookSerializer',

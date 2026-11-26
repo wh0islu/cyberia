@@ -4,6 +4,10 @@ from . import api
 
 app_name = 'base'
 urlpatterns = [
+    path('api/v1/reading-sessions/', api.reading_sessions_api_collection, name='reading_sessions_api'),
+    path('api/v1/movie-sessions/', api.movie_sessions_api_collection, name='movie_sessions_api'),
+    path('api/v1/series-sessions/', api.series_sessions_api_collection, name='series_sessions_api'),
+    path('api/v1/study-sessions/', api.study_sessions_api_collection, name='study_sessions_api'),
     path('api/v1/books/', api.books_api_collection, name='books_api'),
     path('api/v1/books/<int:pk>/', api.book_api, name='book_api'),
     path('api/v1/media-search/', api.tmdb_media_search, name='tmdb_media_search'),
